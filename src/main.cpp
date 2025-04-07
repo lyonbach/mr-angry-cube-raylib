@@ -1,4 +1,5 @@
 #include "GameObject.h" 
+#include "MrAngryCube.h"
 
 #include "raylib.h"
 #include "raymath.h"
@@ -6,6 +7,10 @@
 
 #include <filesystem>
 
+std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
+std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
+std::string shaderPath = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
+std::string modelPath = (fs / "../models" / "mr_angry_cube.obj").string();
 
 int main(void)
 {
@@ -33,7 +38,7 @@ int main(void)
     Vector3 rotateAxis = { 0.0f, 0.0f, 1.0f };
     Vector3 nextRotateAxis = rotateAxis;
     
-    GameObject *mrAngryCube = new GameObject();
+    MrAngryCube *mrAngryCube = new MrAngryCube(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
