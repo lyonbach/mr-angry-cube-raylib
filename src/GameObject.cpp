@@ -38,9 +38,9 @@ GameObject::GameObject()
 
 GameObject::~GameObject()
 {
-    UnloadShader(m_Shader);       // Unload shader
-    UnloadTexture(m_Texture);     // Unload texture
-    UnloadModel(m_Model);         // Unload model
+    UnloadModel(m_Model);
+    UnloadTexture(m_Texture);
+    UnloadMaterial(m_Material);
 }
 
 void GameObject::Render()
@@ -67,9 +67,5 @@ void GameObject::Update(Vector3 rotationAxis, float increment)
     m_Transform.m12 = -m_Rotation.z / 90.0f * m_Size * 2;
     m_Transform.m13 = deltaY.y * deltaY.x * m_Size;
     m_Transform.m14 = m_Rotation.x / 90.0f * m_Size * 2;
-
-    TraceLog(LOG_INFO, "Size: %f", m_Size);
-    TraceLog(LOG_INFO, "Hypotenuse: %f", m_Hypotenuse);
-    TraceLog(LOG_INFO, "HalfSize: %f", m_HalfSize);
 
 }
