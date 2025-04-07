@@ -1,4 +1,5 @@
 #include "GameObject.h" 
+#include "MrAngryCube.h"
 
 #include "raylib.h"
 #include "raymath.h"
@@ -6,6 +7,10 @@
 
 #include <filesystem>
 
+std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
+std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
+std::string shaderPath = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
+std::string modelPath = (fs / "../models" / "mr_angry_cube.obj").string();
 
 int main(void)
 {
@@ -33,7 +38,7 @@ int main(void)
     Vector3 rotateAxis = { 0.0f, 0.0f, 1.0f };
     Vector3 nextRotateAxis = rotateAxis;
     
-    GameObject mrAngryCube = GameObject();
+    MrAngryCube *mrAngryCube = new MrAngryCube(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -70,9 +75,9 @@ int main(void)
         
         // Update
         //----------------------------------------------------------------------------------
-        mrAngryCube.Update(rotateAxis, speed);
+        mrAngryCube->Update(rotateAxis, speed);
 
-        Vector3* rotation = &mrAngryCube.m_Rotation;
+        Vector3* rotation = &mrAngryCube->m_Rotation;
         
         if ((int)rotation->x % quarterRotation == 0 && rotateAxis.x != 0.0f || 
             (int)rotation->z % quarterRotation == 0 && rotateAxis.z != 0.0f ||
@@ -82,7 +87,7 @@ int main(void)
                 rotateAxis = nextRotateAxis;
         }
             
-        camera.target = (Vector3){mrAngryCube.m_Transform.m12, mrAngryCube.m_Transform.m13, mrAngryCube.m_Transform.m14};
+        camera.target = (Vector3){mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m13, mrAngryCube->m_Transform.m14};
         camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 10.0f};
         //----------------------------------------------------------------------------------
 
@@ -91,7 +96,7 @@ int main(void)
         BeginDrawing();
             ClearBackground(DARKBLUE);
             BeginMode3D(camera);
-                mrAngryCube.Render();
+                mrAngryCube->Render();
                 DrawGrid(10, 1.0f);
             EndMode3D();
             DrawFPS(10, 10);
@@ -102,7 +107,7 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    mrAngryCube.~GameObject();
+    delete mrAngryCube;
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
