@@ -1,16 +1,20 @@
 #include "GameObject.h" 
 #include "MrAngryCube.h"
+#include "Enemy.h"
 
 #include "raylib.h"
 #include "raymath.h"
 #define GLSL_VERSION 330
 
 #include <filesystem>
+#include <vector>
+
 
 std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
 std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
 std::string shaderPath = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
 std::string modelPath = (fs / "../models" / "mr_angry_cube.obj").string();
+
 
 int main(void)
 {
@@ -33,12 +37,17 @@ int main(void)
     camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
     int quarterRotation = 90;
-    float speed = 5.0f;
+    float speed = 1.0f;
 
     Vector3 rotateAxis = { 0.0f, 0.0f, 1.0f };
     Vector3 nextRotateAxis = rotateAxis;
     
     MrAngryCube *mrAngryCube = new MrAngryCube(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
+    
+    
+    std::vector<GameObject*> gameObjects;
+    gameObjects.push_back(mrAngryCube);
+    gameObjects.push_back(new Enemy(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str()));
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -84,7 +93,14 @@ int main(void)
             (int)rotation->y % quarterRotation == 0 && rotateAxis.y != 0.0f ||
             (rotateAxis.x == 0.0f && rotateAxis.z == 0.0f && rotateAxis.y == 0.0f))
         {
-                rotateAxis = nextRotateAxis;
+            rotateAxis = nextRotateAxis;
+            if (mrAngryCube->IsFaceOnTheGround())
+            {
+                TraceLog(LOG_WARNING, "Mr. Angry Cube: Oh, my face! Getting angry!");
+                mrAngryCube->m_AngerLevel *= 2;
+                TraceLog(LOG_WARNING, "Mr. Angry Cube: Anger level: %f", mrAngryCube->m_AngerLevel);
+                speed = mrAngryCube->m_AngerLevel;
+            }
         }
             
         camera.target = (Vector3){mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m13, mrAngryCube->m_Transform.m14};
@@ -96,7 +112,10 @@ int main(void)
         BeginDrawing();
             ClearBackground(DARKBLUE);
             BeginMode3D(camera);
-                mrAngryCube->Render();
+                for (auto gameObject : gameObjects)
+                {
+                    gameObject->Render();
+                }
                 DrawGrid(10, 1.0f);
             EndMode3D();
             DrawFPS(10, 10);
@@ -107,8 +126,11 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    delete mrAngryCube;
-    CloseWindow();        // Close window and OpenGL context
+    for (auto gameObject : gameObjects)
+    {
+        delete gameObject;
+    }
+    CloseWindow();
     //--------------------------------------------------------------------------------------
 
     return 0;
