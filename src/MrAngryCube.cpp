@@ -52,10 +52,3 @@ bool MrAngryCube::IsFaceOnTheGround()
     // If the cube's "down" vector is not aligned with the world's "down" vector, it means a face is on the ground.
     return fabs(dotProduct) < 0.1f;
 }
-
-bool MrAngryCube::IsColliding()
-{
-
-    return false;  // FIXME FINISH IMPLEMENTATION
-    
-}

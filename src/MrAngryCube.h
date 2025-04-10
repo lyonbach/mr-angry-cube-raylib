@@ -22,7 +22,6 @@ class MrAngryCube : public GameObject
         using GameObject::Update;
         void Update(Vector3 rotationAxis, float increment);
 
-        bool IsColliding();
         bool IsFaceOnTheGround();
 };
 

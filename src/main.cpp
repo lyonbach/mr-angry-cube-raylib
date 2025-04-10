@@ -1,4 +1,5 @@
 #include "GameObject.h" 
+#include "Game.h"
 #include "MrAngryCube.h"
 #include "Enemy.h"
 
@@ -13,15 +14,15 @@
 std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
 std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
 std::string shaderPath = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
-std::string modelPath = (fs / "../models" / "mr_angry_cube.obj").string();
+std::string modelPath = (fs / "../models" / "mr_angry_cube_high_res.obj").string();
 
 
 int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screenWidth = 1600;
+    const int screenHeight = 1600;
     const float cubeSize = 1.0f;
     const float cubeHalfSize = cubeSize / 2.0f;
     const float cubeHypotenuse = sqrt(cubeHalfSize * cubeHalfSize * 2);
@@ -37,17 +38,18 @@ int main(void)
     camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
     int quarterRotation = 90;
-    float speed = 1.0f;
+    float speed = 2.0f;
 
     Vector3 rotateAxis = { 0.0f, 0.0f, 1.0f };
     Vector3 nextRotateAxis = rotateAxis;
     
     MrAngryCube *mrAngryCube = new MrAngryCube(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
     
-    
-    std::vector<GameObject*> gameObjects;
-    gameObjects.push_back(mrAngryCube);
-    gameObjects.push_back(new Enemy(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str()));
+    Game* game = new Game();
+    game->Register(mrAngryCube);
+    game->Register(new Enemy(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str()));
+
+    // gameObjects.push_back(new Enemy(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str()));
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -96,15 +98,19 @@ int main(void)
             rotateAxis = nextRotateAxis;
             if (mrAngryCube->IsFaceOnTheGround())
             {
-                TraceLog(LOG_WARNING, "Mr. Angry Cube: Oh, my face! Getting angry!");
-                mrAngryCube->m_AngerLevel *= 2;
-                TraceLog(LOG_WARNING, "Mr. Angry Cube: Anger level: %f", mrAngryCube->m_AngerLevel);
-                speed = mrAngryCube->m_AngerLevel;
+                for (Enemy* enemy : game->GetCollidingEnemies())
+                {
+                    TraceLog(LOG_WARNING, "Collides!");
+                }
+                // TraceLog(LOG_WARNING, "Mr. Angry Cube: Oh, my face! Getting angry!");
+                // mrAngryCube->m_AngerLevel ;
+                // TraceLog(LOG_WARNING, "Mr. Angry Cube: Anger level: %f", mrAngryCube->m_AngerLevel);
+                // speed = mrAngryCube->m_AngerLevel;
             }
         }
             
         camera.target = (Vector3){mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m13, mrAngryCube->m_Transform.m14};
-        camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 10.0f};
+        camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 20.0f};
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -112,10 +118,7 @@ int main(void)
         BeginDrawing();
             ClearBackground(DARKBLUE);
             BeginMode3D(camera);
-                for (auto gameObject : gameObjects)
-                {
-                    gameObject->Render();
-                }
+                game->Render();
                 DrawGrid(10, 1.0f);
             EndMode3D();
             DrawFPS(10, 10);
@@ -126,10 +129,7 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    for (auto gameObject : gameObjects)
-    {
-        delete gameObject;
-    }
+    delete game;
     CloseWindow();
     //--------------------------------------------------------------------------------------
 

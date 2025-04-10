@@ -12,6 +12,7 @@ class GameObject
         Material m_Material;
 
     public:
+
         Matrix m_Transform;
 
         GameObject(const char* texturePath, const char* shaderPath, const char* modelPath);
