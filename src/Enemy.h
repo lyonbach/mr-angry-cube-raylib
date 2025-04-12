@@ -9,6 +9,7 @@ class Enemy : public GameObject
         virtual ~Enemy() = default;
         
         void Render() override;
+        void Update() override;
 
 };
 

@@ -1,4 +1,4 @@
-#include "GameObject.h" 
+#include "GameObject.h"
 #include "Game.h"
 #include "MrAngryCube.h"
 #include "Enemy.h"
@@ -23,9 +23,6 @@ int main(void)
     //--------------------------------------------------------------------------------------
     const int screenWidth = 1600;
     const int screenHeight = 1600;
-    const float cubeSize = 1.0f;
-    const float cubeHalfSize = cubeSize / 2.0f;
-    const float cubeHypotenuse = sqrt(cubeHalfSize * cubeHalfSize * 2);
 
     InitWindow(screenWidth, screenHeight, "Mr Angry Cube Test - V 0.1");
 
@@ -38,24 +35,15 @@ int main(void)
     camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
     int quarterRotation = 90;
-    float speed = 2.0f;
 
-    Vector3 rotateAxis = { 0.0f, 0.0f, 1.0f };
-    Vector3 nextRotateAxis = rotateAxis;
-    
-    MrAngryCube *mrAngryCube = new MrAngryCube(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
-    
     Game* game = new Game();
+    MrAngryCube *mrAngryCube = new MrAngryCube(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
+    mrAngryCube->m_Speed = 2.0f;
     game->Register(mrAngryCube);
     game->Register(new Enemy(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str()));
 
-    // gameObjects.push_back(new Enemy(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str()));
-
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
-
-    // Define Variables
-    Matrix transform = MatrixScale(cubeSize, cubeSize, cubeSize);
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -65,50 +53,46 @@ int main(void)
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))
         {
-            nextRotateAxis = { 1.0f, 0.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { 1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_S))
         {
-            nextRotateAxis = { -1.0f, 0.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { -1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_A))
         {
-            nextRotateAxis = { 0.0f, 0.0f, -1.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, -1.0f };
         } else if (IsKeyPressed(KEY_D))
         {
-            nextRotateAxis = { 0.0f, 0.0f, 1.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, 1.0f };
         } else if (IsKeyPressed(KEY_E))
         {
-            nextRotateAxis = { 0.0f, -1.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, -1.0f, 0.0f };
         } else if (IsKeyPressed(KEY_Q))
         {
-            nextRotateAxis = { 0.0f, 1.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, 1.0f, 0.0f };
         }
         //----------------------------------------------------------------------------------
-        
+
         // Update
         //----------------------------------------------------------------------------------
-        mrAngryCube->Update(rotateAxis, speed);
-
-        Vector3* rotation = &mrAngryCube->m_Rotation;
-        
-        if ((int)rotation->x % quarterRotation == 0 && rotateAxis.x != 0.0f || 
-            (int)rotation->z % quarterRotation == 0 && rotateAxis.z != 0.0f ||
-            (int)rotation->y % quarterRotation == 0 && rotateAxis.y != 0.0f ||
-            (rotateAxis.x == 0.0f && rotateAxis.z == 0.0f && rotateAxis.y == 0.0f))
+        game->Update();
+        // FIXME move to a function
+        if ((int)mrAngryCube->m_Rotation.x % quarterRotation == 0 && mrAngryCube->m_RotationAxis.x != 0.0f ||
+            (int)mrAngryCube->m_Rotation.z % quarterRotation == 0 && mrAngryCube->m_RotationAxis.z != 0.0f ||
+            (int)mrAngryCube->m_Rotation.y % quarterRotation == 0 && mrAngryCube->m_RotationAxis.y != 0.0f ||
+            (mrAngryCube->m_RotationAxis.x == 0.0f &&
+             mrAngryCube->m_RotationAxis.z == 0.0f &&
+             mrAngryCube->m_RotationAxis.y == 0.0f))
         {
-            rotateAxis = nextRotateAxis;
+            mrAngryCube->m_RotationAxis = mrAngryCube->m_NextRotationAxis;
             if (mrAngryCube->IsFaceOnTheGround())
             {
                 for (Enemy* enemy : game->GetCollidingEnemies())
                 {
                     TraceLog(LOG_WARNING, "Collides!");
                 }
-                // TraceLog(LOG_WARNING, "Mr. Angry Cube: Oh, my face! Getting angry!");
-                // mrAngryCube->m_AngerLevel ;
-                // TraceLog(LOG_WARNING, "Mr. Angry Cube: Anger level: %f", mrAngryCube->m_AngerLevel);
-                // speed = mrAngryCube->m_AngerLevel;
             }
         }
-            
+
         camera.target = (Vector3){mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m13, mrAngryCube->m_Transform.m14};
         camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 20.0f};
         //----------------------------------------------------------------------------------

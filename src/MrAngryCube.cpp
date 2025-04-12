@@ -21,12 +21,12 @@ void MrAngryCube::Render()
     DrawMesh(m_Model.meshes[0], m_Material, m_Transform);
 }
 
-void MrAngryCube::Update(Vector3 rotationAxis, float increment)
+void MrAngryCube::Update()
 {
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position. 
-    m_Rotation = Vector3Add(m_Rotation, Vector3Scale(rotationAxis, increment));
+    m_Rotation = Vector3Add(m_Rotation, Vector3Scale(m_RotationAxis, m_Speed));
 
     // Calculate the vertical position of the cube, x stands for the rotation around x axis
     // and y stands for the rotation around z axis. We do not need the other axis since 
@@ -34,7 +34,7 @@ void MrAngryCube::Update(Vector3 rotationAxis, float increment)
     // We can use the 2d vector to calculate the vertical position of the cube.
     Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin((Vector2){m_Rotation.x, m_Rotation.z}), m_Hypotenuse), 1 / m_HalfSize);
 
-    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * increment);
+    Vector3 incrementVector = Vector3Scale(m_RotationAxis, DEG2RAD * m_Speed);
     m_Transform = MatrixMultiply(m_Transform, MatrixRotateXYZ((Vector3){incrementVector.x, incrementVector.y, incrementVector.z}));
 
     m_Transform.m12 = -m_Rotation.z / 90.0f * m_Size * 2;

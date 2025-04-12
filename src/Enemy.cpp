@@ -12,3 +12,7 @@ void Enemy::Render()
     DrawCube(position, 1, 1, 1, WHITE);
     
 }
+
+void Enemy::Update()
+{
+}
