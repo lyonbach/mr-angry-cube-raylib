@@ -22,7 +22,7 @@ class MrAngryCube : public GameObject
         virtual ~MrAngryCube() = default;
 
         void Render() override;
-        void Update() override;
+        void Update(float deltaTime) override;
         bool IsFaceOnTheGround();
 };
 

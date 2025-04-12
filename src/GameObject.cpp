@@ -28,7 +28,7 @@ void GameObject::Render()
     TraceLog(LOG_WARNING, "Subclasses should implement their own Render method");
 }
 
-void GameObject::Update()
+void GameObject::Update(float deltaTime)
 {
     TraceLog(LOG_WARNING, "Subclasses should implement their own Update method");
 }

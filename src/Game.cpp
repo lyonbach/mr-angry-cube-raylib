@@ -50,10 +50,16 @@ std::vector<Enemy*> Game::GetCollidingEnemies()
 
 void Game::Update()
 {
+    float deltaTime = GetTime() - m_LastUpdateTime;
+    if (deltaTime < 1.0f / m_UpdateSpeed)
+    {
+        return;
+    }
     for (auto& gameObject : m_GameObjects)
     {
-        gameObject->Update();
+        gameObject->Update(deltaTime);
     }
+    m_LastUpdateTime = GetTime();
 }
 
 void Game::Render()

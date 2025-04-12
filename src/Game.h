@@ -12,6 +12,8 @@ class Game
 public:
     std::vector<GameObject*> m_GameObjects;
     bool m_CanQuit = false;
+    float m_LastUpdateTime;
+    int m_UpdateSpeed = 60;
 
     Game();
     Game(std::vector<GameObject*> gameObjects);

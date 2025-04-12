@@ -21,8 +21,9 @@ void MrAngryCube::Render()
     DrawMesh(m_Model.meshes[0], m_Material, m_Transform);
 }
 
-void MrAngryCube::Update()
+void MrAngryCube::Update(float deltaTime)
 {
+
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position. 

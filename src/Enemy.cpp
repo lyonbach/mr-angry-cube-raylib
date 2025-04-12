@@ -13,6 +13,6 @@ void Enemy::Render()
     
 }
 
-void Enemy::Update()
+void Enemy::Update(float deltaTime)
 {
 }
