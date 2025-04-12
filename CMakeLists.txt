@@ -6,7 +6,7 @@ get_filename_component(FOLDER_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${FOLDER_NAME})
 
 # Add executable
-add_executable(${PROJECT_NAME} ./src/main.cpp ./src/GameObject.cpp ./src/MrAngryCube.cpp)
+add_executable(${PROJECT_NAME} ./src/main.cpp ./src/GameObject.cpp ./src/MrAngryCube.cpp ./src/Enemy.cpp ./src/Game.cpp)
 
 set(RAYLIB_INCLUDE_DIR "./vendor/raylib/src")
 set(RAYLIB_LIB_DIR "./vendor/raylib/src")

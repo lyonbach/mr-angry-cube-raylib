@@ -12,11 +12,12 @@ class GameObject
         Material m_Material;
 
     public:
+
         Matrix m_Transform;
 
         GameObject(const char* texturePath, const char* shaderPath, const char* modelPath);
         ~GameObject();
 
         virtual void Render();
-        virtual void Update();
+        virtual void Update(float lastUpdateTime);
 };

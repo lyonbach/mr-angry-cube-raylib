@@ -1,11 +1,15 @@
-#include "GameObject.h" 
+#include "GameObject.h"
+#include "Game.h"
 #include "MrAngryCube.h"
+#include "Enemy.h"
 
 #include "raylib.h"
 #include "raymath.h"
 #define GLSL_VERSION 330
 
 #include <filesystem>
+#include <vector>
+
 
 std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
 std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
@@ -17,10 +21,7 @@ int main(void)
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
-    const int screenHeight = 450;
-    const float cubeSize = 1.0f;
-    const float cubeHalfSize = cubeSize / 2.0f;
-    const float cubeHypotenuse = sqrt(cubeHalfSize * cubeHalfSize * 2);
+    const int screenHeight = 800;
 
     InitWindow(screenWidth, screenHeight, "Mr Angry Cube Test - V 0.1");
 
@@ -33,18 +34,19 @@ int main(void)
     camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
     int quarterRotation = 90;
-    float speed = 5.0f;
 
-    Vector3 rotateAxis = { 0.0f, 0.0f, 1.0f };
-    Vector3 nextRotateAxis = rotateAxis;
+    // Instantiate the game and game specifications.
+    Game* game = new Game();
+    game->m_UpdateSpeed = 100;
     
+
     MrAngryCube *mrAngryCube = new MrAngryCube(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
+    mrAngryCube->m_Speed = 2.0f;
+    game->Register(mrAngryCube);
+    game->Register(new Enemy(texturePath.c_str(), shaderPath.c_str(), modelPath.c_str()));
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    SetTargetFPS(240);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
-
-    // Define Variables
-    Matrix transform = MatrixScale(cubeSize, cubeSize, cubeSize);
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -54,41 +56,48 @@ int main(void)
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))
         {
-            nextRotateAxis = { 1.0f, 0.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { 1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_S))
         {
-            nextRotateAxis = { -1.0f, 0.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { -1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_A))
         {
-            nextRotateAxis = { 0.0f, 0.0f, -1.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, -1.0f };
         } else if (IsKeyPressed(KEY_D))
         {
-            nextRotateAxis = { 0.0f, 0.0f, 1.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, 1.0f };
         } else if (IsKeyPressed(KEY_E))
         {
-            nextRotateAxis = { 0.0f, -1.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, -1.0f, 0.0f };
         } else if (IsKeyPressed(KEY_Q))
         {
-            nextRotateAxis = { 0.0f, 1.0f, 0.0f };
+            mrAngryCube->m_NextRotationAxis = { 0.0f, 1.0f, 0.0f };
         }
         //----------------------------------------------------------------------------------
-        
+
         // Update
         //----------------------------------------------------------------------------------
-        mrAngryCube->Update(rotateAxis, speed);
-
-        Vector3* rotation = &mrAngryCube->m_Rotation;
-        
-        if ((int)rotation->x % quarterRotation == 0 && rotateAxis.x != 0.0f || 
-            (int)rotation->z % quarterRotation == 0 && rotateAxis.z != 0.0f ||
-            (int)rotation->y % quarterRotation == 0 && rotateAxis.y != 0.0f ||
-            (rotateAxis.x == 0.0f && rotateAxis.z == 0.0f && rotateAxis.y == 0.0f))
+        game->Update();
+        // FIXME move to a function
+        if ((int)mrAngryCube->m_Rotation.x % quarterRotation == 0 && mrAngryCube->m_RotationAxis.x != 0.0f ||
+            (int)mrAngryCube->m_Rotation.z % quarterRotation == 0 && mrAngryCube->m_RotationAxis.z != 0.0f ||
+            (int)mrAngryCube->m_Rotation.y % quarterRotation == 0 && mrAngryCube->m_RotationAxis.y != 0.0f ||
+            (mrAngryCube->m_RotationAxis.x == 0.0f &&
+             mrAngryCube->m_RotationAxis.z == 0.0f &&
+             mrAngryCube->m_RotationAxis.y == 0.0f))
         {
-                rotateAxis = nextRotateAxis;
+            mrAngryCube->m_RotationAxis = mrAngryCube->m_NextRotationAxis;
+            if (mrAngryCube->IsFaceOnTheGround())
+            {
+                for (Enemy* enemy : game->GetCollidingEnemies())
+                {
+                    TraceLog(LOG_WARNING, "Collides!");
+                }
+            }
         }
-            
+
         camera.target = (Vector3){mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m13, mrAngryCube->m_Transform.m14};
-        camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 10.0f};
+        camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 20.0f};
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -96,19 +105,20 @@ int main(void)
         BeginDrawing();
             ClearBackground(DARKBLUE);
             BeginMode3D(camera);
-                mrAngryCube->Render();
+                game->Render();
                 DrawGrid(10, 1.0f);
             EndMode3D();
             DrawFPS(10, 10);
-            DrawText("Test Mr. Angry Cube", 10, 30, 20, WHITE);
+            DrawText(("Target Update Rate: " + std::to_string(game->m_UpdateSpeed)).c_str(), 10, 30, 20, WHITE);
+            DrawText(("DeltaTime: " + std::to_string(std::round((GetTime() - game->m_LastUpdateTime) * 1000) / 1000)).c_str(), 10, 50, 20, WHITE);
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    delete mrAngryCube;
-    CloseWindow();        // Close window and OpenGL context
+    delete game;
+    CloseWindow();
     //--------------------------------------------------------------------------------------
 
     return 0;
