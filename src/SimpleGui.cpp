@@ -1,9 +1,8 @@
 #include "SimpleGui.h"
 
 
-PushButton::PushButton(Game* game, const std::string& text, int x, int y, ButtonCallback callbackFunction)
-    : m_Game(game),
-      m_Text(text),
+PushButton::PushButton(const std::string& text, int x, int y, ButtonCallback callbackFunction)
+    : m_Text(text),
       m_Position({ (float)x, (float)y })
 {
     fontSize = 20;
@@ -19,7 +18,7 @@ PushButton::PushButton(Game* game, const std::string& text, int x, int y, Button
     callback=callbackFunction;
 }
 
-void PushButton::Draw()
+void PushButton::Render()
 {
     DrawRectangle(startX, startY, endX - startX, endY - startY, currentBackgroundColor);
     DrawText(m_Text.c_str(), startX + paddingX, startY + paddingY, fontSize, WHITE);
@@ -43,12 +42,52 @@ void PushButton::Update()
     }
 }
 
-
 void PushButton::DoAction()
 {
     if (callback != nullptr)
     {
         callback();
         shouldUpdate = false;
+    }
+}
+
+int PushButton::GetWidth()
+{
+    return endX - startX;
+}
+
+int PushButton::GetHeight()
+{
+    return endY - startY;
+}
+
+Menu::Menu() {}
+
+void Menu::AddItem(GuiItem* item)
+{
+    m_Items.push_back(item);
+}
+
+void Menu::Render()
+{
+    for (GuiItem* item : m_Items)
+    {
+        item->Render();
+    }
+}
+
+void Menu::Update()
+{
+    for (GuiItem* item : m_Items)
+    {
+        item->Update();
+    }
+}
+
+Menu::~Menu()
+{
+    for (GuiItem* item : m_Items)
+    {
+        delete item;
     }
 }
