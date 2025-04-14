@@ -47,6 +47,11 @@ void Game::InitMenu()
     );
 }
 
+void Game::SpawnEnemy(Vector2 coordinates)
+{
+    Register(new Enemy(m_Config->m_TexturePath, m_Config->m_ShaderPath, m_Config->m_ModelPath));
+}
+
 void Game::Register(GameObject* gameObject)
 {
     m_GameObjects.push_back(gameObject);
@@ -94,6 +99,30 @@ void Game::Update()
         gameObject->Update(deltaTime);
     }
     m_LastUpdateTime = GetTime();
+
+    MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(this->m_GameObjects[0]);  // FIXME MOVE TO A FUNCTION
+    if ( // 90 -> quarter rotation.
+        (int)mrAngryCube->m_Rotation.x % 90 == 0 && mrAngryCube->m_RotationAxis.x != 0.0f ||
+        (int)mrAngryCube->m_Rotation.z % 90 == 0 && mrAngryCube->m_RotationAxis.z != 0.0f ||
+        (int)mrAngryCube->m_Rotation.y % 90 == 0 && mrAngryCube->m_RotationAxis.y != 0.0f ||
+        (mrAngryCube->m_RotationAxis.x == 0.0f &&
+         mrAngryCube->m_RotationAxis.z == 0.0f &&
+         mrAngryCube->m_RotationAxis.y == 0.0f)
+        )
+    {
+        mrAngryCube->m_RotationAxis = mrAngryCube->m_NextRotationAxis;
+
+        // Check collisions.
+        for (Enemy* enemy : GetCollidingEnemies())
+        {
+            if (mrAngryCube->IsFaceOnTheGround())
+            {
+                break;
+            }
+            Unregister(enemy);
+        }
+    }
+
 }
 
 void Game::Unregister(GameObject* gameObject)
@@ -121,7 +150,6 @@ void Game::Render()
 
 int Game::Run()
 {
-
     Camera3D camera = { 0 };
     camera.position = (Vector3){ 0.0f, 10.0f, -5.0f };  // Camera position
     camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
@@ -129,15 +157,13 @@ int Game::Run()
     camera.fovy = 45.0f;                                // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
-    int quarterRotation = 90;
-
     MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(this->m_GameObjects[0]);  // FIXME MOVE TO A FUNCTION
     mrAngryCube->m_Speed = 2.0f;
-    Register(new Enemy(m_Config->m_TexturePath, m_Config->m_ShaderPath, m_Config->m_ModelPath));
 
     while (!WindowShouldClose())
     {
-        // Handle events.
+        // Handle key events.
+        //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))
         {
             mrAngryCube->m_NextRotationAxis = { 1.0f, 0.0f, 0.0f };
@@ -156,8 +182,12 @@ int Game::Run()
         } else if (IsKeyPressed(KEY_Q))
         {
             mrAngryCube->m_NextRotationAxis = { 0.0f, 1.0f, 0.0f };
+        } else if (IsKeyPressed(KEY_R))
+        {
+            SpawnEnemy({0, 0});
         }
-        //
+        //----------------------------------------------------------------------------------
+
         BeginDrawing();
         ClearBackground(DARKBLUE);
         switch (m_GameState)
@@ -173,23 +203,6 @@ int Game::Run()
                 //----------------------------------------------------------------------------------
                 Update();
                 // FIXME move to a function
-                if ((int)mrAngryCube->m_Rotation.x % quarterRotation == 0 && mrAngryCube->m_RotationAxis.x != 0.0f ||
-                    (int)mrAngryCube->m_Rotation.z % quarterRotation == 0 && mrAngryCube->m_RotationAxis.z != 0.0f ||
-                    (int)mrAngryCube->m_Rotation.y % quarterRotation == 0 && mrAngryCube->m_RotationAxis.y != 0.0f ||
-                    (mrAngryCube->m_RotationAxis.x == 0.0f &&
-                    mrAngryCube->m_RotationAxis.z == 0.0f &&
-                    mrAngryCube->m_RotationAxis.y == 0.0f))
-                {
-                    mrAngryCube->m_RotationAxis = mrAngryCube->m_NextRotationAxis;
-                    if (mrAngryCube->IsFaceOnTheGround())
-                    {
-                        for (Enemy* enemy : this->GetCollidingEnemies())
-                        {
-                            TraceLog(LOG_WARNING, "Collides!");
-                        }
-                    }
-                }
-
                 camera.target = (Vector3){mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m13, mrAngryCube->m_Transform.m14};
                 camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 20.0f};
                 //----------------------------------------------------------------------------------

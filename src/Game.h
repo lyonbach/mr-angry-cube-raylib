@@ -23,6 +23,7 @@ public:
     Game(GameConfig* config);
     ~Game();
 
+    void SpawnEnemy(Vector2 coordinates);
     void Register(GameObject* gameObject);
     void Unregister(GameObject* gameObject);
     void InitMenu();
