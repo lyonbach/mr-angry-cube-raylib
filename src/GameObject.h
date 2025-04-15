@@ -13,7 +13,7 @@ class GameObject
 
     public:
 
-        Matrix m_Transform;
+        Matrix transform;
 
         GameObject(const char* texturePath, const char* shaderPath, const char* modelPath);
         ~GameObject();

@@ -10,7 +10,7 @@ GameObject::GameObject(const char* texturePath, const char* shaderPath, const ch
     : m_Texture(LoadTexture(texturePath)), m_Shader(LoadShader(0, shaderPath)), m_Model(LoadModel(modelPath))
 {
     m_Material = LoadMaterialDefault();
-    m_Transform = MatrixIdentity();
+    transform = MatrixIdentity();
     m_Material.shader = m_Shader;
     SetMaterialTexture(&m_Material, MATERIAL_MAP_DIFFUSE, m_Texture);
 }

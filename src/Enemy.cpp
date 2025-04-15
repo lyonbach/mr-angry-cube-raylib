@@ -9,7 +9,7 @@ Enemy::Enemy(const char* texturePath, const char* shaderPath, const char* modelP
 
 void Enemy::Render()
 {
-    Vector3 position = { m_Transform.m12, m_Transform.m13, m_Transform.m14 };
+    Vector3 position = { transform.m12, transform.m13, transform.m14 };
     DrawCube(position, 1, 1, 1, m_Color);
     
 }

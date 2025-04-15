@@ -13,24 +13,30 @@ class Game
 
 public:
     std::vector<GameObject*> m_GameObjects;
-    Menu* m_Menu;
-    GameConfig* m_Config;
-    GameState m_GameState;
-    bool m_Initialized = false;
-    float m_LastUpdateTime;
-    int m_UpdateSpeed = 60;
-
+    
     Game(GameConfig* config);
     ~Game();
-
+    
     void SpawnEnemy(Vector2 coordinates);
     void Register(GameObject* gameObject);
     void Unregister(GameObject* gameObject);
     void InitMenu();
-
+    
     void Update();
     void Render();
     int Run();
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();
+    
+    int updateSpeed = 60;
+
+private:
+    bool m_Initialized = false;
+    float m_LastUpdateTime;
+    Menu* m_Menu;
+    GameConfig* m_Config;
+    MrAngryCube* m_MrAngryCube;
+    GameState m_GameState;
+    GameInfo m_GameInfo;
+    Camera3D m_Camera = { 0 };
 };

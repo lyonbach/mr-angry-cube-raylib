@@ -35,7 +35,8 @@ struct GameConfig {
     const char* m_WindowTitle;
 };
 
-struct Specifications {
+struct GameInfo {
     int score = 0;
-    float anger = 0.0f;
+    float anger = 1.0f;
+    float maxAnger = 10.0f;
 };

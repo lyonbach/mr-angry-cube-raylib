@@ -5,8 +5,8 @@
 Game::Game(GameConfig* config)
 {
     m_Config = config;
-    m_GameState = GameState::MainMenu;
-    m_UpdateSpeed = m_Config->m_UpdateSpeed;
+    m_GameState = GameState::Playing;
+    updateSpeed = m_Config->m_UpdateSpeed;
     TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", m_Config->m_UpdateSpeed);
     TraceLog(LOG_DEBUG, "Game configured with target FPS: %d", m_Config->m_TargetFPS);
     SetTargetFPS(m_Config->m_TargetFPS);
@@ -16,8 +16,8 @@ Game::Game(GameConfig* config)
     // SetExitKey(0);  // Disable exit key.
 
     // Initialize main character.
-    Register( new MrAngryCube( m_Config->m_TexturePath, m_Config->m_ShaderPath, m_Config->m_ModelPath) );
-
+    m_MrAngryCube = new MrAngryCube( m_Config->m_TexturePath, m_Config->m_ShaderPath, m_Config->m_ModelPath);
+    Register(m_MrAngryCube);
     m_Initialized = true;
 }
 
@@ -65,19 +65,18 @@ std::vector<Enemy*> Game::GetCollidingEnemies()
         return enemies;
     }
 
-    MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(m_GameObjects[0]);
-    if (!mrAngryCube)
+    if (!m_MrAngryCube)
     {
         return enemies;
     }
 
-    Vector2 mrAngryCubePosition = { mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m14 };
+    Vector2 mrAngryCubePosition = { m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m14 };
 
     for (auto& gameObject : m_GameObjects)
     {
         if (Enemy* enemy = dynamic_cast<Enemy*>(gameObject))
         {
-            Vector2 enemyPosition = { enemy->m_Transform.m12, enemy->m_Transform.m14 };
+            Vector2 enemyPosition = { enemy->transform.m12, enemy->transform.m14 };
             if (fabs(mrAngryCubePosition.x - enemyPosition.x) < 0.1f && fabs(mrAngryCubePosition.y - enemyPosition.y) < 0.1f)
             {
                 enemies.push_back(enemy);
@@ -89,18 +88,26 @@ std::vector<Enemy*> Game::GetCollidingEnemies()
 
 void Game::Update()
 {
+    MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(this->m_GameObjects[0]);  // FIXME MOVE TO A FUNCTION
     float deltaTime = GetTime() - m_LastUpdateTime;
-    if (deltaTime < 1.0f / m_UpdateSpeed)
+    if (deltaTime < 1.0f / updateSpeed)
     {
         return;
     }
     for (auto& gameObject : m_GameObjects)
     {
+        if (gameObject == mrAngryCube)
+        {
+            // if (gameObject.m_IsPausing)
+            // {
+
+            // }
+        }
         gameObject->Update(deltaTime);
     }
     m_LastUpdateTime = GetTime();
 
-    MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(this->m_GameObjects[0]);  // FIXME MOVE TO A FUNCTION
+    // FIXME THIS SHOULD BE IN A FUNCTION IN MR ANGRY CUBE
     if ( // 90 -> quarter rotation.
         (int)mrAngryCube->m_Rotation.x % 90 == 0 && mrAngryCube->m_RotationAxis.x != 0.0f ||
         (int)mrAngryCube->m_Rotation.z % 90 == 0 && mrAngryCube->m_RotationAxis.z != 0.0f ||
@@ -120,7 +127,7 @@ void Game::Update()
                 break;
             }
             Unregister(enemy);
-        }
+        } // FIXME THIS SHOULD BE IN A FUNCTION IN MR ANGRY CUBE
     }
 
 }
@@ -142,23 +149,58 @@ void Game::Render()
         return;
     }
 
-    for (auto& gameObject : m_GameObjects)
+    BeginDrawing();
+    ClearBackground(DARKBLUE);
+    switch (m_GameState)
     {
-        gameObject->Render();
+        case GameState::MainMenu:
+        m_Menu->Update();
+        m_Menu->Render();
+        break;
+
+        case GameState::Playing:
+        {
+            // Update Game
+            //----------------------------------------------------------------------------------
+            Update();
+            // FIXME move to a function
+            m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
+            m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
+            //----------------------------------------------------------------------------------
+
+            // Render Game
+            //----------------------------------------------------------------------------------
+                BeginMode3D(m_Camera);
+                DrawGrid(10, 1.0f);
+                for (auto& gameObject : m_GameObjects)
+                {
+                    gameObject->Render();
+                }
+                EndMode3D();
+                DrawFPS(10, 10);
+                // DrawText(("Target Update Rate: " + std::to_string(m_UpdateSpeed)).c_str(), 10, 30, 20, WHITE);
+                // DrawText(("DeltaTime: " + std::to_string(std::round((GetTime() - m_LastUpdateTime) * 1000) / 1000)).c_str(), 10, 50, 20, WHITE);
+            //----------------------------------------------------------------------------------
+        }
+        break;
+
+        default:
+        TraceLog(LOG_WARNING, "Unknown game state!");
+        break;
     }
+    EndDrawing();
+
 }
 
 int Game::Run()
 {
-    Camera3D camera = { 0 };
-    camera.position = (Vector3){ 0.0f, 10.0f, -5.0f };  // Camera position
-    camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
-    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-    camera.fovy = 45.0f;                                // Camera field-of-view Y
-    camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
+    m_Camera.position = (Vector3){ 0.0f, 10.0f, -5.0f };  // Camera position
+    m_Camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
+    m_Camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+    m_Camera.fovy = 45.0f;                                // Camera field-of-view Y
+    m_Camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
-    MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(this->m_GameObjects[0]);  // FIXME MOVE TO A FUNCTION
-    mrAngryCube->m_Speed = 2.0f;
+    m_MrAngryCube->m_Speed = 2.0f;
 
     while (!WindowShouldClose())
     {
@@ -166,65 +208,29 @@ int Game::Run()
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))
         {
-            mrAngryCube->m_NextRotationAxis = { 1.0f, 0.0f, 0.0f };
+            m_MrAngryCube->m_NextRotationAxis = { 1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_S))
         {
-            mrAngryCube->m_NextRotationAxis = { -1.0f, 0.0f, 0.0f };
+            m_MrAngryCube->m_NextRotationAxis = { -1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_A))
         {
-            mrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, -1.0f };
+            m_MrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, -1.0f };
         } else if (IsKeyPressed(KEY_D))
         {
-            mrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, 1.0f };
+            m_MrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, 1.0f };
         } else if (IsKeyPressed(KEY_E))
         {
-            mrAngryCube->m_NextRotationAxis = { 0.0f, -1.0f, 0.0f };
+            m_MrAngryCube->m_NextRotationAxis = { 0.0f, -1.0f, 0.0f };
         } else if (IsKeyPressed(KEY_Q))
         {
-            mrAngryCube->m_NextRotationAxis = { 0.0f, 1.0f, 0.0f };
+            m_MrAngryCube->m_NextRotationAxis = { 0.0f, 1.0f, 0.0f };
         } else if (IsKeyPressed(KEY_R))
         {
             SpawnEnemy({0, 0});
         }
         //----------------------------------------------------------------------------------
-
-        BeginDrawing();
-        ClearBackground(DARKBLUE);
-        switch (m_GameState)
-        {
-            case GameState::MainMenu:
-            m_Menu->Update();
-            m_Menu->Render();
-            break;
-
-            case GameState::Playing:
-            {
-                // Update Game
-                //----------------------------------------------------------------------------------
-                Update();
-                // FIXME move to a function
-                camera.target = (Vector3){mrAngryCube->m_Transform.m12, mrAngryCube->m_Transform.m13, mrAngryCube->m_Transform.m14};
-                camera.position = (Vector3){camera.target.x, camera.target.y + 5, camera.target.z - 20.0f};
-                //----------------------------------------------------------------------------------
-
-                // Render Game
-                //----------------------------------------------------------------------------------
-                    BeginMode3D(camera);
-                        Render();
-                        DrawGrid(10, 1.0f);
-                    EndMode3D();
-                    DrawFPS(10, 10);
-                    DrawText(("Target Update Rate: " + std::to_string(m_UpdateSpeed)).c_str(), 10, 30, 20, WHITE);
-                    DrawText(("DeltaTime: " + std::to_string(std::round((GetTime() - m_LastUpdateTime) * 1000) / 1000)).c_str(), 10, 50, 20, WHITE);
-                //----------------------------------------------------------------------------------
-            }
-            break;
-
-            default:
-            TraceLog(LOG_WARNING, "Unknown game state!");
-            break;
-        }
-        EndDrawing();
+        Update();
+        Render();
     }
     return 0;
 }
