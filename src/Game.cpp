@@ -96,26 +96,11 @@ void Game::Update()
     }
     for (auto& gameObject : m_GameObjects)
     {
-        if (gameObject == mrAngryCube)
-        {
-            // if (gameObject.m_IsPausing)
-            // {
-
-            // }
-        }
         gameObject->Update(deltaTime);
     }
     m_LastUpdateTime = GetTime();
 
-    // FIXME THIS SHOULD BE IN A FUNCTION IN MR ANGRY CUBE
-    if ( // 90 -> quarter rotation.
-        (int)mrAngryCube->rotation.x % 90 == 0 && mrAngryCube->rotationAxis.x != 0.0f ||
-        (int)mrAngryCube->rotation.z % 90 == 0 && mrAngryCube->rotationAxis.z != 0.0f ||
-        (int)mrAngryCube->rotation.y % 90 == 0 && mrAngryCube->rotationAxis.y != 0.0f ||
-        (mrAngryCube->rotationAxis.x == 0.0f &&
-         mrAngryCube->rotationAxis.z == 0.0f &&
-         mrAngryCube->rotationAxis.y == 0.0f)
-        )
+    if (mrAngryCube->IsAtQuarterRotation())
     {
         mrAngryCube->rotationAxis = mrAngryCube->nextRotationAxis;
 
@@ -127,7 +112,7 @@ void Game::Update()
                 break;
             }
             Unregister(enemy);
-        } // FIXME THIS SHOULD BE IN A FUNCTION IN MR ANGRY CUBE
+        }
     }
 
 }
@@ -178,8 +163,6 @@ void Game::Render()
                 }
                 EndMode3D();
                 DrawFPS(10, 10);
-                // DrawText(("Target Update Rate: " + std::to_string(m_UpdateSpeed)).c_str(), 10, 30, 20, WHITE);
-                // DrawText(("DeltaTime: " + std::to_string(std::round((GetTime() - m_LastUpdateTime) * 1000) / 1000)).c_str(), 10, 50, 20, WHITE);
             //----------------------------------------------------------------------------------
         }
         break;

@@ -16,6 +16,7 @@ public:
     void Render() override;
     void Update(float deltaTime) override;
     bool IsFaceOnTheGround();
+    bool IsAtQuarterRotation(bool ommitZero=true);
     Vector3 rotation;
     Vector3 nextRotationAxis = { 0.0f, 0.0f, 0.0f };
     Vector3 rotationAxis = { 0.0f, 0.0f, 0.0f };
@@ -26,5 +27,6 @@ private:
     float m_HalfSize;
     float m_Hypotenuse;
     float m_AngerLevel = 1.0f;  // Mr. Angry Cube is least a little angry.
+    bool m_IsPausing = false;
 };
 
