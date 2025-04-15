@@ -10,7 +10,7 @@ Vector2 VecSin(Vector2 vec) {
 
 MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const char* modelPath)
 : GameObject(texturePath, shaderPath, modelPath) {
-    m_Rotation = { 0.0f, 0.0f, 0.0f };
+    rotation = { 0.0f, 0.0f, 0.0f };
     m_Size = 1.0f;
     m_HalfSize = m_Size / 2.0f;
     m_Hypotenuse = sqrt(m_HalfSize * m_HalfSize * 2);
@@ -27,20 +27,20 @@ void MrAngryCube::Update(float deltaTime)
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position. 
-    m_Rotation = Vector3Add(m_Rotation, Vector3Scale(m_RotationAxis, m_Speed));
+    rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, speed));
 
     // Calculate the vertical position of the cube, x stands for the rotation around x axis
     // and y stands for the rotation around z axis. We do not need the other axis since 
     // rotation around y does not change the vertical position of the cube. 
     // We can use the 2d vector to calculate the vertical position of the cube.
-    Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin((Vector2){m_Rotation.x, m_Rotation.z}), m_Hypotenuse), 1 / m_HalfSize);
+    Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin((Vector2){rotation.x, rotation.z}), m_Hypotenuse), 1 / m_HalfSize);
 
-    Vector3 incrementVector = Vector3Scale(m_RotationAxis, DEG2RAD * m_Speed);
+    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * speed);
     transform = MatrixMultiply(transform, MatrixRotateXYZ((Vector3){incrementVector.x, incrementVector.y, incrementVector.z}));
 
-    transform.m12 = -m_Rotation.z / 90.0f * m_Size * 2;
+    transform.m12 = -rotation.z / 90.0f * m_Size * 2;
     transform.m13 = deltaY.y * deltaY.x * m_Size;
-    transform.m14 = m_Rotation.x / 90.0f * m_Size * 2;
+    transform.m14 = rotation.x / 90.0f * m_Size * 2;
 }
 
 bool MrAngryCube::IsFaceOnTheGround()

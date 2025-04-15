@@ -6,17 +6,17 @@ Game::Game(GameConfig* config)
 {
     m_Config = config;
     m_GameState = GameState::Playing;
-    updateSpeed = m_Config->m_UpdateSpeed;
-    TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", m_Config->m_UpdateSpeed);
-    TraceLog(LOG_DEBUG, "Game configured with target FPS: %d", m_Config->m_TargetFPS);
-    SetTargetFPS(m_Config->m_TargetFPS);
-    InitWindow(m_Config->m_ScreenWidth, m_Config->m_ScreenHeight, m_Config->m_WindowTitle);
+    updateSpeed = m_Config->updateSpeed;
+    TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", m_Config->updateSpeed);
+    TraceLog(LOG_DEBUG, "Game configured with target FPS: %d", m_Config->targetFPS);
+    SetTargetFPS(m_Config->targetFPS);
+    InitWindow(m_Config->screenWidth, m_Config->screenHeight, m_Config->windowTitle);
     InitMenu();
 
     // SetExitKey(0);  // Disable exit key.
 
     // Initialize main character.
-    m_MrAngryCube = new MrAngryCube( m_Config->m_TexturePath, m_Config->m_ShaderPath, m_Config->m_ModelPath);
+    m_MrAngryCube = new MrAngryCube( m_Config->texturePath, m_Config->shaderPath, m_Config->modelPath);
     Register(m_MrAngryCube);
     m_Initialized = true;
 }
@@ -35,21 +35,21 @@ void Game::InitMenu()
     m_Menu = new Menu();
     m_Menu->AddItem(
         new PushButton("     Play     ",
-            m_Config->m_ScreenWidth / 2,
-            m_Config->m_ScreenHeight / 3,
+            m_Config->screenWidth / 2,
+            m_Config->screenHeight / 3,
             [this](){ m_GameState = GameState::Playing; })
     );
     m_Menu->AddItem(
         new PushButton("     Exit     ",
-            m_Config->m_ScreenWidth / 2,
-            m_Config->m_ScreenHeight / 3 + 50,
+            m_Config->screenWidth / 2,
+            m_Config->screenHeight / 3 + 50,
             [](){ exit(0); })
     );
 }
 
 void Game::SpawnEnemy(Vector2 coordinates)
 {
-    Register(new Enemy(m_Config->m_TexturePath, m_Config->m_ShaderPath, m_Config->m_ModelPath));
+    Register(new Enemy(m_Config->texturePath, m_Config->shaderPath, m_Config->modelPath));
 }
 
 void Game::Register(GameObject* gameObject)
@@ -109,15 +109,15 @@ void Game::Update()
 
     // FIXME THIS SHOULD BE IN A FUNCTION IN MR ANGRY CUBE
     if ( // 90 -> quarter rotation.
-        (int)mrAngryCube->m_Rotation.x % 90 == 0 && mrAngryCube->m_RotationAxis.x != 0.0f ||
-        (int)mrAngryCube->m_Rotation.z % 90 == 0 && mrAngryCube->m_RotationAxis.z != 0.0f ||
-        (int)mrAngryCube->m_Rotation.y % 90 == 0 && mrAngryCube->m_RotationAxis.y != 0.0f ||
-        (mrAngryCube->m_RotationAxis.x == 0.0f &&
-         mrAngryCube->m_RotationAxis.z == 0.0f &&
-         mrAngryCube->m_RotationAxis.y == 0.0f)
+        (int)mrAngryCube->rotation.x % 90 == 0 && mrAngryCube->rotationAxis.x != 0.0f ||
+        (int)mrAngryCube->rotation.z % 90 == 0 && mrAngryCube->rotationAxis.z != 0.0f ||
+        (int)mrAngryCube->rotation.y % 90 == 0 && mrAngryCube->rotationAxis.y != 0.0f ||
+        (mrAngryCube->rotationAxis.x == 0.0f &&
+         mrAngryCube->rotationAxis.z == 0.0f &&
+         mrAngryCube->rotationAxis.y == 0.0f)
         )
     {
-        mrAngryCube->m_RotationAxis = mrAngryCube->m_NextRotationAxis;
+        mrAngryCube->rotationAxis = mrAngryCube->nextRotationAxis;
 
         // Check collisions.
         for (Enemy* enemy : GetCollidingEnemies())
@@ -200,7 +200,7 @@ int Game::Run()
     m_Camera.fovy = 45.0f;                                // Camera field-of-view Y
     m_Camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
-    m_MrAngryCube->m_Speed = 2.0f;
+    m_MrAngryCube->speed = 2.0f;
 
     while (!WindowShouldClose())
     {
@@ -208,22 +208,22 @@ int Game::Run()
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))
         {
-            m_MrAngryCube->m_NextRotationAxis = { 1.0f, 0.0f, 0.0f };
+            m_MrAngryCube->nextRotationAxis = { 1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_S))
         {
-            m_MrAngryCube->m_NextRotationAxis = { -1.0f, 0.0f, 0.0f };
+            m_MrAngryCube->nextRotationAxis = { -1.0f, 0.0f, 0.0f };
         } else if (IsKeyPressed(KEY_A))
         {
-            m_MrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, -1.0f };
+            m_MrAngryCube->nextRotationAxis = { 0.0f, 0.0f, -1.0f };
         } else if (IsKeyPressed(KEY_D))
         {
-            m_MrAngryCube->m_NextRotationAxis = { 0.0f, 0.0f, 1.0f };
+            m_MrAngryCube->nextRotationAxis = { 0.0f, 0.0f, 1.0f };
         } else if (IsKeyPressed(KEY_E))
         {
-            m_MrAngryCube->m_NextRotationAxis = { 0.0f, -1.0f, 0.0f };
+            m_MrAngryCube->nextRotationAxis = { 0.0f, -1.0f, 0.0f };
         } else if (IsKeyPressed(KEY_Q))
         {
-            m_MrAngryCube->m_NextRotationAxis = { 0.0f, 1.0f, 0.0f };
+            m_MrAngryCube->nextRotationAxis = { 0.0f, 1.0f, 0.0f };
         } else if (IsKeyPressed(KEY_R))
         {
             SpawnEnemy({0, 0});
