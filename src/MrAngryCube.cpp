@@ -1,4 +1,5 @@
 #include "MrAngryCube.h"
+#include "Enemy.h"
 
 #include "raylib.h"
 #include "raymath.h"
@@ -23,11 +24,15 @@ void MrAngryCube::Render()
 
 void MrAngryCube::Update(float deltaTime)
 {
-    if(m_IsPausing)
-    {
-        TraceLog(LOG_INFO, "test");
-        return;
+    if(!m_IsMoving) { 
+    
+        float t = (GetTime() - m_LastPauseCheckTime);
+        if (t < m_MovePauseDuration) { return; }
+
+        m_LastPauseCheckTime = GetTime();
+        m_IsMoving = true;
     }
+
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position. 
@@ -45,6 +50,17 @@ void MrAngryCube::Update(float deltaTime)
     transform.m12 = -rotation.z / 90.0f * m_Size * 2;
     transform.m13 = deltaY.y * deltaY.x * m_Size;
     transform.m14 = rotation.x / 90.0f * m_Size * 2;
+
+    if(IsAtQuarterRotation())
+    {
+        rotationAxis = nextRotationAxis;
+        if (IsFaceOnTheGround())
+        {
+            TraceLog(LOG_INFO, "Face on the ground!");
+        }
+        m_IsMoving = false;
+    }
+
 }
 
 bool MrAngryCube::IsFaceOnTheGround()

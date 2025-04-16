@@ -98,23 +98,18 @@ void Game::Update()
     {
         gameObject->Update(deltaTime);
     }
-    m_LastUpdateTime = GetTime();
 
-    if (mrAngryCube->IsAtQuarterRotation())
+    // Check collisions.
+    for (Enemy* enemy : GetCollidingEnemies())
     {
-        mrAngryCube->rotationAxis = mrAngryCube->nextRotationAxis;
-
-        // Check collisions.
-        for (Enemy* enemy : GetCollidingEnemies())
+        if (mrAngryCube->IsFaceOnTheGround())
         {
-            if (mrAngryCube->IsFaceOnTheGround())
-            {
-                break;
-            }
-            Unregister(enemy);
+            break;
         }
+        Unregister(enemy);
     }
 
+    m_LastUpdateTime = GetTime();
 }
 
 void Game::Unregister(GameObject* gameObject)

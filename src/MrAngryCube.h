@@ -27,6 +27,8 @@ private:
     float m_HalfSize;
     float m_Hypotenuse;
     float m_AngerLevel = 1.0f;  // Mr. Angry Cube is least a little angry.
-    bool m_IsPausing = false;
+    bool m_IsMoving = false;
+    float m_LastPauseCheckTime = 0.0f;
+    float m_MovePauseDuration = 0.7f;
 };
 
