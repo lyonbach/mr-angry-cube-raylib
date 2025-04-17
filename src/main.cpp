@@ -2,15 +2,12 @@
 #include "Game.h"
 #include "MrAngryCube.h"
 #include "Enemy.h"
-#include "Miscellaneous.h"
 #include "SimpleGui.h"
-
 #include "raylib.h"
 #include "raymath.h"
-#define GLSL_VERSION 330
-
 #include <filesystem>
 #include <vector>
+#define GLSL_VERSION 330
 
 
 std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();

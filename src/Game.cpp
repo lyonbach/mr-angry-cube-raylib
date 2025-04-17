@@ -4,21 +4,22 @@
 
 Game::Game(GameConfig* config)
 {
-    m_Config = config;
+    gameConfig = config;
     m_GameState = GameState::Playing;
-    updateSpeed = m_Config->updateSpeed;
-    TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", m_Config->updateSpeed);
-    TraceLog(LOG_DEBUG, "Game configured with target FPS: %d", m_Config->targetFPS);
-    SetTargetFPS(m_Config->targetFPS);
-    InitWindow(m_Config->screenWidth, m_Config->screenHeight, m_Config->windowTitle);
+    updateSpeed = gameConfig->updateSpeed;
+    TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", gameConfig->updateSpeed);
+    TraceLog(LOG_DEBUG, "Game configured with target FPS: %d", gameConfig->targetFPS);
+    SetTargetFPS(gameConfig->targetFPS);
+    InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle);
     InitMenu();
 
     // SetExitKey(0);  // Disable exit key.
 
     // Initialize main character.
-    m_MrAngryCube = new MrAngryCube( m_Config->texturePath, m_Config->shaderPath, m_Config->modelPath);
+    m_MrAngryCube = new MrAngryCube( gameConfig->texturePath, gameConfig->shaderPath, gameConfig->modelPath);
     Register(m_MrAngryCube);
     m_Initialized = true;
+
 }
 
 Game::~Game()
@@ -35,21 +36,21 @@ void Game::InitMenu()
     m_Menu = new Menu();
     m_Menu->AddItem(
         new PushButton("     Play     ",
-            m_Config->screenWidth / 2,
-            m_Config->screenHeight / 3,
+            gameConfig->screenWidth / 2,
+            gameConfig->screenHeight / 3,
             [this](){ m_GameState = GameState::Playing; })
     );
     m_Menu->AddItem(
         new PushButton("     Exit     ",
-            m_Config->screenWidth / 2,
-            m_Config->screenHeight / 3 + 50,
+            gameConfig->screenWidth / 2,
+            gameConfig->screenHeight / 3 + 50,
             [](){ exit(0); })
     );
 }
 
 void Game::SpawnEnemy(Vector2 coordinates)
 {
-    Register(new Enemy(m_Config->texturePath, m_Config->shaderPath, m_Config->modelPath));
+    Register(new Enemy(gameConfig->texturePath, gameConfig->shaderPath, gameConfig->modelPath));
 }
 
 void Game::Register(GameObject* gameObject)
@@ -108,7 +109,6 @@ void Game::Update()
         }
         Unregister(enemy);
     }
-
     m_LastUpdateTime = GetTime();
 }
 
@@ -142,7 +142,6 @@ void Game::Render()
         {
             // Update Game
             //----------------------------------------------------------------------------------
-            Update();
             // FIXME move to a function
             m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
             m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
@@ -151,11 +150,8 @@ void Game::Render()
             // Render Game
             //----------------------------------------------------------------------------------
                 BeginMode3D(m_Camera);
-                DrawGrid(10, 1.0f);
-                for (auto& gameObject : m_GameObjects)
-                {
-                    gameObject->Render();
-                }
+                DrawGrid(200, 1.0f);
+                for (auto& gameObject : m_GameObjects) { gameObject->Render(); }
                 EndMode3D();
                 DrawFPS(10, 10);
             //----------------------------------------------------------------------------------
@@ -166,8 +162,19 @@ void Game::Render()
         TraceLog(LOG_WARNING, "Unknown game state!");
         break;
     }
-    EndDrawing();
 
+    for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
+    {
+        auto timedText = *it;
+        if(GetTime() - timedText->lastCheckTime > timedText->duration)
+        {
+            it = m_MrAngryCube->timedTexts.erase(it);
+        } else {
+            timedText->Draw();
+            it++;
+        }
+    }
+    EndDrawing();
 }
 
 int Game::Run()

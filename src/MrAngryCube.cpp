@@ -1,8 +1,10 @@
-#include "MrAngryCube.h"
 #include "Enemy.h"
-
+#include "Miscellaneous.h"
+#include "MrAngryCube.h"
+#include "Game.h"
 #include "raylib.h"
 #include "raymath.h"
+#include <thread>
 
 
 Vector2 VecSin(Vector2 vec) {
@@ -24,23 +26,18 @@ void MrAngryCube::Render()
 
 void MrAngryCube::Update(float deltaTime)
 {
-    if(!m_IsMoving) { 
-    
-        float t = (GetTime() - m_LastPauseCheckTime);
-        if (t < m_MovePauseDuration) { return; }
-
-        m_LastPauseCheckTime = GetTime();
-        m_IsMoving = true;
+    if(!m_IsMoving) {
+        return;
     }
 
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
-    // the x and y values of the vector to update the cube vertical position. 
+    // the x and y values of the vector to update the cube vertical position.
     rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, speed));
 
     // Calculate the vertical position of the cube, x stands for the rotation around x axis
-    // and y stands for the rotation around z axis. We do not need the other axis since 
-    // rotation around y does not change the vertical position of the cube. 
+    // and y stands for the rotation around z axis. We do not need the other axis since
+    // rotation around y does not change the vertical position of the cube.
     // We can use the 2d vector to calculate the vertical position of the cube.
     Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin((Vector2){rotation.x, rotation.z}), m_Hypotenuse), 1 / m_HalfSize);
 
@@ -56,11 +53,13 @@ void MrAngryCube::Update(float deltaTime)
         rotationAxis = nextRotationAxis;
         if (IsFaceOnTheGround())
         {
-            TraceLog(LOG_INFO, "Face on the ground!");
+            const char* text = "Oh no! My Face!\nGetting angrier...";
+            TimedText* timedText = Utilities::GetTimedText(text);
+            timedText->lastCheckTime = GetTime();
+            timedTexts.push_back(timedText);
         }
-        m_IsMoving = false;
+        WaitFor(m_MovePauseDuration);
     }
-
 }
 
 bool MrAngryCube::IsFaceOnTheGround()
@@ -92,4 +91,13 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
         result = result && (rotation.x != 0 || rotation.z != 0);
     }
     return result;
+}
+
+const void MrAngryCube::WaitFor(float seconds)
+{
+    m_IsMoving = false;
+    std::thread([this, seconds]() {
+        std::this_thread::sleep_for(std::chrono::duration<float>(seconds));
+        m_IsMoving = true;
+    }).detach();
 }
