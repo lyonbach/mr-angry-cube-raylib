@@ -22,6 +22,7 @@ public:
     int Run();
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();
+    std::vector<Enemy*> GetEnemies();
 
     int updateSpeed = 60;
     GameConfig* gameConfig;
@@ -34,6 +35,5 @@ private:
     Menu* m_Menu;
     MrAngryCube* m_MrAngryCube;
     GameState m_GameState;
-    GameInfo m_GameInfo;
     Camera3D m_Camera = { 0 };
 };

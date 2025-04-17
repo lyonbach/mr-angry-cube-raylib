@@ -1,7 +1,6 @@
 #pragma once
 #include "raylib.h"
 #include <functional>
-#include <random>
 
 
 enum class GameState {
@@ -41,8 +40,9 @@ struct GameConfig {
 
 struct GameInfo {
     int score = 0;
+    int faceHits = 0;
     float anger = 1.0f;
-    float maxAnger = 10.0f;
+    float maxAnger = 5.0f;
 };
 
 class TimedText

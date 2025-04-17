@@ -29,3 +29,8 @@ void GameObject::Update(float deltaTime)
 {
     TraceLog(LOG_WARNING, "Subclasses should implement their own Update method");
 }
+
+void GameObject::SetPosition(Vector2 position)
+{
+    TraceLog(LOG_INFO, "Subclasses should implement their own Update method");
+}

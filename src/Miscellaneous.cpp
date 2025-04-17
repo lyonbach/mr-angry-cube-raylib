@@ -16,7 +16,7 @@ TimedText* Utilities::GetTimedText(char const* text, Vector2 position)  // FIXME
 {
     return (new TimedText([text, position](){
             int fontSize = 20;
-            DrawText(text, position.x, position.y, fontSize, RED);
+            DrawText(text, position.x, position.y, fontSize, YELLOW);
         }));
 }
 
@@ -26,6 +26,6 @@ TimedText* Utilities::GetTimedText(char const* text)  // FIXME create a cpp file
     float y = GetScreenHeight() / 3;
     return (new TimedText([text, x, y](){
             int fontSize = 20;
-            DrawText(text, x, y, fontSize, RED);
+            DrawText(text, x, y, fontSize, YELLOW);
         }));
 }

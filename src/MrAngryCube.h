@@ -1,4 +1,5 @@
 #pragma once
+// #include "Game.h"
 #include "GameObject.h"
 #include "Miscellaneous.h"
 #include "raylib.h"
@@ -20,6 +21,7 @@ public:
     Vector3 rotationAxis = { 0.0f, 0.0f, 0.0f };
     float speed = 1.0f;  // Degrees per update.
     std::vector<TimedText*> timedTexts;
+    GameInfo gameInfo;
 
 private:
     const void WaitFor(float seconds);

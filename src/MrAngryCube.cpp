@@ -1,7 +1,6 @@
 #include "Enemy.h"
 #include "Miscellaneous.h"
 #include "MrAngryCube.h"
-#include "Game.h"
 #include "raylib.h"
 #include "raymath.h"
 #include <thread>
@@ -33,7 +32,8 @@ void MrAngryCube::Update(float deltaTime)
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position.
-    rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, speed));
+    float scaledSpeed = speed * gameInfo.anger;
+    rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, scaledSpeed));
 
     // Calculate the vertical position of the cube, x stands for the rotation around x axis
     // and y stands for the rotation around z axis. We do not need the other axis since
@@ -41,7 +41,7 @@ void MrAngryCube::Update(float deltaTime)
     // We can use the 2d vector to calculate the vertical position of the cube.
     Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin((Vector2){rotation.x, rotation.z}), m_Hypotenuse), 1 / m_HalfSize);
 
-    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * speed);
+    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * scaledSpeed);
     transform = MatrixMultiply(transform, MatrixRotateXYZ((Vector3){incrementVector.x, incrementVector.y, incrementVector.z}));
 
     transform.m12 = -rotation.z / 90.0f * m_Size * 2;
@@ -53,12 +53,18 @@ void MrAngryCube::Update(float deltaTime)
         rotationAxis = nextRotationAxis;
         if (IsFaceOnTheGround())
         {
-            const char* text = "Oh no! My Face!\nGetting angrier...";
+            // Increase in anger.
+            gameInfo.anger = std::min(gameInfo.maxAnger, gameInfo.anger + 0.5f);
+
+            // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
+            const char* text = "My Face!\n Now I am getting angrier...";
             TimedText* timedText = Utilities::GetTimedText(text);
             timedText->lastCheckTime = GetTime();
             timedTexts.push_back(timedText);
+            WaitFor(m_MovePauseDuration * 3);
+        } else {
+            WaitFor(m_MovePauseDuration);
         }
-        WaitFor(m_MovePauseDuration);
     }
 }
 

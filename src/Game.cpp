@@ -50,7 +50,16 @@ void Game::InitMenu()
 
 void Game::SpawnEnemy(Vector2 coordinates)
 {
-    Register(new Enemy(gameConfig->texturePath, gameConfig->shaderPath, gameConfig->modelPath));
+    // Enemies can appear next to the Mr. Angry Cube or 20 unit distance from him.
+    // In addition, each coordinate should be divisible to 2.
+    int randX = GetRandomValue(2, 20);
+    int randZ = GetRandomValue(2, 20);
+    if (randX % 2 != 0) randX++;
+    if (randZ % 2 != 0) randZ++;
+
+    Enemy* enemy = new Enemy(gameConfig->texturePath, gameConfig->shaderPath, gameConfig->modelPath);
+    enemy->SetPosition({(float)randX, (float)randZ});
+    Register(enemy);
 }
 
 void Game::Register(GameObject* gameObject)
@@ -87,9 +96,30 @@ std::vector<Enemy*> Game::GetCollidingEnemies()
     return enemies;
 }
 
+std::vector<Enemy*> Game::GetEnemies()
+{
+    std::vector<Enemy*> enemies;
+    if (m_GameObjects.empty())
+    {
+        return enemies;
+    }
+    if (!m_MrAngryCube)
+    {
+        return enemies;
+    }
+
+    for (auto& gameObject : m_GameObjects)
+    {
+        if (Enemy* enemy = dynamic_cast<Enemy*>(gameObject))
+        {
+            enemies.push_back(enemy);
+        }
+    }
+    return enemies;
+}
+
 void Game::Update()
 {
-    MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(this->m_GameObjects[0]);  // FIXME MOVE TO A FUNCTION
     float deltaTime = GetTime() - m_LastUpdateTime;
     if (deltaTime < 1.0f / updateSpeed)
     {
@@ -103,11 +133,12 @@ void Game::Update()
     // Check collisions.
     for (Enemy* enemy : GetCollidingEnemies())
     {
-        if (mrAngryCube->IsFaceOnTheGround())
+        if (m_MrAngryCube->IsFaceOnTheGround())
         {
             break;
         }
         Unregister(enemy);
+        m_MrAngryCube->gameInfo.score++;
     }
     m_LastUpdateTime = GetTime();
 }
@@ -163,6 +194,7 @@ void Game::Render()
         break;
     }
 
+    // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
     for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
     {
         auto timedText = *it;
@@ -174,6 +206,15 @@ void Game::Render()
             it++;
         }
     }
+
+    // Draw score. FIXME SHOULD BE IMPROVED
+    int fontSize = 30;
+    std::string scoreText ("Score: " + std::to_string(m_MrAngryCube->gameInfo.score));
+    DrawText(scoreText.c_str(), 2*fontSize, GetScreenHeight() - 6*fontSize, fontSize, YELLOW);
+    std::string angerText ("Anger : " + std::to_string(m_MrAngryCube->gameInfo.anger / m_MrAngryCube->gameInfo.maxAnger * 100.0f) + "%");
+    DrawText(angerText.c_str(), 2*fontSize, GetScreenHeight() - 4*fontSize, fontSize, YELLOW);
+    std::string enemyCountText ("Enemies Alive: " + std::to_string(GetEnemies().size()));
+    DrawText(enemyCountText.c_str(), 2*fontSize, GetScreenHeight() - 2*fontSize, fontSize, YELLOW);
     EndDrawing();
 }
 
