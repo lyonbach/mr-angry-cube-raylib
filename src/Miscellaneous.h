@@ -1,4 +1,7 @@
 #pragma once
+#include "raylib.h"
+#include <functional>
+
 
 enum class GameState {
     MainMenu,
@@ -17,25 +20,47 @@ struct GameConfig {
         const char* texturePath,
         const char* shaderPath,
         const char* modelPath)
-        : m_TargetFPS(targetFPS),
-        m_UpdateSpeed(updateSpeed),
-        m_ScreenWidth(screenWidth),
-        m_ScreenHeight(screenHeight),
-        m_TexturePath(texturePath),
-        m_ShaderPath(shaderPath),
-        m_ModelPath(modelPath),
-        m_WindowTitle(windowTitle) {}
-    int m_TargetFPS;
-    int m_UpdateSpeed;
-    int m_ScreenWidth;
-    int m_ScreenHeight;
-    const char* m_TexturePath;
-    const char* m_ShaderPath;
-    const char* m_ModelPath;
-    const char* m_WindowTitle;
+        : targetFPS(targetFPS),
+        updateSpeed(updateSpeed),
+        screenWidth(screenWidth),
+        screenHeight(screenHeight),
+        texturePath(texturePath),
+        shaderPath(shaderPath),
+        modelPath(modelPath),
+        windowTitle(windowTitle) {}
+    int targetFPS;
+    int updateSpeed;
+    int screenWidth;
+    int screenHeight;
+    const char* texturePath;  // FIXME use std::string
+    const char* shaderPath;  // FIXME use std::string
+    const char* modelPath;  // FIXME use std::string
+    const char* windowTitle;  // FIXME use std::string
 };
 
-struct Specifications {
+struct GameInfo {
     int score = 0;
-    float anger = 0.0f;
+    int faceHits = 0;
+    float anger = 1.0f;
+    float maxAnger = 5.0f;
 };
+
+class TimedText
+{
+public:
+    const std::function<void()> drawFunction;
+    float lastCheckTime;
+    float duration;
+    const char* text;
+
+    void Draw();
+    TimedText(const std::function<void()> drawFunction);
+};
+
+namespace Utilities
+{
+    TimedText* GetTimedText(char const* text);
+    TimedText* GetTimedText(char const* text, Vector2 position);
+} // namespace Utilities
+
+

@@ -2,22 +2,18 @@
 #include "Game.h"
 #include "MrAngryCube.h"
 #include "Enemy.h"
-#include "Miscellaneous.h"
 #include "SimpleGui.h"
-
 #include "raylib.h"
 #include "raymath.h"
-#define GLSL_VERSION 330
-
 #include <filesystem>
 #include <vector>
+#define GLSL_VERSION 330
 
 
 std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
 std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
 std::string shaderPath  = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
-std::string modelPath   = (fs / "../models" / "mr_angry_cube.obj").string();
-Specifications specs;
+std::string modelPath   = (fs / "../models" / "mr_angry_cube_high_res.obj").string();
 GameConfig config(240,100, 800, 800, "Mr Angry Cube",
     texturePath.c_str(), shaderPath.c_str(), modelPath.c_str());
 

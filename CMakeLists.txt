@@ -6,7 +6,12 @@ get_filename_component(FOLDER_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${FOLDER_NAME})
 
 # Add executable
-add_executable(${PROJECT_NAME} ./src/main.cpp ./src/GameObject.cpp ./src/MrAngryCube.cpp ./src/Enemy.cpp ./src/Game.cpp ./src/SimpleGui.cpp)
+file(GLOB_RECURSE CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+# Print all source files
+foreach(SOURCE_FILE ${CPP_SOURCES})
+    message(STATUS "Source file: ${SOURCE_FILE}")
+endforeach()
+add_executable(${PROJECT_NAME} ${CPP_SOURCES})
 
 set(RAYLIB_INCLUDE_DIR "./vendor/raylib/src")
 set(RAYLIB_LIB_DIR "./vendor/raylib/src")
