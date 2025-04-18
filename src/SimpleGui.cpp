@@ -13,7 +13,7 @@ PushButton::PushButton(const std::string& text, int x, int y, ButtonCallback cal
     startY = (int)m_Position.y - paddingY;
     endX = startX + textWidth + paddingX * 2;
     endY = startY + paddingY * 2 + fontSize;
-    currentBackgroundColor = DARKGRAY;
+    currentBackgroundColor = DARKGREEN;
     shouldUpdate = true;
     callback=callbackFunction;
 }
@@ -38,7 +38,7 @@ void PushButton::Update()
             DoAction();
         }
     } else {
-        currentBackgroundColor = DARKGRAY;
+        currentBackgroundColor = DARKGREEN;
     }
 }
 

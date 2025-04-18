@@ -1,8 +1,9 @@
 #pragma once
-#include "GameObject.h"
 #include "Enemy.h"
-#include "MrAngryCube.h"
+#include "GameConfig.h"
+#include "GameObject.h"
 #include "Miscellaneous.h"
+#include "MrAngryCube.h"
 #include "SimpleGui.h"
 #include <vector>
 
@@ -10,7 +11,7 @@
 class Game
 {
 public:
-    Game(GameConfig* config);
+    Game();
     ~Game();
 
     void SpawnEnemy(Vector2 coordinates);
@@ -24,9 +25,7 @@ public:
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();
     std::vector<Enemy*> GetEnemies();
-
-    int updateSpeed = 60;
-    GameConfig* gameConfig;
+    int updateSpeed;
 
 private:
     std::vector<GameObject*> m_GameObjects;

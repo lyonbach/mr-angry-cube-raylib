@@ -17,6 +17,7 @@ MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const 
     m_Size = 1.0f;
     m_HalfSize = m_Size / 2.0f;
     m_Hypotenuse = sqrt(m_HalfSize * m_HalfSize * 2);
+    speed = gameInfo.possibleSpeeds.at(0);
 }
 
 void MrAngryCube::Render()
@@ -33,8 +34,7 @@ void MrAngryCube::Update(float deltaTime)
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position.
-    float scaledSpeed = speed * gameInfo.anger;
-    rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, scaledSpeed));
+    rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, speed));
 
     // Calculate the vertical position of the cube, x stands for the rotation around x axis
     // and y stands for the rotation around z axis. We do not need the other axis since
@@ -42,7 +42,7 @@ void MrAngryCube::Update(float deltaTime)
     // We can use the 2d vector to calculate the vertical position of the cube.
     Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin((Vector2){rotation.x, rotation.z}), m_Hypotenuse), 1 / m_HalfSize);
 
-    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * scaledSpeed);
+    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * speed);
     transform = MatrixMultiply(transform, MatrixRotateXYZ((Vector3){incrementVector.x, incrementVector.y, incrementVector.z}));
 
     transform.m12 = -rotation.z / 90.0f * m_Size * 2;
@@ -57,10 +57,14 @@ void MrAngryCube::Update(float deltaTime)
         rotationCount += Utilities::AbsVector3(rotationAxis);
         int rotationCountSum = Utilities::SumVector3(rotationCount);
 
-        if (gameInfo.anger == gameInfo.maxAnger)
+        if (gameInfo.anger >= gameInfo.possibleSpeeds.size() - 1)
         {
-            rotationCountdown += -1;
-            TraceLog(LOG_WARNING, "Game over in: %i rotations.", rotationCountdown);
+            gameInfo.rotationCountdown += -1;
+            TraceLog(LOG_WARNING, "Game over in: %i rotations.", gameInfo.rotationCountdown);  // FIXME SHOW TO USER BETTER.
+        } else if (gameInfo.anger < gameInfo.possibleSpeeds.size() - 1)
+        {
+            GameInfo tempGameInfo;
+            gameInfo.rotationCountdown = tempGameInfo.rotationCountdown;
         }
 
         if (rotationCountSum % 10 == 0 && rotationCountSum > 0)
@@ -71,7 +75,7 @@ void MrAngryCube::Update(float deltaTime)
 
         if (IsFaceOnTheGround())  // Handling when face hits the ground.
         {
-            quote = "My Face!\n No more Mr. Nice Cube!";
+            quote = "My Face!\n No more Mr. Nice Cube!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
             shouldIncreaseAnger = true;
 
             // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
@@ -82,7 +86,8 @@ void MrAngryCube::Update(float deltaTime)
 
         if (shouldIncreaseAnger)
         {
-            gameInfo.anger = std::min(gameInfo.maxAnger, gameInfo.anger + 0.5f);
+            gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
+            speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
         }
 
         if (quote != "")
@@ -91,7 +96,6 @@ void MrAngryCube::Update(float deltaTime)
             timedText->lastCheckTime = GetTime();
             timedTexts.push_back(timedText);
         }
-
         rotationAxis = nextRotationAxis;
     }
 }

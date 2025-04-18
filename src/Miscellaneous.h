@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include <functional>
+#include <vector>
 
 
 enum class GameState {
@@ -10,39 +11,42 @@ enum class GameState {
     GameOver
 };
 
-struct GameConfig {
-    GameConfig(
-        int targetFPS,
-        int updateSpeed,
-        int screenWidth,
-        int screenHeight,
-        const char* windowTitle,
-        const char* texturePath,
-        const char* shaderPath,
-        const char* modelPath)
-        : targetFPS(targetFPS),
-        updateSpeed(updateSpeed),
-        screenWidth(screenWidth),
-        screenHeight(screenHeight),
-        texturePath(texturePath),
-        shaderPath(shaderPath),
-        modelPath(modelPath),
-        windowTitle(windowTitle) {}
-    int targetFPS;
-    int updateSpeed;
-    int screenWidth;
-    int screenHeight;
-    const char* texturePath;  // FIXME use std::string
-    const char* shaderPath;  // FIXME use std::string
-    const char* modelPath;  // FIXME use std::string
-    const char* windowTitle;  // FIXME use std::string
-};
+// struct GameConfig {
+//     GameConfig(
+//         int updateSpeed,
+//         int screenWidth,
+//         int screenHeight,
+//         const char* windowTitle,
+//         const char* texturePath,
+//         const char* shaderPath,
+//         const char* modelPath)
+//         :
+//         updateSpeed(updateSpeed),
+//         screenWidth(screenWidth),
+//         screenHeight(screenHeight),
+//         texturePath(texturePath),
+//         shaderPath(shaderPath),
+//         modelPath(modelPath),
+//         windowTitle(windowTitle) {}
+//     int updateSpeed;
+//     int screenWidth;
+//     int screenHeight;
+//     const char* texturePath;  // FIXME use std::string
+//     const char* shaderPath;  // FIXME use std::string
+//     const char* modelPath;  // FIXME use std::string
+//     const char* windowTitle;  // FIXME use std::string
+//     Color backgroundColor = DARKGRAY;
+//     int rotationCountdown = 20;
+// };
 
 struct GameInfo {
     int score = 0;
     int faceHits = 0;
-    float anger = 1.0f;
-    float maxAnger = 5.0f;
+    std::vector<float> possibleSpeeds = {
+        1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 5.0f, 6.0f, 7.5, 9.0f
+    };
+    int anger = 0;
+    int rotationCountdown = 20;
 };
 
 class TimedText
