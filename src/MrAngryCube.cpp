@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <thread>
+#include <string>
 
 
 Vector2 VecSin(Vector2 vec) {
@@ -16,6 +17,7 @@ MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const 
     m_Size = 1.0f;
     m_HalfSize = m_Size / 2.0f;
     m_Hypotenuse = sqrt(m_HalfSize * m_HalfSize * 2);
+    speed = Game::Get().gameInfo.possibleSpeeds.at(0);
 }
 
 void MrAngryCube::Render()
@@ -25,15 +27,14 @@ void MrAngryCube::Render()
 
 void MrAngryCube::Update(float deltaTime)
 {
-    if(!m_IsMoving) {
+    if(!isMoving) {
         return;
     }
 
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position.
-    float scaledSpeed = speed * gameInfo.anger;
-    rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, scaledSpeed));
+    rotation = Vector3Add(rotation, Vector3Scale(rotationAxis, speed));
 
     // Calculate the vertical position of the cube, x stands for the rotation around x axis
     // and y stands for the rotation around z axis. We do not need the other axis since
@@ -41,7 +42,7 @@ void MrAngryCube::Update(float deltaTime)
     // We can use the 2d vector to calculate the vertical position of the cube.
     Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin((Vector2){rotation.x, rotation.z}), m_Hypotenuse), 1 / m_HalfSize);
 
-    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * scaledSpeed);
+    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * speed);
     transform = MatrixMultiply(transform, MatrixRotateXYZ((Vector3){incrementVector.x, incrementVector.y, incrementVector.z}));
 
     transform.m12 = -rotation.z / 90.0f * m_Size * 2;
@@ -50,21 +51,8 @@ void MrAngryCube::Update(float deltaTime)
 
     if(IsAtQuarterRotation())
     {
+        rotationCount += Utilities::AbsVector3(rotationAxis);
         rotationAxis = nextRotationAxis;
-        if (IsFaceOnTheGround())
-        {
-            // Increase in anger.
-            gameInfo.anger = std::min(gameInfo.maxAnger, gameInfo.anger + 0.5f);
-
-            // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
-            const char* text = "My Face!\n Now I am getting angrier...";
-            TimedText* timedText = Utilities::GetTimedText(text);
-            timedText->lastCheckTime = GetTime();
-            timedTexts.push_back(timedText);
-            WaitFor(m_MovePauseDuration * 3);
-        } else {
-            WaitFor(m_MovePauseDuration);
-        }
     }
 }
 
@@ -99,11 +87,11 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
     return result;
 }
 
-const void MrAngryCube::WaitFor(float seconds)
+const void MrAngryCube::WaitForNonBlocking(float seconds)  // FIXME MOVE THIS TO GAME CLASS.
 {
-    m_IsMoving = false;
+    isMoving = false;
     std::thread([this, seconds]() {
         std::this_thread::sleep_for(std::chrono::duration<float>(seconds));
-        m_IsMoving = true;
+        isMoving = true;
     }).detach();
 }

@@ -2,24 +2,32 @@
 #include <algorithm>
 
 
-Game::Game(GameConfig* config)
-{
-    gameConfig = config;
-    m_GameState = GameState::Playing;
-    updateSpeed = gameConfig->updateSpeed;
-    TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", gameConfig->updateSpeed);
-    TraceLog(LOG_DEBUG, "Game configured with target FPS: %d", gameConfig->targetFPS);
-    SetTargetFPS(gameConfig->targetFPS);
-    InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle);
-    InitMenu();
+Game& Game::Get() {
+    static Game instance;
+    return instance;
+}
 
-    // SetExitKey(0);  // Disable exit key.
+Game::Game()
+{
+    Utilities::Log("Created Game singleton class.", "GAME");
+}
+
+void Game::Init(GameConfig* configuration)
+{
+    m_GameState = GameState::MainMenu;
+    m_GameConfig = configuration;
+    InitWindow(m_GameConfig->screenWidth, m_GameConfig->screenHeight, m_GameConfig->windowTitle.c_str());
+    InitMenu();
+    SetExitKey(0);  // Disable exit key.
 
     // Initialize main character.
-    m_MrAngryCube = new MrAngryCube( gameConfig->texturePath, gameConfig->shaderPath, gameConfig->modelPath);
+    m_MrAngryCube = new MrAngryCube(
+        m_GameConfig->texturePath.c_str(),
+        m_GameConfig->shaderPath.c_str(),
+        m_GameConfig->modelPath.c_str()
+    );
     Register(m_MrAngryCube);
     m_Initialized = true;
-
 }
 
 Game::~Game()
@@ -36,14 +44,14 @@ void Game::InitMenu()
     m_Menu = new Menu();
     m_Menu->AddItem(
         new PushButton("     Play     ",
-            gameConfig->screenWidth / 2,
-            gameConfig->screenHeight / 3,
+            m_GameConfig->screenWidth / 2,
+            m_GameConfig->screenHeight / 3,
             [this](){ m_GameState = GameState::Playing; })
     );
     m_Menu->AddItem(
         new PushButton("     Exit     ",
-            gameConfig->screenWidth / 2,
-            gameConfig->screenHeight / 3 + 50,
+            m_GameConfig->screenWidth / 2,
+            m_GameConfig->screenHeight / 3 + 50,
             [](){ exit(0); })
     );
 }
@@ -57,7 +65,11 @@ void Game::SpawnEnemy(Vector2 coordinates)
     if (randX % 2 != 0) randX++;
     if (randZ % 2 != 0) randZ++;
 
-    Enemy* enemy = new Enemy(gameConfig->texturePath, gameConfig->shaderPath, gameConfig->modelPath);
+    Enemy* enemy = new Enemy(
+        m_GameConfig->texturePath.c_str(),
+        m_GameConfig->shaderPath.c_str(),
+        m_GameConfig->modelPath.c_str()
+    );
     enemy->SetPosition({(float)randX, (float)randZ});
     Register(enemy);
 }
@@ -65,6 +77,15 @@ void Game::SpawnEnemy(Vector2 coordinates)
 void Game::Register(GameObject* gameObject)
 {
     m_GameObjects.push_back(gameObject);
+}
+
+void Game::Unregister(GameObject* gameObject)
+{
+    auto it = std::remove(m_GameObjects.begin(), m_GameObjects.end(), gameObject);
+    if (it != m_GameObjects.end())
+    {
+        m_GameObjects.erase(it);
+    }
 }
 
 std::vector<Enemy*> Game::GetCollidingEnemies()
@@ -120,14 +141,71 @@ std::vector<Enemy*> Game::GetEnemies()
 
 void Game::Update()
 {
+    if (m_GameState != GameState::Playing) { return; }
+    // FIXME MOVE TO A FUNCTION
+    m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
+    m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
+    // FIXME
+
     float deltaTime = GetTime() - m_LastUpdateTime;
-    if (deltaTime < 1.0f / updateSpeed)
+    if (deltaTime < 1.0f / m_GameConfig->updateSpeed)
     {
         return;
     }
+
     for (auto& gameObject : m_GameObjects)
     {
         gameObject->Update(deltaTime);
+    }
+
+    if(m_MrAngryCube->IsAtQuarterRotation() && m_MrAngryCube->isMoving)
+    {
+        bool shouldIncreaseAnger = false;
+        const char* quote = "";
+
+        int rotationCountSum = Utilities::SumVector3(m_MrAngryCube->rotationCount);  // FIXME BETTER NAMES
+
+        if (Game::Get().gameInfo.anger >= Game::Get().gameInfo.possibleSpeeds.size() - 1)
+        {
+            Game::Get().gameInfo.rotationCountdown += -1;
+            TraceLog(LOG_WARNING, "Game over in: %i rotations.", Game::Get().gameInfo.rotationCountdown);  // FIXME SHOW TO USER BETTER.
+        } else if (Game::Get().gameInfo.anger < Game::Get().gameInfo.possibleSpeeds.size() - 1)
+        {
+            GameInfo tempGameInfo;
+            Game::Get().gameInfo.rotationCountdown = tempGameInfo.rotationCountdown;
+        }
+
+        if (rotationCountSum % 10 == 0 && rotationCountSum > 0)
+        {
+            quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
+            shouldIncreaseAnger = true;
+        }
+
+        if (m_MrAngryCube->IsFaceOnTheGround())
+        {
+            quote = "My Face!\n No more Mr. Nice Cube!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
+            shouldIncreaseAnger = true;
+
+            // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
+            m_MrAngryCube->WaitForNonBlocking(.2f * 3);  // FIXME MOVE TO GAME CONFIG
+        } else {
+            m_MrAngryCube->WaitForNonBlocking(.2f);  // FIXME MOVE TO GAME CONFIG
+        }
+
+        // Handle anger.
+        if (shouldIncreaseAnger)
+        {
+            gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
+            m_MrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
+        }
+
+        // Handle quotes.
+        if (quote != "")
+        {
+            TimedText* timedText = Utilities::GetTimedText(quote);
+            timedText->lastCheckTime = GetTime();
+            timedTexts.push_back(timedText);
+        }
     }
 
     // Check collisions.
@@ -138,18 +216,16 @@ void Game::Update()
             break;
         }
         Unregister(enemy);
-        m_MrAngryCube->gameInfo.score++;
+        gameInfo.score++;
+        gameInfo.anger = std::max(0, --gameInfo.anger);
     }
-    m_LastUpdateTime = GetTime();
-}
 
-void Game::Unregister(GameObject* gameObject)
-{
-    auto it = std::remove(m_GameObjects.begin(), m_GameObjects.end(), gameObject);
-    if (it != m_GameObjects.end())
+    if (gameInfo.rotationCountdown == 0)
     {
-        m_GameObjects.erase(it);
+        m_GameState = GameState::GameOver;
     }
+
+    m_LastUpdateTime = GetTime();
 }
 
 void Game::Render()
@@ -161,61 +237,88 @@ void Game::Render()
     }
 
     BeginDrawing();
-    ClearBackground(DARKBLUE);
+    ClearBackground(m_GameConfig->backgroundColor);
     switch (m_GameState)
     {
         case GameState::MainMenu:
         m_Menu->Update();
         m_Menu->Render();
         break;
+        case GameState::Playing:
+            BeginMode3D(m_Camera);
+            DrawGrid(200, 1.0f);
+            for (auto& gameObject : m_GameObjects) { gameObject->Render(); }
+            EndMode3D();
+            // DrawFPS(10, 10); FIXME REMOVE LATER
+        break;
+        case GameState::Paused:
+        {
+            // Do nothing.
+        }
+        case GameState::GameOver:
+            ClearBackground(DARKGREEN);
+        break;
+        default:
+            TraceLog(LOG_WARNING, "Unknown game state!");
+        break;
+    }
+    RenderHud();
+    EndDrawing();
+}
 
+void Game::RenderHud()
+{
+    std::vector<std::string> textsToRender;
+    switch (m_GameState)
+    {
         case GameState::Playing:
         {
-            // Update Game
-            //----------------------------------------------------------------------------------
-            // FIXME move to a function
-            m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
-            m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
-            //----------------------------------------------------------------------------------
+            // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
+            for(auto it=timedTexts.begin(); it!=timedTexts.end();)
+            {
+                auto timedText = *it;
+                if(GetTime() - timedText->lastCheckTime > timedText->duration)
+                {
+                    it = timedTexts.erase(it);
+                } else {
+                    timedText->Draw();
+                    it++;
+                }
+            }
 
-            // Render Game
-            //----------------------------------------------------------------------------------
-                BeginMode3D(m_Camera);
-                DrawGrid(200, 1.0f);
-                for (auto& gameObject : m_GameObjects) { gameObject->Render(); }
-                EndMode3D();
-                DrawFPS(10, 10);
-            //----------------------------------------------------------------------------------
+            // Draw score. FIXME SHOULD BE IMPROVED
+            int fontSize = 20;
+            int percentage = (int)((float)gameInfo.anger / (gameInfo.possibleSpeeds.size() - 1) * 100);
+            int rotations = m_MrAngryCube->rotationCount.x + m_MrAngryCube->rotationCount.y + m_MrAngryCube->rotationCount.z;
+            textsToRender = {
+                std::string("Score: " + std::to_string(gameInfo.score)),
+                std::string("Anger: " + std::to_string(percentage) + "%"),
+                std::string("Enemies Alive: " + std::to_string(GetEnemies().size())),
+                std::string("Rotations: " + std::to_string(rotations))
+            };
+            for (size_t i = 0; i < textsToRender.size(); i++)
+            {
+                std::string text = textsToRender.at(i);
+                DrawText(text.c_str(), 2*fontSize, (2 + 2 * i) * fontSize, fontSize, YELLOW);
+            }
         }
         break;
-
-        default:
-        TraceLog(LOG_WARNING, "Unknown game state!");
-        break;
-    }
-
-    // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
-    for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
-    {
-        auto timedText = *it;
-        if(GetTime() - timedText->lastCheckTime > timedText->duration)
+        case GameState::Paused:
         {
-            it = m_MrAngryCube->timedTexts.erase(it);
-        } else {
-            timedText->Draw();
-            it++;
+            int fontSize = 30;
+            const char* text = "GAME PAUSED";
+            DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
         }
-    }
+        break;
+        case GameState::GameOver:
+        {
+            int fontSize = 30;
+            const char* text = "GAME OVER";
+            DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
+        }
+        break;
 
-    // Draw score. FIXME SHOULD BE IMPROVED
-    int fontSize = 30;
-    std::string scoreText ("Score: " + std::to_string(m_MrAngryCube->gameInfo.score));
-    DrawText(scoreText.c_str(), 2*fontSize, GetScreenHeight() - 6*fontSize, fontSize, YELLOW);
-    std::string angerText ("Anger : " + std::to_string(m_MrAngryCube->gameInfo.anger / m_MrAngryCube->gameInfo.maxAnger * 100.0f) + "%");
-    DrawText(angerText.c_str(), 2*fontSize, GetScreenHeight() - 4*fontSize, fontSize, YELLOW);
-    std::string enemyCountText ("Enemies Alive: " + std::to_string(GetEnemies().size()));
-    DrawText(enemyCountText.c_str(), 2*fontSize, GetScreenHeight() - 2*fontSize, fontSize, YELLOW);
-    EndDrawing();
+    }
 }
 
 int Game::Run()
@@ -226,9 +329,7 @@ int Game::Run()
     m_Camera.fovy = 45.0f;                                // Camera field-of-view Y
     m_Camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
-    m_MrAngryCube->speed = 2.0f;
-
-    while (!WindowShouldClose())
+    while (!WindowShouldClose())  // Main loop.
     {
         // Handle key events.
         //----------------------------------------------------------------------------------
@@ -253,7 +354,26 @@ int Game::Run()
         } else if (IsKeyPressed(KEY_R))
         {
             SpawnEnemy({0, 0});
-        }
+        } else if (IsKeyPressed(KEY_ESCAPE)) {
+            switch (m_GameState)
+            {
+                case GameState::Playing:
+                    m_GameState = GameState::Paused;
+                break;
+
+                case GameState::Paused:
+                    m_GameState = GameState::Playing;
+                break;
+
+                case GameState::GameOver:
+                    m_GameState = GameState::MainMenu;
+
+                default:
+                break;
+            }
+       } else if (IsKeyPressed(KEY_F)) {
+            ToggleFullscreen();
+       }
         //----------------------------------------------------------------------------------
         Update();
         Render();
