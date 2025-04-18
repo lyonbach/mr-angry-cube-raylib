@@ -7,11 +7,11 @@
 #include "SimpleGui.h"
 #include <vector>
 
+class MrAngryCube;  // Forward declare
 
-class Game
-{
+class Game {
 public:
-    static Game& Get();
+    static Game& Get();  // Singleton accessor
     ~Game();
 
     void Init(GameConfig* configuration);
@@ -26,20 +26,23 @@ public:
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();
     std::vector<Enemy*> GetEnemies();
-
-    static Game s_Game;
-    Game(Game &other) = delete;
-    void operator=(const Game &) = delete;
     
+    GameInfo gameInfo;
+    std::vector<TimedText*> timedTexts;
+
+    // Prevent copy
+    Game(const Game&) = delete;
+    void operator=(const Game&) = delete;
+
 private:
-    Game();
+    Game();  // Private constructor for singleton
     std::vector<GameObject*> m_GameObjects;
     std::vector<TimedText*> m_TimedTexts;
     bool m_Initialized = false;
-    float m_LastUpdateTime = GetTime();
-    Menu* m_Menu;
-    GameConfig* m_GameConfig;
-    MrAngryCube* m_MrAngryCube;
+    float m_LastUpdateTime = 0.0f;
+    Menu* m_Menu = nullptr;
+    GameConfig* m_GameConfig = nullptr;
+    MrAngryCube* m_MrAngryCube = nullptr;
     GameState m_GameState;
     Camera3D m_Camera = { 0 };
 };

@@ -15,7 +15,7 @@ std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
 std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
 std::string shaderPath  = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
 std::string modelPath   = (fs / "../models" / "mr_angry_cube_high_res.obj").string();
-Game Game::s_Game;
+
 
 int main(void)
 {

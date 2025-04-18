@@ -2,10 +2,10 @@
 #include <algorithm>
 
 
-Game& Game::Get()
-{
-    return s_Game;
-};
+Game& Game::Get() {
+    static Game instance;
+    return instance;
+}
 
 Game::Game()
 {
@@ -19,7 +19,7 @@ void Game::Init(GameConfig* configuration)
     InitWindow(m_GameConfig->screenWidth, m_GameConfig->screenHeight, m_GameConfig->windowTitle.c_str());
     InitMenu();
     SetExitKey(0);  // Disable exit key.
-    
+
     // Initialize main character.
     m_MrAngryCube = new MrAngryCube(
         m_GameConfig->texturePath.c_str(),
@@ -152,9 +152,60 @@ void Game::Update()
     {
         return;
     }
+
     for (auto& gameObject : m_GameObjects)
     {
         gameObject->Update(deltaTime);
+    }
+
+    if(m_MrAngryCube->IsAtQuarterRotation() && m_MrAngryCube->isMoving)
+    {
+        bool shouldIncreaseAnger = false;
+        const char* quote = "";
+
+        int rotationCountSum = Utilities::SumVector3(m_MrAngryCube->rotationCount);  // FIXME BETTER NAMES
+
+        if (Game::Get().gameInfo.anger >= Game::Get().gameInfo.possibleSpeeds.size() - 1)
+        {
+            Game::Get().gameInfo.rotationCountdown += -1;
+            TraceLog(LOG_WARNING, "Game over in: %i rotations.", Game::Get().gameInfo.rotationCountdown);  // FIXME SHOW TO USER BETTER.
+        } else if (Game::Get().gameInfo.anger < Game::Get().gameInfo.possibleSpeeds.size() - 1)
+        {
+            GameInfo tempGameInfo;
+            Game::Get().gameInfo.rotationCountdown = tempGameInfo.rotationCountdown;
+        }
+
+        if (rotationCountSum % 10 == 0 && rotationCountSum > 0)
+        {
+            quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
+            shouldIncreaseAnger = true;
+        }
+
+        if (m_MrAngryCube->IsFaceOnTheGround())
+        {
+            quote = "My Face!\n No more Mr. Nice Cube!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
+            shouldIncreaseAnger = true;
+
+            // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
+            m_MrAngryCube->WaitForNonBlocking(.2f * 3);  // FIXME MOVE TO GAME CONFIG
+        } else {
+            m_MrAngryCube->WaitForNonBlocking(.2f);  // FIXME MOVE TO GAME CONFIG
+        }
+
+        // Handle anger.
+        if (shouldIncreaseAnger)
+        {
+            gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
+            m_MrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
+        }
+
+        // Handle quotes.
+        if (quote != "")
+        {
+            TimedText* timedText = Utilities::GetTimedText(quote);
+            timedText->lastCheckTime = GetTime();
+            timedTexts.push_back(timedText);
+        }
     }
 
     // Check collisions.
@@ -165,11 +216,11 @@ void Game::Update()
             break;
         }
         Unregister(enemy);
-        m_MrAngryCube->gameInfo.score++;
-        m_MrAngryCube->gameInfo.anger = std::max(0, --m_MrAngryCube->gameInfo.anger);
+        gameInfo.score++;
+        gameInfo.anger = std::max(0, --gameInfo.anger);
     }
 
-    if (m_MrAngryCube->gameInfo.rotationCountdown == 0)
+    if (gameInfo.rotationCountdown == 0)
     {
         m_GameState = GameState::GameOver;
     }
@@ -223,12 +274,12 @@ void Game::RenderHud()
         case GameState::Playing:
         {
             // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
-            for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
+            for(auto it=timedTexts.begin(); it!=timedTexts.end();)
             {
                 auto timedText = *it;
                 if(GetTime() - timedText->lastCheckTime > timedText->duration)
                 {
-                    it = m_MrAngryCube->timedTexts.erase(it);
+                    it = timedTexts.erase(it);
                 } else {
                     timedText->Draw();
                     it++;
@@ -237,10 +288,10 @@ void Game::RenderHud()
 
             // Draw score. FIXME SHOULD BE IMPROVED
             int fontSize = 20;
-            int percentage = (int)((float)m_MrAngryCube->gameInfo.anger / (m_MrAngryCube->gameInfo.possibleSpeeds.size() - 1) * 100);
+            int percentage = (int)((float)gameInfo.anger / (gameInfo.possibleSpeeds.size() - 1) * 100);
             int rotations = m_MrAngryCube->rotationCount.x + m_MrAngryCube->rotationCount.y + m_MrAngryCube->rotationCount.z;
             textsToRender = {
-                std::string("Score: " + std::to_string(m_MrAngryCube->gameInfo.score)),
+                std::string("Score: " + std::to_string(gameInfo.score)),
                 std::string("Anger: " + std::to_string(percentage) + "%"),
                 std::string("Enemies Alive: " + std::to_string(GetEnemies().size())),
                 std::string("Rotations: " + std::to_string(rotations))

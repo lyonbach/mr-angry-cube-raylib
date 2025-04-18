@@ -17,7 +17,7 @@ MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const 
     m_Size = 1.0f;
     m_HalfSize = m_Size / 2.0f;
     m_Hypotenuse = sqrt(m_HalfSize * m_HalfSize * 2);
-    speed = gameInfo.possibleSpeeds.at(0);
+    speed = Game::Get().gameInfo.possibleSpeeds.at(0);
 }
 
 void MrAngryCube::Render()
@@ -27,7 +27,7 @@ void MrAngryCube::Render()
 
 void MrAngryCube::Update(float deltaTime)
 {
-    if(!m_IsMoving) {
+    if(!isMoving) {
         return;
     }
 
@@ -51,51 +51,7 @@ void MrAngryCube::Update(float deltaTime)
 
     if(IsAtQuarterRotation())
     {
-        bool shouldIncreaseAnger = false;
-        const char* quote = "";
-
         rotationCount += Utilities::AbsVector3(rotationAxis);
-        int rotationCountSum = Utilities::SumVector3(rotationCount);
-
-        if (gameInfo.anger >= gameInfo.possibleSpeeds.size() - 1)
-        {
-            gameInfo.rotationCountdown += -1;
-            TraceLog(LOG_WARNING, "Game over in: %i rotations.", gameInfo.rotationCountdown);  // FIXME SHOW TO USER BETTER.
-        } else if (gameInfo.anger < gameInfo.possibleSpeeds.size() - 1)
-        {
-            GameInfo tempGameInfo;
-            gameInfo.rotationCountdown = tempGameInfo.rotationCountdown;
-        }
-
-        if (rotationCountSum % 10 == 0 && rotationCountSum > 0)
-        {
-            quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
-            shouldIncreaseAnger = true;
-        }
-
-        if (IsFaceOnTheGround())  // Handling when face hits the ground.
-        {
-            quote = "My Face!\n No more Mr. Nice Cube!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
-            shouldIncreaseAnger = true;
-
-            // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
-            WaitForNonBlocking(m_MovePauseDuration * 3);
-        } else {
-            WaitForNonBlocking(m_MovePauseDuration);
-        }
-
-        if (shouldIncreaseAnger)
-        {
-            gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
-            speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
-        }
-
-        if (quote != "")
-        {
-            TimedText* timedText = Utilities::GetTimedText(quote);
-            timedText->lastCheckTime = GetTime();
-            timedTexts.push_back(timedText);
-        }
         rotationAxis = nextRotationAxis;
     }
 }
@@ -131,11 +87,11 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
     return result;
 }
 
-const void MrAngryCube::WaitForNonBlocking(float seconds)
+const void MrAngryCube::WaitForNonBlocking(float seconds)  // FIXME MOVE THIS TO GAME CLASS.
 {
-    m_IsMoving = false;
+    isMoving = false;
     std::thread([this, seconds]() {
         std::this_thread::sleep_for(std::chrono::duration<float>(seconds));
-        m_IsMoving = true;
+        isMoving = true;
     }).detach();
 }
