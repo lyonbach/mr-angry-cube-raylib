@@ -20,6 +20,7 @@ public:
     Vector3 nextRotationAxis = { 0.0f, 0.0f, 0.0f };
     Vector3 rotationAxis = { 0.0f, 0.0f, 0.0f };
     Vector3 rotationCount = { 0.0f, 0.0f, 0.0f };
+    int rotationCountdown = 10;  // Number of rotation to count down after 100% of anger. Game over when reaches zero.
     float speed = 1.0f;  // Degrees per update.
     std::vector<TimedText*> timedTexts;
     GameInfo gameInfo;

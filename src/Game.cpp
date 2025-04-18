@@ -5,7 +5,7 @@
 Game::Game(GameConfig* config)
 {
     gameConfig = config;
-    m_GameState = GameState::Playing;
+    m_GameState = GameState::MainMenu;
     updateSpeed = gameConfig->updateSpeed;
     TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", gameConfig->updateSpeed);
     TraceLog(LOG_DEBUG, "Game configured with target FPS: %d", gameConfig->targetFPS);
@@ -67,6 +67,15 @@ void Game::Register(GameObject* gameObject)
     m_GameObjects.push_back(gameObject);
 }
 
+void Game::Unregister(GameObject* gameObject)
+{
+    auto it = std::remove(m_GameObjects.begin(), m_GameObjects.end(), gameObject);
+    if (it != m_GameObjects.end())
+    {
+        m_GameObjects.erase(it);
+    }
+}
+
 std::vector<Enemy*> Game::GetCollidingEnemies()
 {
     std::vector<Enemy*> enemies;
@@ -120,6 +129,12 @@ std::vector<Enemy*> Game::GetEnemies()
 
 void Game::Update()
 {
+    // FIXME MOVE TO A FUNCTION
+    m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
+    m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
+    // FIXME 
+
+    if (m_GameState != GameState::Playing) { return; }
     float deltaTime = GetTime() - m_LastUpdateTime;
     if (deltaTime < 1.0f / updateSpeed)
     {
@@ -141,14 +156,10 @@ void Game::Update()
         m_MrAngryCube->gameInfo.score++;
     }
     m_LastUpdateTime = GetTime();
-}
 
-void Game::Unregister(GameObject* gameObject)
-{
-    auto it = std::remove(m_GameObjects.begin(), m_GameObjects.end(), gameObject);
-    if (it != m_GameObjects.end())
+    if (m_MrAngryCube->rotationCountdown == 0)
     {
-        m_GameObjects.erase(it);
+        m_GameState = GameState::GameOver;
     }
 }
 
@@ -171,13 +182,6 @@ void Game::Render()
 
         case GameState::Playing:
         {
-            // Update Game
-            //----------------------------------------------------------------------------------
-            // FIXME move to a function
-            m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
-            m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
-            //----------------------------------------------------------------------------------
-
             // Render Game
             //----------------------------------------------------------------------------------
                 BeginMode3D(m_Camera);
@@ -186,41 +190,49 @@ void Game::Render()
                 EndMode3D();
                 DrawFPS(10, 10);
             //----------------------------------------------------------------------------------
+            
+            // Render Game Information
+            //----------------------------------------------------------------------------------
+            // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
+            for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
+            {
+                auto timedText = *it;
+                if(GetTime() - timedText->lastCheckTime > timedText->duration)
+                {
+                    it = m_MrAngryCube->timedTexts.erase(it);
+                } else {
+                    timedText->Draw();
+                    it++;
+                }
+            }
+
+            // Draw score. FIXME SHOULD BE IMPROVED
+            int fontSize = 20;
+            int percentage = (m_MrAngryCube->gameInfo.anger / m_MrAngryCube->gameInfo.maxAnger * 100.0f);
+            int rotations = m_MrAngryCube->rotationCount.x + m_MrAngryCube->rotationCount.y + m_MrAngryCube->rotationCount.z;
+            std::vector<std::string> textsToRender = {
+                std::string("Score: " + std::to_string(m_MrAngryCube->gameInfo.score)),
+                std::string("Anger: " + std::to_string(percentage) + "%"),
+                std::string("Enemies Alive: " + std::to_string(GetEnemies().size())),
+                std::string("Rotations: " + std::to_string(rotations))
+            };
+            for (size_t i = 0; i < textsToRender.size(); i++)
+            {
+                std::string text = textsToRender.at(i);
+                DrawText(text.c_str(), 2*fontSize, (2 + 2 * i) * fontSize, fontSize, YELLOW);
+            }
+            //----------------------------------------------------------------------------------
+
         }
+        break;
+
+        case GameState::GameOver:
+        ClearBackground(DARKGREEN);
         break;
 
         default:
         TraceLog(LOG_WARNING, "Unknown game state!");
         break;
-    }
-
-    // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
-    for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
-    {
-        auto timedText = *it;
-        if(GetTime() - timedText->lastCheckTime > timedText->duration)
-        {
-            it = m_MrAngryCube->timedTexts.erase(it);
-        } else {
-            timedText->Draw();
-            it++;
-        }
-    }
-
-    // Draw score. FIXME SHOULD BE IMPROVED
-    int fontSize = 20;
-    int percentage = (m_MrAngryCube->gameInfo.anger / m_MrAngryCube->gameInfo.maxAnger * 100.0f);
-    int rotations = m_MrAngryCube->rotationCount.x + m_MrAngryCube->rotationCount.y + m_MrAngryCube->rotationCount.z;
-    std::vector<std::string> textsToRender = {
-        std::string("Score: " + std::to_string(m_MrAngryCube->gameInfo.score)),
-        std::string("Anger: " + std::to_string(percentage) + "%"),
-        std::string("Enemies Alive: " + std::to_string(GetEnemies().size())),
-        std::string("Rotations: " + std::to_string(rotations))
-    };
-    for (size_t i = 0; i < textsToRender.size(); i++)
-    {
-        std::string text = textsToRender.at(i);
-        DrawText(text.c_str(), 2*fontSize, (2 + 2 * i) * fontSize, fontSize, YELLOW);
     }
     EndDrawing();
 }
@@ -235,7 +247,7 @@ int Game::Run()
 
     m_MrAngryCube->speed = 2.0f;
 
-    while (!WindowShouldClose())
+    while (!WindowShouldClose())  // Main loop.
     {
         // Handle key events.
         //----------------------------------------------------------------------------------

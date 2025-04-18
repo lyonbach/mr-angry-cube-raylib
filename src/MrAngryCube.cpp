@@ -56,6 +56,13 @@ void MrAngryCube::Update(float deltaTime)
 
         rotationCount += Utilities::AbsVector3(rotationAxis);
         int rotationCountSum = Utilities::SumVector3(rotationCount);
+
+        if (gameInfo.anger == gameInfo.maxAnger)
+        {
+            rotationCountdown += -1;
+            TraceLog(LOG_WARNING, "Game over in: %i rotations.", rotationCountdown);
+        }
+
         if (rotationCountSum % 10 == 0 && rotationCountSum > 0)
         {
             quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
