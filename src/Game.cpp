@@ -132,7 +132,7 @@ void Game::Update()
     // FIXME MOVE TO A FUNCTION
     m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
     m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
-    // FIXME 
+    // FIXME
 
     if (m_GameState != GameState::Playing) { return; }
     float deltaTime = GetTime() - m_LastUpdateTime;
@@ -312,8 +312,9 @@ int Game::Run()
                 default:
                 break;
             }
+       } else if (IsKeyPressed(KEY_F)) {
+            ToggleFullscreen();
        }
-        
         //----------------------------------------------------------------------------------
         Update();
         Render();
