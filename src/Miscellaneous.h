@@ -61,6 +61,6 @@ namespace Utilities
 {
     TimedText* GetTimedText(char const* text);
     TimedText* GetTimedText(char const* text, Vector2 position);
+    Vector3 AbsVector3(Vector3& vector3);
+    int SumVector3(Vector3& vector3);
 } // namespace Utilities
-
-

@@ -208,13 +208,20 @@ void Game::Render()
     }
 
     // Draw score. FIXME SHOULD BE IMPROVED
-    int fontSize = 30;
-    std::string scoreText ("Score: " + std::to_string(m_MrAngryCube->gameInfo.score));
-    DrawText(scoreText.c_str(), 2*fontSize, GetScreenHeight() - 6*fontSize, fontSize, YELLOW);
-    std::string angerText ("Anger : " + std::to_string(m_MrAngryCube->gameInfo.anger / m_MrAngryCube->gameInfo.maxAnger * 100.0f) + "%");
-    DrawText(angerText.c_str(), 2*fontSize, GetScreenHeight() - 4*fontSize, fontSize, YELLOW);
-    std::string enemyCountText ("Enemies Alive: " + std::to_string(GetEnemies().size()));
-    DrawText(enemyCountText.c_str(), 2*fontSize, GetScreenHeight() - 2*fontSize, fontSize, YELLOW);
+    int fontSize = 20;
+    int percentage = (m_MrAngryCube->gameInfo.anger / m_MrAngryCube->gameInfo.maxAnger * 100.0f);
+    int rotations = m_MrAngryCube->rotationCount.x + m_MrAngryCube->rotationCount.y + m_MrAngryCube->rotationCount.z;
+    std::vector<std::string> textsToRender = {
+        std::string("Score: " + std::to_string(m_MrAngryCube->gameInfo.score)),
+        std::string("Anger: " + std::to_string(percentage) + "%"),
+        std::string("Enemies Alive: " + std::to_string(GetEnemies().size())),
+        std::string("Rotations: " + std::to_string(rotations))
+    };
+    for (size_t i = 0; i < textsToRender.size(); i++)
+    {
+        std::string text = textsToRender.at(i);
+        DrawText(text.c_str(), 2*fontSize, (2 + 2 * i) * fontSize, fontSize, YELLOW);
+    }
     EndDrawing();
 }
 

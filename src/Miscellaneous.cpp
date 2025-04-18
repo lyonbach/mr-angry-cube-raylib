@@ -29,3 +29,13 @@ TimedText* Utilities::GetTimedText(char const* text)  // FIXME create a cpp file
             DrawText(text, x, y, fontSize, YELLOW);
         }));
 }
+
+Vector3 Utilities::AbsVector3(Vector3& vector3)
+{
+    return Vector3({(float)abs(vector3.x), (float)abs(vector3.y), (float)abs(vector3.z)});
+}
+
+int Utilities::SumVector3(Vector3& vector3)
+{
+    return (int)(vector3.x + vector3.y + vector3.z);
+}

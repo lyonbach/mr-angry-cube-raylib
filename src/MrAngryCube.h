@@ -19,12 +19,13 @@ public:
     Vector3 rotation;
     Vector3 nextRotationAxis = { 0.0f, 0.0f, 0.0f };
     Vector3 rotationAxis = { 0.0f, 0.0f, 0.0f };
+    Vector3 rotationCount = { 0.0f, 0.0f, 0.0f };
     float speed = 1.0f;  // Degrees per update.
     std::vector<TimedText*> timedTexts;
     GameInfo gameInfo;
 
 private:
-    const void WaitFor(float seconds);
+    const void WaitForNonBlocking(float seconds);
     float m_Size;
     float m_HalfSize;
     float m_Hypotenuse;
@@ -33,4 +34,3 @@ private:
     float m_LastPauseCheckTime = 0.0f;
     float m_MovePauseDuration = 0.2f;
 };
-

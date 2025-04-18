@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <thread>
+#include <string>
 
 
 Vector2 VecSin(Vector2 vec) {
@@ -50,21 +51,41 @@ void MrAngryCube::Update(float deltaTime)
 
     if(IsAtQuarterRotation())
     {
-        rotationAxis = nextRotationAxis;
-        if (IsFaceOnTheGround())
+        bool shouldIncreaseAnger = false;
+        const char* quote = "";
+
+        rotationCount += Utilities::AbsVector3(rotationAxis);
+        int rotationCountSum = Utilities::SumVector3(rotationCount);
+        if (rotationCountSum % 10 == 0 && rotationCountSum > 0)
         {
-            // Increase in anger.
-            gameInfo.anger = std::min(gameInfo.maxAnger, gameInfo.anger + 0.5f);
+            quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
+            shouldIncreaseAnger = true;
+        }
+
+        if (IsFaceOnTheGround())  // Handling when face hits the ground.
+        {
+            quote = "My Face!\n No more Mr. Nice Cube!";
+            shouldIncreaseAnger = true;
 
             // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
-            const char* text = "My Face!\n Now I am getting angrier...";
-            TimedText* timedText = Utilities::GetTimedText(text);
+            WaitForNonBlocking(m_MovePauseDuration * 3);
+        } else {
+            WaitForNonBlocking(m_MovePauseDuration);
+        }
+
+        if (shouldIncreaseAnger)
+        {
+            gameInfo.anger = std::min(gameInfo.maxAnger, gameInfo.anger + 0.5f);
+        }
+
+        if (quote != "")
+        {
+            TimedText* timedText = Utilities::GetTimedText(quote);
             timedText->lastCheckTime = GetTime();
             timedTexts.push_back(timedText);
-            WaitFor(m_MovePauseDuration * 3);
-        } else {
-            WaitFor(m_MovePauseDuration);
         }
+
+        rotationAxis = nextRotationAxis;
     }
 }
 
@@ -99,7 +120,7 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
     return result;
 }
 
-const void MrAngryCube::WaitFor(float seconds)
+const void MrAngryCube::WaitForNonBlocking(float seconds)
 {
     m_IsMoving = false;
     std::thread([this, seconds]() {
