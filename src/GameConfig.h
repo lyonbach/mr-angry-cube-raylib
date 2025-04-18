@@ -16,6 +16,10 @@ public:
     Color backgroundColor;
     void Init(std::string texturePath, std::string shaderPath, std::string modelPath, int screenWidth, int screenHeight, int updateSpeed, Color backgroundColor);
     bool initialized = false;
+
+    GameConfig(GameConfig & other) = delete;
+    void operator=(const GameConfig &) = delete;
+
 private:
     static GameConfig s_GameConfig;
     GameConfig();

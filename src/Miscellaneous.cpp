@@ -39,3 +39,8 @@ int Utilities::SumVector3(Vector3& vector3)
 {
     return (int)(vector3.x + vector3.y + vector3.z);
 }
+
+void Utilities::Log(std::string message, std::string prefix, TraceLogLevel logLevel)
+{
+    TraceLog(logLevel, ("[" + prefix + "]: " + message).c_str());
+}

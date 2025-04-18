@@ -11,9 +11,10 @@
 class Game
 {
 public:
-    Game();
+    static Game& Get();
     ~Game();
 
+    void Init();
     void SpawnEnemy(Vector2 coordinates);
     void Register(GameObject* gameObject);
     void Unregister(GameObject* gameObject);
@@ -26,8 +27,13 @@ public:
     std::vector<Enemy*> GetCollidingEnemies();
     std::vector<Enemy*> GetEnemies();
     int updateSpeed;
+    static Game s_Game;
 
+    Game(Game &other) = delete;
+    void operator=(const Game &) = delete;
+    
 private:
+    Game();
     std::vector<GameObject*> m_GameObjects;
     std::vector<TimedText*> m_TimedTexts;
     bool m_Initialized = false;

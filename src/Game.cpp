@@ -2,7 +2,17 @@
 #include <algorithm>
 
 
+Game& Game::Get()
+{
+    return s_Game;
+};
+
 Game::Game()
+{
+    Utilities::Log("Created Game singleton class.", "GAME");
+}
+
+void Game::Init()
 {
     m_GameState = GameState::MainMenu;
     updateSpeed = GameConfig::Get().updateSpeed;
@@ -10,12 +20,11 @@ Game::Game()
     InitWindow(GameConfig::Get().screenWidth, GameConfig::Get().screenHeight, GameConfig::Get().windowTitle.c_str());
     InitMenu();
     SetExitKey(0);  // Disable exit key.
-
+    
     // Initialize main character.
     m_MrAngryCube = new MrAngryCube( GameConfig::Get().texturePath.c_str(), GameConfig::Get().shaderPath.c_str(), GameConfig::Get().modelPath.c_str() );
     Register(m_MrAngryCube);
     m_Initialized = true;
-
 }
 
 Game::~Game()

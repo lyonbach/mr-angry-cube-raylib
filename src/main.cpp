@@ -16,14 +16,16 @@ std::string texturePath = (fs / "../textures" / "texel_checker.png").string();
 std::string shaderPath  = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
 std::string modelPath   = (fs / "../models" / "mr_angry_cube_high_res.obj").string();
 GameConfig GameConfig::s_GameConfig;
+Game Game::s_Game;
 
 int main(void)
 {
     GameConfig& config = GameConfig::Get();
     config.Init(texturePath, shaderPath, modelPath, 800, 600, 120, DARKGRAY);
 
-    Game* game = new Game();
-    int returnCode = game->Run();
-    delete game;
+    // Game* game = new Game();
+    Game& game = Game::Get();
+    game.Init();
+    int returnCode = game.Run();
     return returnCode;
 }
