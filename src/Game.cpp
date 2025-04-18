@@ -12,17 +12,20 @@ Game::Game()
     Utilities::Log("Created Game singleton class.", "GAME");
 }
 
-void Game::Init()
+void Game::Init(GameConfig* configuration)
 {
     m_GameState = GameState::MainMenu;
-    updateSpeed = GameConfig::Get().updateSpeed;
-    TraceLog(LOG_DEBUG, "Configuring game with the update speed: %d", GameConfig::Get().updateSpeed);
-    InitWindow(GameConfig::Get().screenWidth, GameConfig::Get().screenHeight, GameConfig::Get().windowTitle.c_str());
+    m_GameConfig = configuration;
+    InitWindow(m_GameConfig->screenWidth, m_GameConfig->screenHeight, m_GameConfig->windowTitle.c_str());
     InitMenu();
     SetExitKey(0);  // Disable exit key.
     
     // Initialize main character.
-    m_MrAngryCube = new MrAngryCube( GameConfig::Get().texturePath.c_str(), GameConfig::Get().shaderPath.c_str(), GameConfig::Get().modelPath.c_str() );
+    m_MrAngryCube = new MrAngryCube(
+        m_GameConfig->texturePath.c_str(),
+        m_GameConfig->shaderPath.c_str(),
+        m_GameConfig->modelPath.c_str()
+    );
     Register(m_MrAngryCube);
     m_Initialized = true;
 }
@@ -41,14 +44,14 @@ void Game::InitMenu()
     m_Menu = new Menu();
     m_Menu->AddItem(
         new PushButton("     Play     ",
-            GameConfig::Get().screenWidth / 2,
-            GameConfig::Get().screenHeight / 3,
+            m_GameConfig->screenWidth / 2,
+            m_GameConfig->screenHeight / 3,
             [this](){ m_GameState = GameState::Playing; })
     );
     m_Menu->AddItem(
         new PushButton("     Exit     ",
-            GameConfig::Get().screenWidth / 2,
-            GameConfig::Get().screenHeight / 3 + 50,
+            m_GameConfig->screenWidth / 2,
+            m_GameConfig->screenHeight / 3 + 50,
             [](){ exit(0); })
     );
 }
@@ -62,7 +65,11 @@ void Game::SpawnEnemy(Vector2 coordinates)
     if (randX % 2 != 0) randX++;
     if (randZ % 2 != 0) randZ++;
 
-    Enemy* enemy = new Enemy(GameConfig::Get().texturePath.c_str(), GameConfig::Get().shaderPath.c_str(), GameConfig::Get().modelPath.c_str());
+    Enemy* enemy = new Enemy(
+        m_GameConfig->texturePath.c_str(),
+        m_GameConfig->shaderPath.c_str(),
+        m_GameConfig->modelPath.c_str()
+    );
     enemy->SetPosition({(float)randX, (float)randZ});
     Register(enemy);
 }
@@ -141,7 +148,7 @@ void Game::Update()
     // FIXME
 
     float deltaTime = GetTime() - m_LastUpdateTime;
-    if (deltaTime < 1.0f / updateSpeed)
+    if (deltaTime < 1.0f / m_GameConfig->updateSpeed)
     {
         return;
     }
@@ -179,7 +186,7 @@ void Game::Render()
     }
 
     BeginDrawing();
-    ClearBackground(GameConfig::Get().backgroundColor);
+    ClearBackground(m_GameConfig->backgroundColor);
     switch (m_GameState)
     {
         case GameState::MainMenu:

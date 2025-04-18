@@ -14,7 +14,7 @@ public:
     static Game& Get();
     ~Game();
 
-    void Init();
+    void Init(GameConfig* configuration);
     void SpawnEnemy(Vector2 coordinates);
     void Register(GameObject* gameObject);
     void Unregister(GameObject* gameObject);
@@ -26,9 +26,8 @@ public:
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();
     std::vector<Enemy*> GetEnemies();
-    int updateSpeed;
-    static Game s_Game;
 
+    static Game s_Game;
     Game(Game &other) = delete;
     void operator=(const Game &) = delete;
     
@@ -39,6 +38,7 @@ private:
     bool m_Initialized = false;
     float m_LastUpdateTime = GetTime();
     Menu* m_Menu;
+    GameConfig* m_GameConfig;
     MrAngryCube* m_MrAngryCube;
     GameState m_GameState;
     Camera3D m_Camera = { 0 };

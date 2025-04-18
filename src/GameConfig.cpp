@@ -1,24 +1,13 @@
 #include "GameConfig.h"
 
-GameConfig::GameConfig()
+GameConfig::GameConfig(std::string texturePath, std::string shaderPath, std::string modelPath, int screenWidth, int screenHeight, int updateSpeed, Color backgroundColor)
+    : texturePath(texturePath),
+      shaderPath(shaderPath),
+      modelPath(modelPath),
+      screenWidth(screenWidth),
+      screenHeight(screenHeight),
+      updateSpeed(updateSpeed),
+      backgroundColor(backgroundColor)
 {
-
+    Utilities::Log("Created game configuration.", "GAMECONFIG");
 }
-
-GameConfig& GameConfig::Get()
-{
-    return s_GameConfig;
-}
-
-void GameConfig::Init(std::string texturePath, std::string shaderPath, std::string modelPath, int screenWidth, int screenHeight, int updateSpeed, Color backgroundColor)
-{
-    this->texturePath = texturePath;
-    this->shaderPath = shaderPath;
-    this->modelPath = modelPath;
-    this->screenWidth = screenWidth;
-    this->screenHeight = screenHeight;
-    this->updateSpeed = updateSpeed;
-    this->backgroundColor = backgroundColor;
-    initialized = true;
-}
-
