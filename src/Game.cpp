@@ -12,8 +12,7 @@ Game::Game(GameConfig* config)
     SetTargetFPS(gameConfig->targetFPS);
     InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle);
     InitMenu();
-
-    // SetExitKey(0);  // Disable exit key.
+    SetExitKey(0);  // Disable exit key.
 
     // Initialize main character.
     m_MrAngryCube = new MrAngryCube( gameConfig->texturePath, gameConfig->shaderPath, gameConfig->modelPath);
@@ -129,6 +128,7 @@ std::vector<Enemy*> Game::GetEnemies()
 
 void Game::Update()
 {
+    if (m_GameState != GameState::Playing) { return; }
     // FIXME MOVE TO A FUNCTION
     m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
     m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
@@ -182,24 +182,24 @@ void Game::Render()
         break;
 
         case GameState::Playing:
-        {
-            // Render Game
-            //----------------------------------------------------------------------------------
-                BeginMode3D(m_Camera);
-                DrawGrid(200, 1.0f);
-                for (auto& gameObject : m_GameObjects) { gameObject->Render(); }
-                EndMode3D();
-                DrawFPS(10, 10);
-            //----------------------------------------------------------------------------------
-        }
+            BeginMode3D(m_Camera);
+            DrawGrid(200, 1.0f);
+            for (auto& gameObject : m_GameObjects) { gameObject->Render(); }
+            EndMode3D();
+            DrawFPS(10, 10);
         break;
 
+        case GameState::Paused:
+        {
+            // Do nothing.
+        }
+
         case GameState::GameOver:
-        ClearBackground(DARKGREEN);
+            ClearBackground(DARKGREEN);
         break;
 
         default:
-        TraceLog(LOG_WARNING, "Unknown game state!");
+            TraceLog(LOG_WARNING, "Unknown game state!");
         break;
     }
     EndDrawing();
@@ -211,6 +211,7 @@ void Game::RenderHud()
     switch (m_GameState)
     {
         case GameState::Playing:
+        {
             // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
             for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
             {
@@ -239,8 +240,23 @@ void Game::RenderHud()
                 std::string text = textsToRender.at(i);
                 DrawText(text.c_str(), 2*fontSize, (2 + 2 * i) * fontSize, fontSize, YELLOW);
             }
-            //----------------------------------------------------------------------------------
+        }
         break;
+        case GameState::Paused:
+        {
+            int fontSize = 30;
+            const char* text = "GAME PAUSED";
+            DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
+        }
+        break;
+        case GameState::GameOver:
+        {
+            int fontSize = 30;
+            const char* text = "GAME OVER";
+            DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
+        }
+        break;
+
     }
 }
 
@@ -279,7 +295,25 @@ int Game::Run()
         } else if (IsKeyPressed(KEY_R))
         {
             SpawnEnemy({0, 0});
-        }
+        } else if (IsKeyPressed(KEY_ESCAPE)) {
+            switch (m_GameState)
+            {
+                case GameState::Playing:
+                    m_GameState = GameState::Paused;
+                break;
+
+                case GameState::Paused:
+                    m_GameState = GameState::Playing;
+                break;
+
+                case GameState::GameOver:
+                    m_GameState = GameState::MainMenu;
+
+                default:
+                break;
+            }
+       }
+        
         //----------------------------------------------------------------------------------
         Update();
         Render();
