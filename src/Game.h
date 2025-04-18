@@ -19,6 +19,7 @@ public:
     void InitMenu();
     void Update();
     void Render();
+    void RenderHud();
     int Run();
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();

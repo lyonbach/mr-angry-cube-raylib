@@ -173,6 +173,7 @@ void Game::Render()
 
     BeginDrawing();
     ClearBackground(DARKBLUE);
+    RenderHud();
     switch (m_GameState)
     {
         case GameState::MainMenu:
@@ -190,9 +191,26 @@ void Game::Render()
                 EndMode3D();
                 DrawFPS(10, 10);
             //----------------------------------------------------------------------------------
-            
-            // Render Game Information
-            //----------------------------------------------------------------------------------
+        }
+        break;
+
+        case GameState::GameOver:
+        ClearBackground(DARKGREEN);
+        break;
+
+        default:
+        TraceLog(LOG_WARNING, "Unknown game state!");
+        break;
+    }
+    EndDrawing();
+}
+
+void Game::RenderHud()
+{
+    std::vector<std::string> textsToRender;
+    switch (m_GameState)
+    {
+        case GameState::Playing:
             // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
             for(auto it=m_MrAngryCube->timedTexts.begin(); it!=m_MrAngryCube->timedTexts.end();)
             {
@@ -210,7 +228,7 @@ void Game::Render()
             int fontSize = 20;
             int percentage = (m_MrAngryCube->gameInfo.anger / m_MrAngryCube->gameInfo.maxAnger * 100.0f);
             int rotations = m_MrAngryCube->rotationCount.x + m_MrAngryCube->rotationCount.y + m_MrAngryCube->rotationCount.z;
-            std::vector<std::string> textsToRender = {
+            textsToRender = {
                 std::string("Score: " + std::to_string(m_MrAngryCube->gameInfo.score)),
                 std::string("Anger: " + std::to_string(percentage) + "%"),
                 std::string("Enemies Alive: " + std::to_string(GetEnemies().size())),
@@ -222,19 +240,8 @@ void Game::Render()
                 DrawText(text.c_str(), 2*fontSize, (2 + 2 * i) * fontSize, fontSize, YELLOW);
             }
             //----------------------------------------------------------------------------------
-
-        }
-        break;
-
-        case GameState::GameOver:
-        ClearBackground(DARKGREEN);
-        break;
-
-        default:
-        TraceLog(LOG_WARNING, "Unknown game state!");
         break;
     }
-    EndDrawing();
 }
 
 int Game::Run()
