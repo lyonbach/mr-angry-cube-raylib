@@ -20,7 +20,7 @@ void Enemy::Update(float deltaTime)
     transform.m13 = m_Size / 2;
 }
 
-void Enemy::SetPosition(Vector2 position)
+void Enemy::SetPosition(Vector3 position)
 {
-    transform = MatrixMultiply(MatrixTranslate(position.x, m_Size / 2, position.y), transform);
+    transform = MatrixMultiply(MatrixTranslate(position.x, m_Size / 2, position.z), transform);
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "CameraController.h"
 #include "Enemy.h"
 #include "GameConfig.h"
 #include "GameObject.h"
@@ -8,6 +9,7 @@
 #include <vector>
 
 class MrAngryCube;  // Forward declare
+class CameraController;
 
 class Game {
 public:
@@ -33,16 +35,17 @@ public:
     // Prevent copy
     Game(const Game&) = delete;
     void operator=(const Game&) = delete;
+    std::vector<GameObject*> gameObjects;
 
 private:
     Game();  // Private constructor for singleton
-    std::vector<GameObject*> m_GameObjects;
     std::vector<TimedText*> m_TimedTexts;
     bool m_Initialized = false;
     float m_LastUpdateTime = 0.0f;
     Menu* m_Menu = nullptr;
     GameConfig* m_GameConfig = nullptr;
     MrAngryCube* m_MrAngryCube = nullptr;
+    CameraController m_CamController;
     GameState m_GameState;
-    Camera3D m_Camera = { 0 };
+    // Camera3D m_Camera = { 0 };
 };

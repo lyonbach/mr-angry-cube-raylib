@@ -9,7 +9,7 @@ public:
     virtual ~Enemy() = default;
     void Render() override;
     void Update(float deltaTime) override;
-    void SetPosition(Vector2 position) override;
+    void SetPosition(Vector3 position) override;
 
 private:
     Color m_Color;
