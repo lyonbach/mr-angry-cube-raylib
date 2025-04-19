@@ -14,7 +14,7 @@ Game::Game()
 
 void Game::Init(GameConfig* configuration)
 {
-    m_GameState = GameState::MainMenu;
+    m_GameState = GameState::Playing;
     m_GameConfig = configuration;
     InitWindow(m_GameConfig->screenWidth, m_GameConfig->screenHeight, m_GameConfig->windowTitle.c_str());
     InitMenu();
@@ -32,11 +32,11 @@ void Game::Init(GameConfig* configuration)
 
 Game::~Game()
 {
-    for (auto& gameObject : m_GameObjects)
+    for (auto& gameObject : gameObjects)
     {
         delete gameObject;
     }
-    m_GameObjects.clear();
+    gameObjects.clear();
 }
 
 void Game::InitMenu()
@@ -70,28 +70,28 @@ void Game::SpawnEnemy(Vector2 coordinates)
         m_GameConfig->shaderPath.c_str(),
         m_GameConfig->modelPath.c_str()
     );
-    enemy->SetPosition({(float)randX, (float)randZ});
+    enemy->SetPosition({(float)randX, .5, (float)randZ}); // FIXME GET ENEMYSIZE
     Register(enemy);
 }
 
 void Game::Register(GameObject* gameObject)
 {
-    m_GameObjects.push_back(gameObject);
+    gameObjects.push_back(gameObject);
 }
 
 void Game::Unregister(GameObject* gameObject)
 {
-    auto it = std::remove(m_GameObjects.begin(), m_GameObjects.end(), gameObject);
-    if (it != m_GameObjects.end())
+    auto it = std::remove(gameObjects.begin(), gameObjects.end(), gameObject);
+    if (it != gameObjects.end())
     {
-        m_GameObjects.erase(it);
+        gameObjects.erase(it);
     }
 }
 
 std::vector<Enemy*> Game::GetCollidingEnemies()
 {
     std::vector<Enemy*> enemies;
-    if (m_GameObjects.empty())
+    if (gameObjects.empty())
     {
         return enemies;
     }
@@ -103,7 +103,7 @@ std::vector<Enemy*> Game::GetCollidingEnemies()
 
     Vector2 mrAngryCubePosition = { m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m14 };
 
-    for (auto& gameObject : m_GameObjects)
+    for (auto& gameObject : gameObjects)
     {
         if (Enemy* enemy = dynamic_cast<Enemy*>(gameObject))
         {
@@ -120,7 +120,7 @@ std::vector<Enemy*> Game::GetCollidingEnemies()
 std::vector<Enemy*> Game::GetEnemies()
 {
     std::vector<Enemy*> enemies;
-    if (m_GameObjects.empty())
+    if (gameObjects.empty())
     {
         return enemies;
     }
@@ -129,7 +129,7 @@ std::vector<Enemy*> Game::GetEnemies()
         return enemies;
     }
 
-    for (auto& gameObject : m_GameObjects)
+    for (auto& gameObject : gameObjects)
     {
         if (Enemy* enemy = dynamic_cast<Enemy*>(gameObject))
         {
@@ -142,10 +142,7 @@ std::vector<Enemy*> Game::GetEnemies()
 void Game::Update()
 {
     if (m_GameState != GameState::Playing) { return; }
-    // FIXME MOVE TO A FUNCTION
-    m_Camera.target = (Vector3){m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m13, m_MrAngryCube->transform.m14};
-    m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 5, m_Camera.target.z - 20.0f};
-    // FIXME
+    // m_CamController.Update(m_MrAngryCube); // Update camera.
 
     float deltaTime = GetTime() - m_LastUpdateTime;
     if (deltaTime < 1.0f / m_GameConfig->updateSpeed)
@@ -153,7 +150,7 @@ void Game::Update()
         return;
     }
 
-    for (auto& gameObject : m_GameObjects)
+    for (auto& gameObject : gameObjects)
     {
         gameObject->Update(deltaTime);
     }
@@ -245,11 +242,7 @@ void Game::Render()
         m_Menu->Render();
         break;
         case GameState::Playing:
-            BeginMode3D(m_Camera);
-            DrawGrid(200, 1.0f);
-            for (auto& gameObject : m_GameObjects) { gameObject->Render(); }
-            EndMode3D();
-            // DrawFPS(10, 10); FIXME REMOVE LATER
+            m_CamController.Render();
         break;
         case GameState::Paused:
         {
@@ -259,7 +252,7 @@ void Game::Render()
             ClearBackground(DARKGREEN);
         break;
         default:
-            TraceLog(LOG_WARNING, "Unknown game state!");
+            TraceLog(LOG_ERROR, "Unknown game state!");
         break;
     }
     RenderHud();
@@ -323,12 +316,8 @@ void Game::RenderHud()
 
 int Game::Run()
 {
-    m_Camera.position = (Vector3){ 0.0f, 10.0f, -5.0f };  // Camera position
-    m_Camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
-    m_Camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-    m_Camera.fovy = 45.0f;                                // Camera field-of-view Y
-    m_Camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
+    m_CamController.Run(m_MrAngryCube);
     while (!WindowShouldClose())  // Main loop.
     {
         // Handle key events.

@@ -11,7 +11,8 @@ public:
     ~GameObject();
     virtual void Render();
     virtual void Update(float lastUpdateTime);
-    virtual void SetPosition(Vector2 position);
+    virtual void SetPosition(Vector3 position);
+    virtual Vector3 GetPosition();
 
     Matrix transform;
 
