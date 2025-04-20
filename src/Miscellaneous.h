@@ -26,4 +26,4 @@ namespace Utilities
     Vector3 AbsVector3(Vector3& vector3);
     int SumVector3(Vector3& vector3);
     void Log(std::string message, std::string prefix="CUSTOM", TraceLogLevel logLevel=LOG_INFO);
-} // namespace Utilities
+}

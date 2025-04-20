@@ -10,9 +10,10 @@ class GuiItem
 {
 public:
     Vector2 m_Position;
-    virtual void Render() = 0;
-    virtual void Update() = 0;
-    virtual int GetWidth() = 0;
+
+    virtual void Render()   = 0;
+    virtual void Update()   = 0;
+    virtual int GetWidth()  = 0;
     virtual int GetHeight() = 0;
 };
 

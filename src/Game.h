@@ -9,14 +9,16 @@
 #include "SimpleGui.h"
 #include <vector>
 
-class MrAngryCube;  // Forward declare
+class MrAngryCube;
 class CameraController;
 
 class Game {
 public:
-    static Game& Get();  // Singleton accessor
-    ~Game();
+    GameInfo gameInfo;
+    std::vector<TimedText*> timedTexts;
 
+    static Game& Get();
+    ~Game();
     void Init(GameConfig* configuration);
     void SpawnEnemy(Vector2 coordinates);
     void Register(GameObject* gameObject);
@@ -29,17 +31,13 @@ public:
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();
     std::vector<Enemy*> GetEnemies();
-    
-    GameInfo gameInfo;
-    std::vector<TimedText*> timedTexts;
 
-    // Prevent copy
     Game(const Game&) = delete;
     void operator=(const Game&) = delete;
     std::vector<GameObject*> gameObjects;
 
 private:
-    Game();  // Private constructor for singleton
+    Game();
     std::vector<TimedText*> m_TimedTexts;
     bool m_Initialized = false;
     float m_LastUpdateTime = 0.0f;
@@ -47,6 +45,5 @@ private:
     GameConfig* m_GameConfig = nullptr;
     MrAngryCube* m_MrAngryCube = nullptr;
     CameraController m_CamController;
-    GameState m_GameState;
-    // Camera3D m_Camera = { 0 };
+    GameState m_GameState = GameState::MainMenu;
 };
