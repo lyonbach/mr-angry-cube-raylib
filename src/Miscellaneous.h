@@ -12,6 +12,12 @@ enum class GameState {
     GameOver
 };
 
+enum class RotationDirection
+{
+    CCW,
+    CW
+};
+
 struct GameInfo {
     int score = 0;
     int faceHits = 0;

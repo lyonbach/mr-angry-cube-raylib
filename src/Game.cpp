@@ -324,16 +324,16 @@ int Game::Run()
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))
         {
-            m_MrAngryCube->nextRotationAxis = { 1.0f, 0.0f, 0.0f };
+            m_MrAngryCube->nextRotationAxis = m_CamController.GetRightVector();
         } else if (IsKeyPressed(KEY_S))
         {
-            m_MrAngryCube->nextRotationAxis = { -1.0f, 0.0f, 0.0f };
+            m_MrAngryCube->nextRotationAxis = m_CamController.GetLeftVector();
         } else if (IsKeyPressed(KEY_A))
         {
-            m_MrAngryCube->nextRotationAxis = { 0.0f, 0.0f, -1.0f };
+            m_MrAngryCube->nextRotationAxis = m_CamController.GetRearVector();
         } else if (IsKeyPressed(KEY_D))
         {
-            m_MrAngryCube->nextRotationAxis = { 0.0f, 0.0f, 1.0f };
+            m_MrAngryCube->nextRotationAxis = m_CamController.GetFrontVector();
         } else if (IsKeyPressed(KEY_E))
         {
             m_MrAngryCube->nextRotationAxis = { 0.0f, -1.0f, 0.0f };
@@ -360,9 +360,11 @@ int Game::Run()
                 default:
                 break;
             }
-       } else if (IsKeyPressed(KEY_F)) {
-            ToggleFullscreen();
-       }
+        } else if (IsKeyPressed(KEY_RIGHT)) {
+            m_CamController.RotateCamera(RotationDirection::CW);
+        } else if (IsKeyPressed(KEY_LEFT)) {
+            m_CamController.RotateCamera(RotationDirection::CCW);
+        }
         //----------------------------------------------------------------------------------
         Update();
         Render();

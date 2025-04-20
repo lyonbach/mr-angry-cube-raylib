@@ -19,21 +19,10 @@ void CameraController::Update(GameObject* targetObject)
         return;
     }
 
-    // FIND THE FORCE -> SHOULD BE PROPORTIONAL TO THE SQUARE OF THE DISTANCE
-    // SHOULD CAMERA UPDATE BE COMPLETELY ON ANOTHER THREAD?
-    //
+    // FIXME FIND THE FORCE -> SHOULD BE PROPORTIONAL TO THE SQUARE OF THE DISTANCE
     m_Camera.target = (Vector3){targetObject->transform.m12, targetObject->transform.m13, targetObject->transform.m14};
-    m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 2.0f, m_Camera.target.z - 5.0f};
+    m_Camera.position = Vector3Add(m_Camera.target, chaseVector);
 
-    // Camera Effects.
-    // MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(targetObject);
-    // if (mrAngryCube != nullptr)
-    // {
-    //     if(mrAngryCube->IsFaceOnTheGround())
-    //     {
-    //         DoCameraShake(2.0f, 2.0f, mrAngryCube);
-    //     }
-    // }
 }
 
 void CameraController::Run(GameObject* targetObject)
@@ -44,15 +33,11 @@ void CameraController::Run(GameObject* targetObject)
 
         while (shouldRun && !WindowShouldClose())
         {
-            if (canUpdate)
-            {
-                Vector3 distanceVector = Vector3Subtract(targetObject->GetPosition(), m_Camera.target);  // FIXME
-                m_Camera.target = Vector3Scale(distanceVector, .1) + m_Camera.target; // FIXME 
-            }
-            m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 2.0f, m_Camera.target.z - 5.0f};
+            if (canUpdate) { Update(targetObject); }
+            // m_Camera.position = (Vector3){m_Camera.target.x, m_Camera.target.y + 2.0f, m_Camera.target.z - 5.0f};
             if (mrAngryCube)
             {
-                float shakeStrength = mrAngryCube->IsFaceOnTheGround() ? 1.0f : .2f; 
+                float shakeStrength = mrAngryCube->IsFaceOnTheGround() ? 1.0f : .2f;
                 if (mrAngryCube->IsAtQuarterRotation() && mrAngryCube->isMoving && (lastRotation.x != mrAngryCube->rotation.x || lastRotation.z != mrAngryCube->rotation.z) > .1f)
                 {
                     DoCameraShake(2.0f, shakeStrength, targetObject);
@@ -74,18 +59,47 @@ void CameraController::Render()
 
 void CameraController::DoCameraShake(float seconds, float strength, GameObject* targetObject)
 {
+    // FIXME I DONT LIKE THIS SOLUTION, IMPLEMENT APPLYING FORCE APPROACH.
     std::thread([this, seconds, strength, targetObject]() {
         canUpdate = false;
         int maxCount = 4;
         for(int i = 0; i < maxCount; i++)
         {
-            m_Camera.target = (Vector3){targetObject->transform.m12, targetObject->transform.m13, targetObject->transform.m14};
+            Update(targetObject);
             m_Camera.target.x = targetObject->transform.m12 + 0.1f * strength * (maxCount - i);
             std::this_thread::sleep_for(std::chrono::duration<float>(.04));
-            m_Camera.target = (Vector3){targetObject->transform.m12, targetObject->transform.m13, targetObject->transform.m14};
+            Update(targetObject);
             m_Camera.target.x = targetObject->transform.m12 - 0.1f * strength * (maxCount - i);
             std::this_thread::sleep_for(std::chrono::duration<float>(.04));
         }
         canUpdate = true;
     }).detach();
+}
+
+Vector3 CameraController::GetFrontVector()
+{
+    return Vector3Normalize(Vector3Multiply(m_Camera.target - m_Camera.position, Vector3({1.0f, 0.0f, 1.0f})));
+}
+
+Vector3 CameraController::GetRearVector()
+{
+    return Vector3Normalize(Vector3Multiply(Vector3({1.0f, 0.0f, 1.0f}), m_Camera.position - m_Camera.target));
+}
+
+Vector3 CameraController::GetLeftVector()
+{
+    return Vector3CrossProduct(GetFrontVector(), m_Camera.up);
+}
+
+Vector3 CameraController::GetRightVector()
+{
+    return Vector3CrossProduct(m_Camera.up, GetFrontVector());
+}
+
+void CameraController::RotateCamera(RotationDirection direction)
+{
+    float angle = direction == RotationDirection::CCW ? -90.0f : 90.0f;
+    chaseVector = Vector3RotateByAxisAngle(chaseVector, {0.0f, 1.0f, 0.0f}, DEG2RAD * angle);
+    TraceLog(LOG_INFO, "Chase Vector");
+    TraceLog(LOG_INFO, "%f, %f, %f", chaseVector.x, chaseVector.y, chaseVector.z);
 }
