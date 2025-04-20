@@ -2,14 +2,23 @@
 #include <algorithm>
 
 
-Game& Game::Get() {
-    static Game instance;
-    return instance;
-}
-
 Game::Game()
 {
     Utilities::Log("Created Game singleton class.", "GAME");
+}
+
+Game::~Game()
+{
+    for (auto& gameObject : gameObjects)
+    {
+        delete gameObject;
+    }
+    gameObjects.clear();
+}
+
+Game& Game::Get() {
+    static Game instance;
+    return instance;
 }
 
 void Game::Init(GameConfig* configuration)
@@ -28,15 +37,6 @@ void Game::Init(GameConfig* configuration)
     );
     Register(m_MrAngryCube);
     m_Initialized = true;
-}
-
-Game::~Game()
-{
-    for (auto& gameObject : gameObjects)
-    {
-        delete gameObject;
-    }
-    gameObjects.clear();
 }
 
 void Game::InitMenu()
@@ -184,6 +184,9 @@ void Game::Update()
             shouldIncreaseAnger = true;
 
             // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
+            m_MrAngryCube->rotation.x = (int)(m_MrAngryCube->rotation.x);
+            m_MrAngryCube->rotation.y = (int)(m_MrAngryCube->rotation.y);
+            m_MrAngryCube->rotation.z = (int)(m_MrAngryCube->rotation.z);
             m_MrAngryCube->WaitForNonBlocking(.2f * 3);  // FIXME MOVE TO GAME CONFIG
         } else {
             m_MrAngryCube->WaitForNonBlocking(.2f);  // FIXME MOVE TO GAME CONFIG
@@ -208,10 +211,6 @@ void Game::Update()
     // Check collisions.
     for (Enemy* enemy : GetCollidingEnemies())
     {
-        if (m_MrAngryCube->IsFaceOnTheGround())
-        {
-            break;
-        }
         Unregister(enemy);
         gameInfo.score++;
         gameInfo.anger = std::max(0, --gameInfo.anger);
@@ -320,6 +319,9 @@ int Game::Run()
     m_CamController.Run(m_MrAngryCube);
     while (!WindowShouldClose())  // Main loop.
     {
+        // Vector3 vec = m_MrAngryCube->GetPosition();
+        Vector3 vec = m_MrAngryCube->rotation;
+
         // Handle key events.
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))

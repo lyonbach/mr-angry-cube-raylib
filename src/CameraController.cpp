@@ -100,6 +100,4 @@ void CameraController::RotateCamera(RotationDirection direction)
 {
     float angle = direction == RotationDirection::CCW ? -90.0f : 90.0f;
     chaseVector = Vector3RotateByAxisAngle(chaseVector, {0.0f, 1.0f, 0.0f}, DEG2RAD * angle);
-    TraceLog(LOG_INFO, "Chase Vector");
-    TraceLog(LOG_INFO, "%f, %f, %f", chaseVector.x, chaseVector.y, chaseVector.z);
 }

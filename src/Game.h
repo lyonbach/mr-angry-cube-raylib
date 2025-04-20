@@ -2,6 +2,7 @@
 #include "CameraController.h"
 #include "Enemy.h"
 #include "GameConfig.h"
+#include "GameInfo.h"
 #include "GameObject.h"
 #include "Miscellaneous.h"
 #include "MrAngryCube.h"

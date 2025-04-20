@@ -1,17 +1,6 @@
 #include "Miscellaneous.h"
 
 
-TimedText::TimedText(const std::function<void()> drawFunction)  
-    : drawFunction(drawFunction), lastCheckTime(0.0f), duration(3.0f), text("")
-{
-    lastCheckTime = GetTime();
-};
-
-void TimedText::Draw()
-{
-    drawFunction();
-}
-
 TimedText* Utilities::GetTimedText(char const* text, Vector2 position)  // FIXME create a cpp file instead.
 {
     return (new TimedText([text, position](){
