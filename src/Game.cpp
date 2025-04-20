@@ -159,7 +159,7 @@ void Game::Update()
         bool shouldIncreaseAnger = false;
         const char* quote = "";
 
-        int rotationCountSum = Utilities::SumVector3(m_MrAngryCube->rotationCount);  // FIXME BETTER NAMES
+        int numberOfRotations = Utilities::SumVector3(gameInfo.rotationCount);
 
         if (Game::Get().gameInfo.anger >= Game::Get().gameInfo.possibleSpeeds.size() - 1)
         {
@@ -171,7 +171,7 @@ void Game::Update()
             Game::Get().gameInfo.rotationCountdown = tempGameInfo.rotationCountdown;
         }
 
-        if (rotationCountSum % 10 == 0 && rotationCountSum > 0)
+        if (numberOfRotations % 10 == 0 && numberOfRotations > 0)
         {
             quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
             shouldIncreaseAnger = true;
@@ -282,7 +282,8 @@ void Game::RenderHud()
             // Draw score. FIXME SHOULD BE IMPROVED
             int fontSize = 20;
             int percentage = (int)((float)gameInfo.anger / (gameInfo.possibleSpeeds.size() - 1) * 100);
-            int rotations = m_MrAngryCube->rotationCount.x + m_MrAngryCube->rotationCount.y + m_MrAngryCube->rotationCount.z;
+            // GameInfo* gameInfo = &Game::Get().gameInfo;
+            int rotations = gameInfo.rotationCount.x + gameInfo.rotationCount.y + gameInfo.rotationCount.z;
             textsToRender = {
                 std::string("Score: " + std::to_string(gameInfo.score)),
                 std::string("Anger: " + std::to_string(percentage) + "%"),

@@ -16,13 +16,12 @@ public:
     void Update(float deltaTime) override;
     bool IsFaceOnTheGround();
     bool IsAtQuarterRotation(bool ommitZero=true);
-    Vector3 rotation;
     Vector3 nextRotationAxis = { 0.0f, 0.0f, 0.0f };
     Vector3 rotationAxis = { 0.0f, 0.0f, 0.0f };
-    Vector3 rotationCount = { 0.0f, 0.0f, 0.0f };
-    float speed;
-    const void WaitForNonBlocking(float seconds);
+    Vector3 rotation = {0.0f, 0.0f, 0.0f};
+    float speed = 0.0f;
     bool isMoving = true;
+    const void WaitForNonBlocking(float seconds);
 
 private:
     float m_Size;

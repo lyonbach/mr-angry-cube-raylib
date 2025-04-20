@@ -12,7 +12,8 @@ Vector2 VecSin(Vector2 vec) {
 }
 
 MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const char* modelPath)
-: GameObject(texturePath, shaderPath, modelPath) {
+: GameObject(texturePath, shaderPath, modelPath)
+{
     rotation = { 0.0f, 0.0f, 0.0f };
     m_Size = 1.0f;
     m_HalfSize = m_Size / 2.0f;
@@ -51,7 +52,7 @@ void MrAngryCube::Update(float deltaTime)
 
     if(IsAtQuarterRotation())
     {
-        rotationCount += Utilities::AbsVector3(rotationAxis);
+        Game::Get().gameInfo.rotationCount += Utilities::AbsVector3(rotationAxis);
         rotationAxis = nextRotationAxis;
     }
 }
@@ -87,7 +88,7 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
     return result;
 }
 
-const void MrAngryCube::WaitForNonBlocking(float seconds)  // FIXME MOVE THIS TO GAME CLASS.
+const void MrAngryCube::WaitForNonBlocking(float seconds)
 {
     isMoving = false;
     std::thread([this, seconds]() {

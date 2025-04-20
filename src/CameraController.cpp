@@ -29,7 +29,7 @@ void CameraController::Run(GameObject* targetObject)
 {
     std::thread([this, targetObject](){
         MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(targetObject);
-        Vector3 lastRotation = mrAngryCube->rotationCount;
+        Vector3 lastRotationCount = Game::Get().gameInfo.rotationCount;
 
         while (shouldRun && !WindowShouldClose())
         {
@@ -38,12 +38,12 @@ void CameraController::Run(GameObject* targetObject)
             if (mrAngryCube)
             {
                 float shakeStrength = mrAngryCube->IsFaceOnTheGround() ? 1.0f : .2f;
-                if (mrAngryCube->IsAtQuarterRotation() && mrAngryCube->isMoving && (lastRotation.x != mrAngryCube->rotation.x || lastRotation.z != mrAngryCube->rotation.z) > .1f)
+                if (mrAngryCube->IsAtQuarterRotation() && mrAngryCube->isMoving && (lastRotationCount.x != mrAngryCube->rotation.x || lastRotationCount.z != mrAngryCube->rotation.z) > .1f)
                 {
                     DoCameraShake(2.0f, shakeStrength, targetObject);
                 }
             }
-            lastRotation = mrAngryCube->rotation;
+            lastRotationCount = mrAngryCube->rotation;
         }
 
     }).detach();
