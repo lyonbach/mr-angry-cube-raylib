@@ -27,6 +27,7 @@ public:
     void Update();
     void Render();
     void RenderHud();
+    void HandleKeyEvents();
     int Run();
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();

@@ -141,52 +141,43 @@ std::vector<Enemy*> Game::GetEnemies()
 
 void Game::Update()
 {
+    // Update only if playing.
     if (m_GameState != GameState::Playing) { return; }
 
+    // Return if not time yet for the update.
     float deltaTime = GetTime() - m_LastUpdateTime;
-    if (deltaTime < 1.0f / m_GameConfig->updateSpeed)
-    {
-        return;
-    }
+    if (deltaTime < 1.0f / m_GameConfig->updateSpeed) { return; }
 
-    for (auto& gameObject : gameObjects)
-    {
-        gameObject->Update(deltaTime);
-    }
+    for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
 
     if(m_MrAngryCube->IsAtQuarterRotation() && m_MrAngryCube->isMoving)
     {
+        if (gameInfo.anger >= gameInfo.possibleSpeeds.size() - 1)
+        {
+            gameInfo.rotationCountdown += -1;
+            TraceLog(LOG_WARNING, "Game over in: %i rotations.", gameInfo.rotationCountdown);  // FIXME SHOW TO USER BETTER.
+        } else if (gameInfo.anger < gameInfo.possibleSpeeds.size() - 1)
+        {
+            gameInfo.rotationCountdown = gameInfo.defaultGameOverCountDown;
+        }
+        if (gameInfo.rotationCountdown == 0) { m_GameState = GameState::GameOver; }
+
         bool shouldIncreaseAnger = false;
         const char* quote = "";
-
         int numberOfRotations = Utilities::SumVector3(gameInfo.rotationCount);
-
-        if (Game::Get().gameInfo.anger >= Game::Get().gameInfo.possibleSpeeds.size() - 1)
-        {
-            Game::Get().gameInfo.rotationCountdown += -1;
-            TraceLog(LOG_WARNING, "Game over in: %i rotations.", Game::Get().gameInfo.rotationCountdown);  // FIXME SHOW TO USER BETTER.
-        } else if (Game::Get().gameInfo.anger < Game::Get().gameInfo.possibleSpeeds.size() - 1)
-        {
-            GameInfo tempGameInfo;
-            Game::Get().gameInfo.rotationCountdown = tempGameInfo.rotationCountdown;
-        }
-
-        if (numberOfRotations % 10 == 0 && numberOfRotations > 0)
+        if (gameInfo.angerIncrementCountdown <= 0 && numberOfRotations > 0)
         {
             quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
             shouldIncreaseAnger = true;
+            gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
         }
 
         if (m_MrAngryCube->IsFaceOnTheGround())
         {
             quote = "My Face!\n No more Mr. Nice Cube!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
             shouldIncreaseAnger = true;
-
-            // Create a text to be displayed. FIXME THIS LOGIC WILL BE CHANGED TO SHOW SOME TEXTURE OR DECAL.
-            m_MrAngryCube->rotation.x = (int)(m_MrAngryCube->rotation.x);
-            m_MrAngryCube->rotation.y = (int)(m_MrAngryCube->rotation.y);
-            m_MrAngryCube->rotation.z = (int)(m_MrAngryCube->rotation.z);
             m_MrAngryCube->WaitForNonBlocking(.2f * 3);  // FIXME MOVE TO GAME CONFIG
+            gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
         } else {
             m_MrAngryCube->WaitForNonBlocking(.2f);  // FIXME MOVE TO GAME CONFIG
         }
@@ -195,7 +186,6 @@ void Game::Update()
         if (shouldIncreaseAnger)
         {
             gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
-            m_MrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
         }
 
         // Handle quotes.
@@ -207,19 +197,17 @@ void Game::Update()
         }
     }
 
-    // Check collisions.
     for (Enemy* enemy : GetCollidingEnemies())
     {
         Unregister(enemy);
         gameInfo.score++;
-        if (--gameInfo.anger < 0) {
-            gameInfo.anger = 0;
-        }
+        gameInfo.anger = std::max(0, --gameInfo.anger);
+        gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
     }
 
-    if (gameInfo.rotationCountdown == 0)
+    if (m_MrAngryCube->IsAtQuarterRotation())
     {
-        m_GameState = GameState::GameOver;
+        m_MrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
     }
 
     m_LastUpdateTime = GetTime();
@@ -282,7 +270,6 @@ void Game::RenderHud()
             // Draw score. FIXME SHOULD BE IMPROVED
             int fontSize = 20;
             int percentage = (int)((float)gameInfo.anger / (gameInfo.possibleSpeeds.size() - 1) * 100);
-            // GameInfo* gameInfo = &Game::Get().gameInfo;
             int rotations = gameInfo.rotationCount.x + gameInfo.rotationCount.y + gameInfo.rotationCount.z;
             textsToRender = {
                 std::string("Score: " + std::to_string(gameInfo.score)),
@@ -317,60 +304,61 @@ void Game::RenderHud()
 
 int Game::Run()
 {
-
     m_CamController.Run(m_MrAngryCube);
     while (!WindowShouldClose())  // Main loop.
     {
-        // Handle key events.
-        //----------------------------------------------------------------------------------
-        if (IsKeyPressed(KEY_W))
-        {
-            m_MrAngryCube->nextRotationAxis = m_CamController.GetRightVector();
-        } else if (IsKeyPressed(KEY_S))
-        {
-            m_MrAngryCube->nextRotationAxis = m_CamController.GetLeftVector();
-        } else if (IsKeyPressed(KEY_A))
-        {
-            m_MrAngryCube->nextRotationAxis = m_CamController.GetRearVector();
-        } else if (IsKeyPressed(KEY_D))
-        {
-            m_MrAngryCube->nextRotationAxis = m_CamController.GetFrontVector();
-        } else if (IsKeyPressed(KEY_E))
-        {
-            m_MrAngryCube->nextRotationAxis = { 0.0f, -1.0f, 0.0f };
-        } else if (IsKeyPressed(KEY_Q))
-        {
-            m_MrAngryCube->nextRotationAxis = { 0.0f, 1.0f, 0.0f };
-        } else if (IsKeyPressed(KEY_R))
-        {
-            SpawnEnemy({0, 0});
-        } else if (IsKeyPressed(KEY_ESCAPE)) {
-            switch (m_GameState)
-            {
-                case GameState::Playing:
-                    m_GameState = GameState::Paused;
-                break;
-
-                case GameState::Paused:
-                    m_GameState = GameState::Playing;
-                break;
-
-                case GameState::GameOver:
-                    m_GameState = GameState::MainMenu;
-
-                default:
-                break;
-            }
-        } else if (IsKeyPressed(KEY_RIGHT)) {
-            m_CamController.RotateCamera(RotationDirection::CW);
-        } else if (IsKeyPressed(KEY_LEFT)) {
-            m_CamController.RotateCamera(RotationDirection::CCW);
-        }
-        //----------------------------------------------------------------------------------
+        HandleKeyEvents();
         Update();
         Render();
     }
     return 0;
+}
+
+void Game::HandleKeyEvents()
+{
+    if (IsKeyPressed(KEY_W))
+    {
+        m_MrAngryCube->nextRotationAxis = m_CamController.GetRightVector();
+    } else if (IsKeyPressed(KEY_S))
+    {
+        m_MrAngryCube->nextRotationAxis = m_CamController.GetLeftVector();
+    } else if (IsKeyPressed(KEY_A))
+    {
+        m_MrAngryCube->nextRotationAxis = m_CamController.GetRearVector();
+    } else if (IsKeyPressed(KEY_D))
+    {
+        m_MrAngryCube->nextRotationAxis = m_CamController.GetFrontVector();
+    } else if (IsKeyPressed(KEY_E))
+    {
+        m_MrAngryCube->nextRotationAxis = { 0.0f, -1.0f, 0.0f };
+    } else if (IsKeyPressed(KEY_Q))
+    {
+        m_MrAngryCube->nextRotationAxis = { 0.0f, 1.0f, 0.0f };
+    } else if (IsKeyPressed(KEY_R))
+    {
+        SpawnEnemy({0, 0});
+    } else if (IsKeyPressed(KEY_ESCAPE)) {
+        switch (m_GameState)
+        {
+            case GameState::Playing:
+                m_GameState = GameState::Paused;
+            break;
+
+            case GameState::Paused:
+                m_GameState = GameState::Playing;
+            break;
+
+            case GameState::GameOver:
+                m_GameState = GameState::MainMenu;
+
+            default:
+            break;
+        }
+    } else if (IsKeyPressed(KEY_RIGHT)) {
+        m_CamController.RotateCamera(RotationDirection::CW);
+    } else if (IsKeyPressed(KEY_LEFT)) {
+        m_CamController.RotateCamera(RotationDirection::CCW);
+    }
 }
 
 void Game::Exit()

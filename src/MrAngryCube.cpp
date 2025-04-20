@@ -53,6 +53,7 @@ void MrAngryCube::Update(float deltaTime)
     if(IsAtQuarterRotation())
     {
         Game::Get().gameInfo.rotationCount += Utilities::AbsVector3(rotationAxis);
+        Game::Get().gameInfo.angerIncrementCountdown += -(bool)Utilities::SumVector3(Game::Get().gameInfo.rotationCount);
         rotationAxis = nextRotationAxis;
     }
 }
