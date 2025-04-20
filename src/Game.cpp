@@ -24,16 +24,16 @@ Game& Game::Get() {
 void Game::Init(GameConfig* configuration)
 {
     m_GameState = GameState::Playing;
-    m_GameConfig = configuration;
-    InitWindow(m_GameConfig->screenWidth, m_GameConfig->screenHeight, m_GameConfig->windowTitle.c_str());
+    gameConfig = configuration;
+    InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle.c_str());
     InitMenu();
     SetExitKey(0);  // Disable exit key.
 
     // Initialize main character.
     m_MrAngryCube = new MrAngryCube(
-        m_GameConfig->texturePath.c_str(),
-        m_GameConfig->shaderPath.c_str(),
-        m_GameConfig->modelPath.c_str()
+        gameConfig->texturePath.c_str(),
+        gameConfig->shaderPath.c_str(),
+        gameConfig->modelPath.c_str()
     );
     Register(m_MrAngryCube);
     m_Initialized = true;
@@ -44,34 +44,21 @@ void Game::InitMenu()
     m_Menu = new Menu();
     m_Menu->AddItem(
         new PushButton("     Play     ",
-            m_GameConfig->screenWidth / 2,
-            m_GameConfig->screenHeight / 3,
+            gameConfig->screenWidth / 2,
+            gameConfig->screenHeight / 3,
             [this](){ m_GameState = GameState::Playing; })
     );
     m_Menu->AddItem(
         new PushButton("     Exit     ",
-            m_GameConfig->screenWidth / 2,
-            m_GameConfig->screenHeight / 3 + 50,
+            gameConfig->screenWidth / 2,
+            gameConfig->screenHeight / 3 + 50,
             [](){ exit(0); })
     );
 }
 
-void Game::SpawnEnemy(Vector2 coordinates)
+void Game::SpawnEnemy()
 {
-    // Enemies can appear next to the Mr. Angry Cube or 20 unit distance from him.
-    // In addition, each coordinate should be divisible to 2.
-    int randX = GetRandomValue(2, 20);
-    int randZ = GetRandomValue(2, 20);
-    if (randX % 2 != 0) randX++;
-    if (randZ % 2 != 0) randZ++;
-
-    Enemy* enemy = new Enemy(
-        m_GameConfig->texturePath.c_str(),
-        m_GameConfig->shaderPath.c_str(),
-        m_GameConfig->modelPath.c_str()
-    );
-    enemy->SetPosition({(float)randX, .5, (float)randZ}); // FIXME GET ENEMYSIZE
-    Register(enemy);
+    m_GameMode.spawnBehaviour();
 }
 
 void Game::Register(GameObject* gameObject)
@@ -146,7 +133,7 @@ void Game::Update()
 
     // Return if not time yet for the update.
     float deltaTime = GetTime() - m_LastUpdateTime;
-    if (deltaTime < 1.0f / m_GameConfig->updateSpeed) { return; }
+    if (deltaTime < 1.0f / gameConfig->updateSpeed) { return; }
 
     for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
 
@@ -222,7 +209,7 @@ void Game::Render()
     }
 
     BeginDrawing();
-    ClearBackground(m_GameConfig->backgroundColor);
+    ClearBackground(gameConfig->backgroundColor);
     switch (m_GameState)
     {
         case GameState::MainMenu:
@@ -336,7 +323,7 @@ void Game::HandleKeyEvents()
         m_MrAngryCube->nextRotationAxis = { 0.0f, 1.0f, 0.0f };
     } else if (IsKeyPressed(KEY_R))
     {
-        SpawnEnemy({0, 0});
+        SpawnEnemy();
     } else if (IsKeyPressed(KEY_ESCAPE)) {
         switch (m_GameState)
         {

@@ -14,9 +14,5 @@ public:
     int updateSpeed;
     std::string windowTitle = "Mr. AngryCube (DEV)";
     Color backgroundColor;
-
     GameConfig(std::string texturePath, std::string shaderPath, std::string modelPath, int screenWidth, int screenHeight, int updateSpeed, Color backgroundColor);
-
-private:
-    static GameConfig s_GameConfig;
 };

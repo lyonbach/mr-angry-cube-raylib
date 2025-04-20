@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "GameConfig.h"
 #include "GameObject.h"
+#include "Behaviours.h"
 #include "MrAngryCube.h"
 #include "SimpleGui.h"
 #include "raylib.h"
@@ -19,9 +20,10 @@ std::string modelPath   = (fs / "../models" / "mr_angry_cube_high_res.obj").stri
 
 int main(void)
 {
+
     Game& game = Game::Get();
-    GameConfig configuration(texturePath, shaderPath, modelPath, 800, 600, 60, DARKGRAY);
-    game.Init(&configuration);
+    GameConfig gameConfig(texturePath, shaderPath, modelPath, 1920, 1200, 60, DARKGRAY);
+    game.Init(&gameConfig);
 
     int returnCode = game.Run();
     return returnCode;
