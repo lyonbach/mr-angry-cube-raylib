@@ -63,20 +63,20 @@ bool MrAngryCube::IsFaceOnTheGround()
         return false;
     }
     // Mr. Angry Cube gets more angry when he hits his face on the ground.
-    Vector3 down = { 0.0f, 1.0f, 0.0f };  // Global down vector.
-    Vector3 cubeUp = Vector3Transform(down, transform);
-    float dotProduct = Vector3DotProduct(cubeUp, down);
+    Vector3 up = { 0.0f, 1.0f, 0.0f };  // Global down vector.
+    Vector3 cubeUp = Vector3Transform(up, transform);
+    float dotProduct = Vector3DotProduct(cubeUp, up);
 
-    // If the cube's "down" vector is not aligned with the world's "down" vector, it means a face is on the ground.
+    // If the cube's "up" vector is not aligned with the world's "up" vector, it means a face is on the ground.
     return fabs(dotProduct) < 0.1f;
 }
 
 bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
 {
     bool result = (
-        (int)rotation.x % 90 == 0 && rotationAxis.x != 0.0f ||
-        (int)rotation.z % 90 == 0 && rotationAxis.z != 0.0f ||
-        (int)rotation.y % 90 == 0 && rotationAxis.y != 0.0f ||
+        ((int)rotation.x) % 90 == 0 && rotationAxis.x != 0.0f ||
+        ((int)rotation.z) % 90 == 0 && rotationAxis.z != 0.0f ||
+        ((int)rotation.y) % 90 == 0 && rotationAxis.y != 0.0f ||
         (rotationAxis.x == 0.0f &&
          rotationAxis.z == 0.0f &&
          rotationAxis.y == 0.0f));

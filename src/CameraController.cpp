@@ -78,22 +78,22 @@ void CameraController::DoCameraShake(float seconds, float strength, GameObject* 
 
 Vector3 CameraController::GetFrontVector()
 {
-    return Vector3Normalize(Vector3Multiply(m_Camera.target - m_Camera.position, Vector3({1.0f, 0.0f, 1.0f})));
+    return Vector3Normalize(Vector3Scale(Vector3Multiply(Vector3({1.0f, 0.0f, 1.0f}), chaseVector), -1.0f));
 }
 
 Vector3 CameraController::GetRearVector()
 {
-    return Vector3Normalize(Vector3Multiply(Vector3({1.0f, 0.0f, 1.0f}), m_Camera.position - m_Camera.target));
+    return Vector3Normalize(Vector3Multiply(chaseVector, Vector3({1.0f, 0.0f, 1.0f})));
 }
 
 Vector3 CameraController::GetLeftVector()
 {
-    return Vector3CrossProduct(GetFrontVector(), m_Camera.up);
+    return Vector3CrossProduct(GetFrontVector(), {0.0f, 1.0f, 0.0f});
 }
 
 Vector3 CameraController::GetRightVector()
 {
-    return Vector3CrossProduct(m_Camera.up, GetFrontVector());
+    return Vector3CrossProduct({0.0f, 1.0f, 0.0}, GetFrontVector());
 }
 
 void CameraController::RotateCamera(RotationDirection direction)

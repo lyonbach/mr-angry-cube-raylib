@@ -142,7 +142,6 @@ std::vector<Enemy*> Game::GetEnemies()
 void Game::Update()
 {
     if (m_GameState != GameState::Playing) { return; }
-    // m_CamController.Update(m_MrAngryCube); // Update camera.
 
     float deltaTime = GetTime() - m_LastUpdateTime;
     if (deltaTime < 1.0f / m_GameConfig->updateSpeed)
@@ -213,7 +212,9 @@ void Game::Update()
     {
         Unregister(enemy);
         gameInfo.score++;
-        gameInfo.anger = std::max(0, --gameInfo.anger);
+        if (--gameInfo.anger < 0) {
+            gameInfo.anger = 0;
+        }
     }
 
     if (gameInfo.rotationCountdown == 0)
@@ -319,9 +320,6 @@ int Game::Run()
     m_CamController.Run(m_MrAngryCube);
     while (!WindowShouldClose())  // Main loop.
     {
-        // Vector3 vec = m_MrAngryCube->GetPosition();
-        Vector3 vec = m_MrAngryCube->rotation;
-
         // Handle key events.
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_W))

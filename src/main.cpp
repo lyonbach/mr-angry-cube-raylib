@@ -12,7 +12,7 @@
 
 
 std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
-std::string texturePath = (fs / "../textures" / "metal.png").string();
+std::string texturePath = (fs / "../textures" / "concrete.png").string();
 std::string shaderPath  = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
 std::string modelPath   = (fs / "../models" / "mr_angry_cube_high_res.obj").string();
 
