@@ -7,6 +7,8 @@
 class GameObject
 {
 public:
+    Matrix transform;
+
     GameObject(const char* texturePath, const char* shaderPath, const char* modelPath);
     ~GameObject();
     virtual void Render();
@@ -14,7 +16,6 @@ public:
     virtual void SetPosition(Vector3 position);
     virtual Vector3 GetPosition();
 
-    Matrix transform;
 
 protected:
     Model m_Model;

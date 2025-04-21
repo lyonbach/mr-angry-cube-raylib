@@ -1,6 +1,5 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib mr_angry_cube_high_res.mtl
 o Cube
 v 0.968750 0.937500 -0.968750
 v 0.968750 -0.937500 -0.968750

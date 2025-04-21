@@ -12,7 +12,8 @@ Vector2 VecSin(Vector2 vec) {
 }
 
 MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const char* modelPath)
-: GameObject(texturePath, shaderPath, modelPath) {
+: GameObject(texturePath, shaderPath, modelPath)
+{
     rotation = { 0.0f, 0.0f, 0.0f };
     m_Size = 1.0f;
     m_HalfSize = m_Size / 2.0f;
@@ -31,6 +32,10 @@ void MrAngryCube::Update(float deltaTime)
         return;
     }
 
+    // float l = Vector3Length(Vector3({transform.m4, transform.m5, transform.m6}));
+    // TraceLog(LOG_INFO, "%f", l);
+
+    Game& game = Game::Get();
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position.
@@ -51,8 +56,21 @@ void MrAngryCube::Update(float deltaTime)
 
     if(IsAtQuarterRotation())
     {
-        rotationCount += Utilities::AbsVector3(rotationAxis);
+        rotation.x = round(rotation.x / 90.0f) * 90.0f;
+        rotation.y = round(rotation.y / 90.0f) * 90.0f;
+        rotation.z = round(rotation.z / 90.0f) * 90.0f;
+        game.gameInfo.rotationCount += Utilities::AbsVector3(rotationAxis);
+        game.gameInfo.angerIncrementCountdown += -(bool)Utilities::SumVector3(Game::Get().gameInfo.rotationCount);
         rotationAxis = nextRotationAxis;
+
+        bool shouldGetAngrier = false;
+        if (IsFaceOnTheGround())
+        {
+            WaitForNonBlocking(.6f);  // FIXME MOVE TO GAME CONFIG
+            game.gameInfo.angerIncrementCountdown = game.gameInfo.defaultAngerIncrementCountdown;
+        } else {
+            WaitForNonBlocking(.2f);  // FIXME MOVE TO GAME CONFIG
+        }
     }
 }
 
@@ -62,24 +80,27 @@ bool MrAngryCube::IsFaceOnTheGround()
     {
         return false;
     }
-    // Mr. Angry Cube gets more angry when he hits his face on the ground.
-    Vector3 down = { 0.0f, 1.0f, 0.0f };  // Global down vector.
-    Vector3 cubeUp = Vector3Transform(down, transform);
-    float dotProduct = Vector3DotProduct(cubeUp, down);
 
-    // If the cube's "down" vector is not aligned with the world's "down" vector, it means a face is on the ground.
+    // Mr. Angry Cube gets more angry when he hits his face on the ground.
+    Vector3 up = { 0.0f, 1.0f, 0.0f };  // Global down vector.
+    Vector3 cubeUp = Vector3Transform(up, transform);
+    float dotProduct = Vector3DotProduct(cubeUp, up);
+
+    // If the cube's "up" vector is not aligned with the world's "up" vector, it means a face is on the ground.
     return fabs(dotProduct) < 0.1f;
 }
 
 bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
 {
+
+    // Quantize rotations.
     bool result = (
-        (int)rotation.x % 90 == 0 && rotationAxis.x != 0.0f ||
-        (int)rotation.z % 90 == 0 && rotationAxis.z != 0.0f ||
-        (int)rotation.y % 90 == 0 && rotationAxis.y != 0.0f ||
-        (rotationAxis.x == 0.0f &&
-         rotationAxis.z == 0.0f &&
-         rotationAxis.y == 0.0f));
+        ((int)rotation.x) % 90 == 0 && rotationAxis.x != 0.0f ||
+        ((int)rotation.z) % 90 == 0 && rotationAxis.z != 0.0f ||
+        ((int)rotation.y) % 90 == 0 && rotationAxis.y != 0.0f ||
+        (rotationAxis.x == 0.0f && rotationAxis.z == 0.0f && rotationAxis.y == 0.0f)
+    );
+
     if (!ommitZero)
     {
         result = result && (rotation.x != 0 || rotation.z != 0);
@@ -87,7 +108,7 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
     return result;
 }
 
-const void MrAngryCube::WaitForNonBlocking(float seconds)  // FIXME MOVE THIS TO GAME CLASS.
+const void MrAngryCube::WaitForNonBlocking(float seconds)
 {
     isMoving = false;
     std::thread([this, seconds]() {
