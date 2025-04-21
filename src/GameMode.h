@@ -8,6 +8,7 @@ class GameMode
 {
 public:
     GameMode();
+    void SetSpawnBehaviour(SpawnBehaviourType spawnBehaviourType);
     SpawnBehaviourType spawnBehaviourType = SpawnBehaviourType::RandomSpawnBehaviour;
     f_SpawnBehaviour spawnBehaviour;
 };

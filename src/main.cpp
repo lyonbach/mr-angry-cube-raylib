@@ -20,9 +20,8 @@ std::string modelPath   = (fs / "../models" / "mr_angry_cube_high_res.obj").stri
 
 int main(void)
 {
-
     Game& game = Game::Get();
-    GameConfig gameConfig(texturePath, shaderPath, modelPath, 1920, 1200, 60, DARKGRAY);
+    GameConfig gameConfig(texturePath, shaderPath, modelPath, 1024, 768, 60, DARKGRAY);
     game.Init(&gameConfig);
 
     int returnCode = game.Run();

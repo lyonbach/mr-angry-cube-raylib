@@ -10,7 +10,7 @@ class CameraController
 public:
     bool shouldRun = true;
     bool canUpdate = true;
-    Vector3 chaseVector {0.0f, 2.0f, -5.0f}; // FIXME ADD DEFAULT VECTOR TO GAME CONFIG.
+    Vector3 chaseVector {0.0f, 5.0f, -8.0f}; // FIXME ADD DEFAULT VECTOR TO GAME CONFIG.
 
     CameraController();
     void Update(GameObject* targetObject=nullptr);

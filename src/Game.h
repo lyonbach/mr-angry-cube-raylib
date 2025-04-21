@@ -19,6 +19,9 @@ class Game {
 public:
     GameInfo gameInfo;
     std::vector<TimedText*> timedTexts;
+    std::vector<GameObject*> gameObjects;
+    GameConfig* gameConfig = nullptr;
+    MrAngryCube* mrAngryCube = nullptr;
 
     static Game& Get();
     ~Game();
@@ -35,19 +38,15 @@ public:
     void Exit();
     std::vector<Enemy*> GetCollidingEnemies();
     std::vector<Enemy*> GetEnemies();
-
+    
     Game(const Game&) = delete;
     void operator=(const Game&) = delete;
-    std::vector<GameObject*> gameObjects;
-    GameConfig* gameConfig = nullptr;
 
 private:
     Game();
     std::vector<TimedText*> m_TimedTexts;
     bool m_Initialized = false;
-    float m_LastUpdateTime = 0.0f;
     Menu* m_Menu = nullptr;
-    MrAngryCube* m_MrAngryCube = nullptr;
     CameraController m_CamController;
     GameState m_GameState = GameState::MainMenu;
     GameMode m_GameMode;

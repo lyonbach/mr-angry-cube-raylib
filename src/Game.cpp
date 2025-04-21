@@ -30,12 +30,12 @@ void Game::Init(GameConfig* configuration)
     SetExitKey(0);  // Disable exit key.
 
     // Initialize main character.
-    m_MrAngryCube = new MrAngryCube(
+    mrAngryCube = new MrAngryCube(
         gameConfig->texturePath.c_str(),
         gameConfig->shaderPath.c_str(),
         gameConfig->modelPath.c_str()
     );
-    Register(m_MrAngryCube);
+    Register(mrAngryCube);
     m_Initialized = true;
 }
 
@@ -83,12 +83,12 @@ std::vector<Enemy*> Game::GetCollidingEnemies()
         return enemies;
     }
 
-    if (!m_MrAngryCube)
+    if (!mrAngryCube)
     {
         return enemies;
     }
 
-    Vector2 mrAngryCubePosition = { m_MrAngryCube->transform.m12, m_MrAngryCube->transform.m14 };
+    Vector2 mrAngryCubePosition = { mrAngryCube->transform.m12, mrAngryCube->transform.m14 };
 
     for (auto& gameObject : gameObjects)
     {
@@ -111,7 +111,7 @@ std::vector<Enemy*> Game::GetEnemies()
     {
         return enemies;
     }
-    if (!m_MrAngryCube)
+    if (!mrAngryCube)
     {
         return enemies;
     }
@@ -131,73 +131,54 @@ void Game::Update()
     // Update only if playing.
     if (m_GameState != GameState::Playing) { return; }
 
-    // Return if not time yet for the update.
-    float deltaTime = GetTime() - m_LastUpdateTime;
+    float deltaTime = GetTime() - gameInfo.lastUpdateTime;
     if (deltaTime < 1.0f / gameConfig->updateSpeed) { return; }
-
     for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
 
-    if(m_MrAngryCube->IsAtQuarterRotation() && m_MrAngryCube->isMoving)
+    if (mrAngryCube->IsAtQuarterRotation())
     {
-        if (gameInfo.anger >= gameInfo.possibleSpeeds.size() - 1)
-        {
-            gameInfo.rotationCountdown += -1;
-            TraceLog(LOG_WARNING, "Game over in: %i rotations.", gameInfo.rotationCountdown);  // FIXME SHOW TO USER BETTER.
-        } else if (gameInfo.anger < gameInfo.possibleSpeeds.size() - 1)
-        {
-            gameInfo.rotationCountdown = gameInfo.defaultGameOverCountDown;
-        }
-        if (gameInfo.rotationCountdown == 0) { m_GameState = GameState::GameOver; }
-
-        bool shouldIncreaseAnger = false;
         const char* quote = "";
-        int numberOfRotations = Utilities::SumVector3(gameInfo.rotationCount);
-        if (gameInfo.angerIncrementCountdown <= 0 && numberOfRotations > 0)
+        bool shouldGetAngrier = false;
+        int totalRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
+        if (gameInfo.angerIncrementCountdown <= 0 && totalRotationCount > 0)
         {
-            quote = "Dizzy and angry!!!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
-            shouldIncreaseAnger = true;
+            // If countdown is zero and we have any rotation around any axis.
+            quote = "Dizzy! Getting angry!";
+            shouldGetAngrier = true;
+
+            // We also set the countdown to its default value.
             gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
         }
 
-        if (m_MrAngryCube->IsFaceOnTheGround())
+        if (mrAngryCube->IsFaceOnTheGround())
         {
-            quote = "My Face!\n No more Mr. Nice Cube!";  // FIXME GET RANDOM QUOTE FROM A BUNCH OF QUOTES.
-            shouldIncreaseAnger = true;
-            m_MrAngryCube->WaitForNonBlocking(.2f * 3);  // FIXME MOVE TO GAME CONFIG
+            quote = "My Face!";
+            shouldGetAngrier = true;
+        }
+
+        // FIXME Handle quote display -> TEMPORARY.
+        if (shouldGetAngrier && !mrAngryCube->isMoving)
+        {
+            if (Utilities::SumVector3(gameInfo.rotationCount) != gameInfo.lastRotationCount)
+            {
+                timedTexts.push_back(Utilities::GetTimedText(quote));
+                gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
+                gameInfo.lastRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
+            }
+        }
+
+        for (Enemy* enemy : GetCollidingEnemies())
+        {
+            Unregister(enemy);
+            gameInfo.score++;
+            gameInfo.anger = std::max(0, --gameInfo.anger);
             gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
-        } else {
-            m_MrAngryCube->WaitForNonBlocking(.2f);  // FIXME MOVE TO GAME CONFIG
         }
 
-        // Handle anger.
-        if (shouldIncreaseAnger)
-        {
-            gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
-        }
-
-        // Handle quotes.
-        if (quote != "")
-        {
-            TimedText* timedText = Utilities::GetTimedText(quote);
-            timedText->lastCheckTime = GetTime();
-            timedTexts.push_back(timedText);
-        }
+        mrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
     }
 
-    for (Enemy* enemy : GetCollidingEnemies())
-    {
-        Unregister(enemy);
-        gameInfo.score++;
-        gameInfo.anger = std::max(0, --gameInfo.anger);
-        gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
-    }
-
-    if (m_MrAngryCube->IsAtQuarterRotation())
-    {
-        m_MrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
-    }
-
-    m_LastUpdateTime = GetTime();
+    gameInfo.lastUpdateTime = GetTime();
 }
 
 void Game::Render()
@@ -224,7 +205,7 @@ void Game::Render()
             // Do nothing.
         }
         case GameState::GameOver:
-            ClearBackground(DARKGREEN);
+            ClearBackground(gameConfig->backgroundColor);
         break;
         default:
             TraceLog(LOG_ERROR, "Unknown game state!");
@@ -291,7 +272,7 @@ void Game::RenderHud()
 
 int Game::Run()
 {
-    m_CamController.Run(m_MrAngryCube);
+    m_CamController.Run(mrAngryCube);
     while (!WindowShouldClose())  // Main loop.
     {
         HandleKeyEvents();
@@ -305,22 +286,22 @@ void Game::HandleKeyEvents()
 {
     if (IsKeyPressed(KEY_W))
     {
-        m_MrAngryCube->nextRotationAxis = m_CamController.GetRightVector();
+        mrAngryCube->nextRotationAxis = m_CamController.GetRightVector();
     } else if (IsKeyPressed(KEY_S))
     {
-        m_MrAngryCube->nextRotationAxis = m_CamController.GetLeftVector();
+        mrAngryCube->nextRotationAxis = m_CamController.GetLeftVector();
     } else if (IsKeyPressed(KEY_A))
     {
-        m_MrAngryCube->nextRotationAxis = m_CamController.GetRearVector();
+        mrAngryCube->nextRotationAxis = m_CamController.GetRearVector();
     } else if (IsKeyPressed(KEY_D))
     {
-        m_MrAngryCube->nextRotationAxis = m_CamController.GetFrontVector();
+        mrAngryCube->nextRotationAxis = m_CamController.GetFrontVector();
     } else if (IsKeyPressed(KEY_E))
     {
-        m_MrAngryCube->nextRotationAxis = { 0.0f, -1.0f, 0.0f };
+        mrAngryCube->nextRotationAxis = { 0.0f, -1.0f, 0.0f };
     } else if (IsKeyPressed(KEY_Q))
     {
-        m_MrAngryCube->nextRotationAxis = { 0.0f, 1.0f, 0.0f };
+        mrAngryCube->nextRotationAxis = { 0.0f, 1.0f, 0.0f };
     } else if (IsKeyPressed(KEY_R))
     {
         SpawnEnemy();
@@ -344,6 +325,9 @@ void Game::HandleKeyEvents()
     } else if (IsKeyPressed(KEY_RIGHT)) {
         m_CamController.RotateCamera(RotationDirection::CW);
     } else if (IsKeyPressed(KEY_LEFT)) {
+        m_CamController.RotateCamera(RotationDirection::CCW);
+    } else if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_UP)) {
+        m_CamController.RotateCamera(RotationDirection::CCW);
         m_CamController.RotateCamera(RotationDirection::CCW);
     }
 }

@@ -1,7 +1,7 @@
 #include "GameMode.h"
 
 
-GameMode::GameMode()
+void GameMode::SetSpawnBehaviour(SpawnBehaviourType spawnBehaviourType)
 {
     switch (spawnBehaviourType)
     {
@@ -13,11 +13,16 @@ GameMode::GameMode()
             SpawnBehaviours::RandomSpawnBehaviour();
         };
         break;
-    case SpawnBehaviourType::DevtestSpawnBehaviour:
+        case SpawnBehaviourType::DevTestSpawnBehaviour:
         spawnBehaviour = [this]() {
-
-            };
+            SpawnBehaviours::DevTestSpawnBehaviour();
+        };
     default:
         break;
     }
+}
+
+GameMode::GameMode()
+{
+    SetSpawnBehaviour(SpawnBehaviourType::DevTestSpawnBehaviour);
 }

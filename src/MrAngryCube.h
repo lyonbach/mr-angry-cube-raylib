@@ -25,8 +25,7 @@ public:
     const void WaitForNonBlocking(float seconds);
 
 private:
-    float m_Size;
-    float m_HalfSize;
-    float m_Hypotenuse;
-    float m_LastPauseCheckTime = 0.0f;
+    float m_Size = 0.0f;
+    float m_HalfSize = 0.0f;
+    float m_Hypotenuse = 0.0f;
 };
