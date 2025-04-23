@@ -24,3 +24,18 @@ target_link_directories(${PROJECT_NAME} PUBLIC ${RAYLIB_LIB_DIR})
 target_link_libraries(${PROJECT_NAME} raylib)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-narrowing)
+
+# Copy models, shaders, textures
+set(FOLDERS "models" "shaders" "textures")
+foreach(FOLDER ${FOLDERS})
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${FOLDER}")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/${FOLDER}"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets/${FOLDER}"
+        )
+    else()
+        message(WARNING "Directory ${CMAKE_CURRENT_SOURCE_DIR}/${FOLDER} does not exist. Skipping copy.")
+    endif()
+endforeach()
+

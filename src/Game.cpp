@@ -23,7 +23,7 @@ Game& Game::Get() {
 
 void Game::Init(GameConfig* configuration)
 {
-    m_GameState = GameState::Playing;
+    m_GameState = GameState::MainMenu;
     gameConfig = configuration;
     InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle.c_str());
     InitMenu();
@@ -126,13 +126,10 @@ std::vector<Enemy*> Game::GetEnemies()
     return enemies;
 }
 
-void Game::Update()
+void Game::Update(float deltaTime)
 {
     // Update only if playing.
     if (m_GameState != GameState::Playing) { return; }
-
-    float deltaTime = GetTime() - gameInfo.lastUpdateTime;
-    if (deltaTime < 1.0f / gameConfig->updateSpeed) { return; }
     for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
 
     if (mrAngryCube->IsAtQuarterRotation())
@@ -177,8 +174,6 @@ void Game::Update()
 
         mrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
     }
-
-    gameInfo.lastUpdateTime = GetTime();
 }
 
 void Game::Render()
@@ -266,17 +261,22 @@ void Game::RenderHud()
             DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
         }
         break;
-
     }
 }
 
 int Game::Run()
 {
-    m_CamController.Run(mrAngryCube);
     while (!WindowShouldClose())  // Main loop.
     {
         HandleKeyEvents();
-        Update();
+
+        float deltaTime = GetTime() - gameInfo.lastUpdateTime;
+        if (deltaTime < 1.0f / gameConfig->updateSpeed) { continue; }
+
+        m_CamController.Update(deltaTime, mrAngryCube);
+        Update(deltaTime);
+        gameInfo.lastUpdateTime = GetTime();
+
         Render();
     }
     return 0;

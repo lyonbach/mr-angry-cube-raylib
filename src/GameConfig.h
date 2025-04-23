@@ -12,7 +12,16 @@ public:
     int screenWidth;
     int screenHeight;
     int updateSpeed;
-    std::string windowTitle = "Mr. AngryCube (DEV)";
+    std::string windowTitle;
     Color backgroundColor;
-    GameConfig(std::string texturePath, std::string shaderPath, std::string modelPath, int screenWidth, int screenHeight, int updateSpeed, Color backgroundColor);
+    GameConfig(
+        std::string texturePath,
+        std::string shaderPath,
+        std::string modelPath,
+        int screenWidth,
+        int screenHeight,
+        int updateSpeed,
+        Color backgroundColor,
+        std::string windowTitle="Mr. AngryCube (DEV)"
+    );
 };

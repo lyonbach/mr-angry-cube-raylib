@@ -30,7 +30,7 @@ public:
     void Register(GameObject* gameObject);
     void Unregister(GameObject* gameObject);
     void InitMenu();
-    void Update();
+    void Update(float deltaTime);
     void Render();
     void RenderHud();
     void HandleKeyEvents();

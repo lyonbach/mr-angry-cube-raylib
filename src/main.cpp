@@ -9,19 +9,32 @@
 #include "raymath.h"
 #include <filesystem>
 #include <vector>
-#define GLSL_VERSION 330
+
+// TODO
+// #ifdef PLATFORM_WEB
+//     #define GLSL_VERSION 330
+// #else
+//     #define GLSL_VERSION 110
+// #endif
 
 
 std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
-std::string texturePath = (fs / "../textures" / "concrete.png").string();
-std::string shaderPath  = (fs / "../vendor/raylib/examples/shaders/resources/shaders/glsl330" / "blur.fs").string();
-std::string modelPath   = (fs / "../models" / "mr_angry_cube_high_res.obj").string();
-
+std::string texturePath = "./assets/textures/texel_checker.png";
+std::string shaderPath  = "./assets/shaders/base.fs";
+std::string modelPath   = "./assets/models/mr_angry_cube_high_res.obj";
 
 int main(void)
 {
+    const char* wd = GetWorkingDirectory();
+
+    int updateRate = 60;
+    #ifdef PLATFORM_WEB
+        updateRate = 90;
+        TraceLog(LOG_INFO, "Setting everything for webplatform...");
+    #endif
+
     Game& game = Game::Get();
-    GameConfig gameConfig(texturePath, shaderPath, modelPath, 1024, 768, 60, DARKGRAY);
+    GameConfig gameConfig(texturePath, shaderPath, modelPath, 1024, 768, updateRate, DARKGRAY);
     game.Init(&gameConfig);
 
     int returnCode = game.Run();
