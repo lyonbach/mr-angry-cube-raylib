@@ -128,10 +128,7 @@ std::vector<Enemy*> Game::GetEnemies()
 
 void Game::Update(float deltaTime)
 {
-    // Update only if playing.
-    if (m_GameState != GameState::Playing) { return; }
     for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
-
     if (mrAngryCube->IsAtQuarterRotation())
     {
         const char* quote = "";
@@ -153,8 +150,8 @@ void Game::Update(float deltaTime)
             shouldGetAngrier = true;
         }
 
-        // FIXME Handle quote display -> TEMPORARY.
-        if (shouldGetAngrier && !mrAngryCube->isMoving)
+        Vector3 velocity = mrAngryCube->GetVelocity(deltaTime);
+        if (shouldGetAngrier && Utilities::SumVector3(velocity) == 0)
         {
             if (Utilities::SumVector3(gameInfo.rotationCount) != gameInfo.lastRotationCount)
             {
@@ -171,7 +168,6 @@ void Game::Update(float deltaTime)
             gameInfo.anger = std::max(0, --gameInfo.anger);
             gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
         }
-
         mrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
     }
 }
@@ -197,7 +193,8 @@ void Game::Render()
         break;
         case GameState::Paused:
         {
-            // Do nothing.
+            m_Menu->Update();
+            m_Menu->Render();
         }
         case GameState::GameOver:
             ClearBackground(gameConfig->backgroundColor);
@@ -217,7 +214,6 @@ void Game::RenderHud()
     {
         case GameState::Playing:
         {
-            // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
             for(auto it=timedTexts.begin(); it!=timedTexts.end();)
             {
                 auto timedText = *it;
@@ -262,22 +258,27 @@ void Game::RenderHud()
         }
         break;
     }
+    DrawFPS(GetScreenWidth() - 200, 50);
 }
 
 int Game::Run()
 {
+    float deltaTime;
     while (!WindowShouldClose())  // Main loop.
     {
         HandleKeyEvents();
-
-        float deltaTime = GetTime() - gameInfo.lastUpdateTime;
-        if (deltaTime < 1.0f / gameConfig->updateSpeed) { continue; }
-
-        m_CamController.Update(deltaTime, mrAngryCube);
-        Update(deltaTime);
-        gameInfo.lastUpdateTime = GetTime();
+        deltaTime = GetTime() - gameInfo.lastUpdateTime;
+        switch (m_GameState)
+        {
+        case GameState::Playing:
+            if (deltaTime < 1.0f / gameConfig->updateSpeed) { continue; }
+            m_CamController.Update(deltaTime, mrAngryCube);
+            Update(deltaTime);
+            break;
+        }
 
         Render();
+        gameInfo.lastUpdateTime = GetTime();
     }
     return 0;
 }

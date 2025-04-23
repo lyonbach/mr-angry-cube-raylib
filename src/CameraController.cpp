@@ -17,14 +17,17 @@ void CameraController::Update(float deltaTime, GameObject* targetObject)
     {
         return;
     }
-    
     Game& game = Game::Get();
+
     if (game.mrAngryCube->IsAtQuarterRotation() && (int)game.mrAngryCube->rotationAxis.y == 0)
     {
-        game.gameInfo.cameraShakeStrenght = 0.1f;
-        game.gameInfo.cameraShakeStrengthLastSet = GetTime();
+        if (GetTime() - game.gameInfo.cameraShakeStrengthLastSet >= .2f)
+        {
+            game.gameInfo.cameraShakeStrenght = 0.05f;
+            game.gameInfo.cameraShakeStrengthLastSet = GetTime();
+        }
     } else {
-        if (GetTime() - game.gameInfo.cameraShakeStrengthLastSet > 0.15)
+        if (GetTime() - game.gameInfo.cameraShakeStrengthLastSet < .2f)
         {
             game.gameInfo.cameraShakeStrenght = 0.0f;
         }
@@ -40,7 +43,7 @@ void CameraController::Update(float deltaTime, GameObject* targetObject)
     scaledNextRotationAxis.y = 0.0f;
 
     Vector3 distance = Vector3Add(target, scaledNextRotationAxis) - m_Camera.target;
-    Vector3 update = Vector3Scale(distance, deltaTime);
+    Vector3 update = Vector3Scale(distance, deltaTime/2);
     m_Camera.target = Vector3Add(m_Camera.target, update);
 
     m_Camera.target.x += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;
@@ -56,26 +59,6 @@ void CameraController::Render()
     for (auto& gameObject : Game::Get().gameObjects) { gameObject->Render(); }
     EndMode3D();
 }
-
-// void CameraController::DoCameraShake(float duration, float strength, GameObject* targetObject)
-// {
-//     // FIXME I DONT LIKE THIS SOLUTION, IMPLEMENT APPLYING FORCE APPROACH.
-//     std::thread([this, duration, strength, targetObject]() {
-//         canUpdate = false;
-//         int maxCount = 4;
-//         float pause = duration / (maxCount * 2.0f);
-//         for(int i = 0; i < maxCount; i++)
-//         {
-//             Update(targetObject);
-//             m_Camera.target.x = targetObject->transform.m12 + 0.1f * strength * (maxCount - i);
-//             std::this_thread::sleep_for(std::chrono::duration<float>(pause));
-//             Update(targetObject);
-//             m_Camera.target.x = targetObject->transform.m12 - 0.1f * strength * (maxCount - i);
-//             std::this_thread::sleep_for(std::chrono::duration<float>(pause));
-//         }
-//         canUpdate = true;
-//     }).detach();
-// }
 
 Vector3 CameraController::GetFrontVector()
 {

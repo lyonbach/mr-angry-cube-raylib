@@ -39,3 +39,10 @@ Vector3 GameObject::GetPosition()
 {
     return Vector3{transform.m12, transform.m13, transform.m14};
 }
+
+Vector3 GameObject::GetVelocity(float deltaTime)
+{
+    Vector3 velocity = Vector3Scale(Vector3Subtract(GetPosition(), m_LastPosition), 1.0f / deltaTime);
+    m_LastPosition = GetPosition();
+    return velocity;
+}

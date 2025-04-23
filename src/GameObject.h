@@ -15,6 +15,7 @@ public:
     virtual void Update(float lastUpdateTime);
     virtual void SetPosition(Vector3 position);
     virtual Vector3 GetPosition();
+    virtual Vector3 GetVelocity(float deltaTime);
 
 
 protected:
@@ -22,4 +23,5 @@ protected:
     Texture m_Texture;
     Shader m_Shader;
     Material m_Material;
+    Vector3 m_LastPosition;
 };
