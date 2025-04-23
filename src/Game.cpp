@@ -128,38 +128,40 @@ std::vector<Enemy*> Game::GetEnemies()
 
 void Game::Update(float deltaTime)
 {
-    for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
-    if (mrAngryCube->IsAtQuarterRotation())
+    if (m_GameState == GameState::Playing)
     {
-        const char* quote = "";
-        bool shouldGetAngrier = false;
-        int totalRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
-        if (gameInfo.angerIncrementCountdown <= 0 && totalRotationCount > 0)
-        {
-            // If countdown is zero and we have any rotation around any axis.
-            quote = "Dizzy! Getting angry!";
-            shouldGetAngrier = true;
+        for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
 
-            // We also set the countdown to its default value.
-            gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
-        }
+        // {
+        //     const char* quote = "";
+        //     bool shouldGetAngrier = false;
+        //     int totalRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
+        //     if (gameInfo.angerIncrementCountdown <= 0 && totalRotationCount > 0)
+        //     {
+        //         // If countdown is zero and we have any rotation around any axis.
+        //         quote = "Dizzy! Getting angry!";
+        //         shouldGetAngrier = true;
 
-        if (mrAngryCube->IsFaceOnTheGround())
-        {
-            quote = "My Face!";
-            shouldGetAngrier = true;
-        }
+        //         // We also set the countdown to its default value.
+        //         gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
+        //     }
 
-        Vector3 velocity = mrAngryCube->GetVelocity(deltaTime);
-        if (shouldGetAngrier && Utilities::SumVector3(velocity) == 0)
-        {
-            if (Utilities::SumVector3(gameInfo.rotationCount) != gameInfo.lastRotationCount)
-            {
-                timedTexts.push_back(Utilities::GetTimedText(quote));
-                gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
-                gameInfo.lastRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
-            }
-        }
+        //     if (mrAngryCube->IsFaceOnTheGround())
+        //     {
+        //         quote = "My Face!";
+        //         shouldGetAngrier = true;
+        //     }
+
+        //     Vector3 velocity = mrAngryCube->GetVelocity(deltaTime);
+        //     if (shouldGetAngrier && Utilities::SumVector3(velocity) == 0)
+        //     {
+        //         if (Utilities::SumVector3(gameInfo.rotationCount) != gameInfo.lastRotationCount)
+        //         {
+        //             timedTexts.push_back(Utilities::GetTimedText(quote));
+        //             gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
+        //             gameInfo.lastRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
+        //         }
+        //     }
 
         for (Enemy* enemy : GetCollidingEnemies())
         {
@@ -168,7 +170,6 @@ void Game::Update(float deltaTime)
             gameInfo.anger = std::max(0, --gameInfo.anger);
             gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
         }
-        mrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
     }
 }
 
@@ -264,19 +265,14 @@ void Game::RenderHud()
 int Game::Run()
 {
     float deltaTime;
-    while (!WindowShouldClose())  // Main loop.
+    while (!WindowShouldClose())
     {
         HandleKeyEvents();
-        deltaTime = GetTime() - gameInfo.lastUpdateTime;
-        switch (m_GameState)
-        {
-        case GameState::Playing:
-            if (deltaTime < 1.0f / gameConfig->updateSpeed) { continue; }
-            m_CamController.Update(deltaTime, mrAngryCube);
-            Update(deltaTime);
-            break;
-        }
 
+        deltaTime = GetTime() - gameInfo.lastUpdateTime;
+        if (deltaTime < 1.0f / gameConfig->updateSpeed) { continue; }
+        m_CamController.Update(deltaTime, mrAngryCube);
+        Update(deltaTime);
         Render();
         gameInfo.lastUpdateTime = GetTime();
     }

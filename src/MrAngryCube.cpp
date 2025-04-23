@@ -27,26 +27,59 @@ void MrAngryCube::Render()
 
 void MrAngryCube::Update(float deltaTime)
 {
+    bool shouldGetAngry = false;
+
     Game& game = Game::Get();
     if(IsAtQuarterRotation())
     {
-        if (IsFaceOnTheGround())
+        if (IsFaceOnTheGround())  // Handle when we hit the face.
         {
             WaitFor(1.0f);  // FIXME MOVE TO GAME CONFIG
             game.gameInfo.angerIncrementCountdown = game.gameInfo.defaultAngerIncrementCountdown;
+            game.gameInfo.faceHits++;
+            shouldGetAngry = true;
+            game.timedTexts.push_back(Utilities::GetTimedText("PLACEHOLDER QUOTE FOR FACE HIT!"));
         } else {
             WaitFor(.3f);  // FIXME MOVE TO GAME CONFIG
         }
 
         if(!canMove) { return; }
+
+        Vector3 velocity = GetVelocity(deltaTime);
+        if (Utilities::SumVector3(velocity) == 0 && Utilities::SumVector3(nextRotationAxis) == 0) { return; }
+
+        // Quantize the rotations so that we won't
+        // accidently keep insignificant amounts of rotation.
         rotation.x = round(rotation.x / 90.0f) * 90.0f;
         rotation.y = round(rotation.y / 90.0f) * 90.0f;
         rotation.z = round(rotation.z / 90.0f) * 90.0f;
+
+        // Update rotation count in the game information and decrement anger increment countdown.
+        int totalRotationCount = Utilities::SumVector3(game.gameInfo.rotationCount);
+        game.gameInfo.angerIncrementCountdown--;
         game.gameInfo.rotationCount += Utilities::AbsVector3(rotationAxis);
-        game.gameInfo.angerIncrementCountdown += -(bool)Utilities::SumVector3(Game::Get().gameInfo.rotationCount);
-        rotationAxis = nextRotationAxis;
+
+        TraceLog(LOG_INFO, "%i", game.gameInfo.anger);
+        if (game.gameInfo.angerIncrementCountdown <= 0 && totalRotationCount > 0)
+        {
+            shouldGetAngry = true;            
+            game.gameInfo.angerIncrementCountdown = game.gameInfo.defaultAngerIncrementCountdown;
+
+            game.timedTexts.push_back(Utilities::GetTimedText("PLACEHOLDER QUOTE FOR\nGET ANGRY VIA DIZZYNESS!"));
+        }
+
+        if (shouldGetAngry)
+        {
+            game.gameInfo.anger = std::min((int)game.gameInfo.possibleSpeeds.size() - 1, ++game.gameInfo.anger);
+        }
+
+        // Update all.
+        rotationAxis = nextRotationAxis;  // Update rotaion axis.
+        game.gameInfo.lastRotationCount = totalRotationCount;  // Update last rotation count.
+        speed = game.gameInfo.possibleSpeeds.at(game.gameInfo.anger);
     }
-    
+
+
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position.

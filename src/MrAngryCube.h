@@ -22,6 +22,7 @@ public:
     void Update(float deltaTime) override;
 
     bool IsFaceOnTheGround();
+    bool IsAngry();
     bool IsAtQuarterRotation(bool ommitZero=true);
     void WaitFor(float seconds);
 
