@@ -7,7 +7,6 @@
 #include "SimpleGui.h"
 #include "raylib.h"
 #include "raymath.h"
-#include <filesystem>
 #include <vector>
 
 // TODO
@@ -18,7 +17,6 @@
 // #endif
 
 
-std::filesystem::path fs = std::filesystem::path(__FILE__).parent_path();
 std::string texturePath = "./assets/textures/texel_checker.png";
 std::string shaderPath  = "./assets/shaders/base.fs";
 std::string modelPath   = "./assets/models/mr_angry_cube_high_res.obj";
