@@ -22,7 +22,8 @@ enum class Reason
 {
     FaceHit,
     Dizzyness,
-    Smash
+    Smash,
+    AlmostGameOver
 };
 
 

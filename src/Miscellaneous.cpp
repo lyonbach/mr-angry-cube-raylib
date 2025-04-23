@@ -24,6 +24,8 @@ TimedText* Utilities::GetTimedText(char const* text, Reason reason)
         color = ORANGE;
     } else if (reason == Reason::FaceHit) {
         color = PURPLE;
+    } else if (reason == Reason::AlmostGameOver) {
+        color = DARKPURPLE;
     }
 
     int fontSize = 30;
@@ -132,6 +134,28 @@ const char* Utilities::GetQuote(Reason reason)
         "Wanna get smashed? Line up!",
     };
 
+    std::vector<const char*> onAlmostGameOverQuotes = {
+        "TOO... MUCH... RAAAAAGE!",
+        "I CAN'T BE CUBED ANY LONGER!!!",
+        "I'M A DANGER TO EVERYTHING!",
+        "THE FLOOR. THE SKY. THE AIR. IT'S ALL WRONG!",
+        "DON'T TOUCH ME OR I'LL SHATTER THE UNIVERSE!",
+        "I HAVE NO CHILL LEFT!",
+        "ONE MORE HIT AND I'M A SQUARE GONE SUPERNOVA!",
+        "THE NEXT THING I SEE... GETS DESTROYED.",
+        "I'M ROLLING ON RAGE FUMES!!",
+        "EVEN I'M SCARED OF ME RIGHT NOW.",
+        "THE WORLD'S NOT READY FOR CUBE-AGEDDON!",
+        "EVERY ANGLE IS THE WRONG ANGLE!",
+        "MY FACE HURTS. MY SOUL HURTS. YOU'RE NEXT.",
+        "IF I STOP ROLLING, I EXPLODE.",
+        "I'M A GEOMETRIC NIGHTMARE!",
+        "MY BLOOD TYPE IS PURE HATRED!",
+        "CUBES WEREN'T MEANT TO FEEL THIS MUCH!",
+        "WHY AM I SHOUTING?! OH YEAH—WRATH MODE!!",
+        "EVEN MY INNER MONOLOGUE IS SCREAMING!",
+        "GOODBYE SANITY. HELLO ANNIHILATION."
+    };
 
     if (reason == Reason::FaceHit)
     {
@@ -145,6 +169,9 @@ const char* Utilities::GetQuote(Reason reason)
     {
         int choice = GetRandomValue(0, onSmashQuotes.size() - 1);
         return onSmashQuotes.at(choice);
+    } else if (reason == Reason::AlmostGameOver) {
+        int choice = GetRandomValue(0, onAlmostGameOverQuotes.size() - 1);
+        return onAlmostGameOverQuotes.at(choice);
     }
     return "";
 }

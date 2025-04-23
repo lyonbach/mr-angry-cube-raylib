@@ -25,7 +25,7 @@ int main(void)
 {
     const char* wd = GetWorkingDirectory();
 
-    int updateRate = 60;
+    int updateRate = 90;
     #ifdef PLATFORM_WEB
         updateRate = 90;
         TraceLog(LOG_INFO, "Setting everything for webplatform...");

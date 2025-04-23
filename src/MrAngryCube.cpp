@@ -76,9 +76,19 @@ void MrAngryCube::Update(float deltaTime)
             }
         }
 
+        if (game.gameInfo.anger == game.gameInfo.maxAnger)
+        {
+            game.gameInfo.gameOverCountdown--;
+            if (game.timedTexts.size() <= 0)
+            {
+                possibleQuote = Utilities::GetQuote(Reason::AlmostGameOver);
+                game.timedTexts.push_back(Utilities::GetTimedText(possibleQuote, Reason::AlmostGameOver));
+            }
+        }
+
         if (shouldGetAngry)
         {
-            game.gameInfo.anger = std::min((int)game.gameInfo.possibleSpeeds.size() - 1, ++game.gameInfo.anger);
+            game.gameInfo.anger = std::min(game.gameInfo.maxAnger, ++game.gameInfo.anger);
         }
 
         // Update all.

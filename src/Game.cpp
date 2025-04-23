@@ -141,10 +141,19 @@ void Game::Update(float deltaTime)
             gameInfo.score++;
             gameInfo.anger = std::max(0, --gameInfo.anger);
             gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
+            gameInfo.gameOverCountdown = gameInfo.defaultGameOverCountDown;
+
             timedTexts.clear();
             const char* quote = Utilities::GetQuote(Reason::Smash);
             timedTexts.push_back(Utilities::GetTimedText(quote, Reason::Smash));
         }
+
+        if (gameInfo.gameOverCountdown <= 0)
+        {
+            m_GameState = GameState::GameOver;
+        }
+
+
     }
 }
 
