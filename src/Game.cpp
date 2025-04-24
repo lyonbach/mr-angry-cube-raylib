@@ -130,11 +130,11 @@ void Game::Update(float deltaTime)
 {
     if (m_GameState == GameState::Playing)
     {
+        m_CamController.Update(deltaTime, mrAngryCube);
         for (auto& gameObject : gameObjects)
         {
             gameObject->Update(deltaTime);
         }
-
         for (Enemy* enemy : GetCollidingEnemies())
         {
             Unregister(enemy);
@@ -147,13 +147,10 @@ void Game::Update(float deltaTime)
             const char* quote = Utilities::GetQuote(Reason::Smash);
             timedTexts.push_back(Utilities::GetTimedText(quote, Reason::Smash));
         }
-
         if (gameInfo.gameOverCountdown <= 0)
         {
             m_GameState = GameState::GameOver;
         }
-
-
     }
 }
 
@@ -248,17 +245,17 @@ void Game::RenderHud()
 
 int Game::Run()
 {
-    float deltaTime;
+    float deltaTime = 5.0f;
     while (!WindowShouldClose())
     {
         HandleKeyEvents();
-
         deltaTime = GetTime() - gameInfo.lastUpdateTime;
-        if (deltaTime < 1.0f / gameConfig->updateSpeed) { continue; }
-        m_CamController.Update(deltaTime, mrAngryCube);
-        Update(deltaTime);
+        if(GetTime() - gameInfo.lastUpdateTime > 1.0f / gameConfig->updateSpeed)
+        {
+            Update(deltaTime);
+            gameInfo.lastUpdateTime = GetTime();
+        }
         Render();
-        gameInfo.lastUpdateTime = GetTime();
     }
     return 0;
 }

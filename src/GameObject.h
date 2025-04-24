@@ -2,7 +2,7 @@
 
 #include "raylib.h"
 #include "raymath.h"
-
+#include <vector>
 
 class GameObject
 {
@@ -15,7 +15,7 @@ public:
     virtual void Update(float lastUpdateTime);
     virtual void SetPosition(Vector3 position);
     virtual Vector3 GetPosition();
-    virtual Vector3 GetVelocity(float deltaTime);
+    virtual Vector3 GetVelocity(float deltaTime, size_t begin, size_t end);
 
 
 protected:
@@ -23,5 +23,5 @@ protected:
     Texture m_Texture;
     Shader m_Shader;
     Material m_Material;
-    Vector3 m_LastPosition;
+    std::vector<Vector3> m_Positions;
 };

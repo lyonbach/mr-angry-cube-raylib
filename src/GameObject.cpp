@@ -40,9 +40,16 @@ Vector3 GameObject::GetPosition()
     return Vector3{transform.m12, transform.m13, transform.m14};
 }
 
-Vector3 GameObject::GetVelocity(float deltaTime)
+Vector3 GameObject::GetVelocity(float deltaTime, size_t begin, size_t end)
 {
-    Vector3 velocity = Vector3Scale(Vector3Subtract(GetPosition(), m_LastPosition), 1.0f / deltaTime);
-    m_LastPosition = GetPosition();
+    if (m_Positions.size() == 0)
+    {
+        return Vector3();
+    }
+
+    Vector3 firstPosition = m_Positions.at(begin);
+    Vector3 lastPosition = m_Positions.at(std::min(end, m_Positions.size()) - 1);
+    Vector3 velocity = Vector3Scale(Vector3Subtract(lastPosition, firstPosition), 1.0f / deltaTime);
+
     return velocity;
 }

@@ -19,18 +19,17 @@ void CameraController::Update(float deltaTime, GameObject* targetObject)
     }
     Game& game = Game::Get();
 
-    if (game.mrAngryCube->IsAtQuarterRotation() && (int)game.mrAngryCube->rotationAxis.y == 0)
+    // Calculating the velocity from the last 20 position vectors.
+    // This means, we are trying to find out if the cube was just stopped.
+    Vector3 velocity = game.mrAngryCube->GetVelocity(deltaTime, 0, 20);
+    if (game.mrAngryCube->IsAtQuarterRotation() && (int)game.mrAngryCube->rotationAxis.y == 0 && Utilities::SumVector3(velocity) != 0)
     {
-        if (GetTime() - game.gameInfo.cameraShakeStrengthLastSet >= .2f)
-        {
-            game.gameInfo.cameraShakeStrenght = 0.05f;
-            game.gameInfo.cameraShakeStrengthLastSet = GetTime();
-        }
-    } else {
-        if (GetTime() - game.gameInfo.cameraShakeStrengthLastSet < .2f)
-        {
-            game.gameInfo.cameraShakeStrenght = 0.0f;
-        }
+        float strength = game.mrAngryCube->IsFaceOnTheGround() ? .03f : .1f;
+        game.gameInfo.cameraShakeStrenght = strength + game.gameInfo.anger / 100.0f;
+        game.gameInfo.cameraShakeStrengthLastSet = GetTime();
+    } else 
+    {
+        game.gameInfo.cameraShakeStrenght = 0.0f;
     }
 
     Vector3 target = (Vector3){targetObject->transform.m12, targetObject->transform.m13, targetObject->transform.m14};
@@ -43,7 +42,7 @@ void CameraController::Update(float deltaTime, GameObject* targetObject)
     scaledNextRotationAxis.y = 0.0f;
 
     Vector3 distance = Vector3Add(target, scaledNextRotationAxis) - m_Camera.target;
-    Vector3 update = Vector3Scale(distance, deltaTime/2);
+    Vector3 update = Vector3Scale(distance, deltaTime * 2);
     m_Camera.target = Vector3Add(m_Camera.target, update);
 
     m_Camera.target.x += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;

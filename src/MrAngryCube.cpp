@@ -30,6 +30,13 @@ void MrAngryCube::Update(float deltaTime)
     bool shouldGetAngry = false;
     const char* possibleQuote = "";
 
+    // Update velocity array.
+    if (m_Positions.size() >= 20)
+    {
+        m_Positions.erase(m_Positions.begin());
+    }
+    m_Positions.push_back(GetPosition());
+
     Game& game = Game::Get();
     if(IsAtQuarterRotation())
     {
@@ -44,15 +51,12 @@ void MrAngryCube::Update(float deltaTime)
                 possibleQuote = Utilities::GetQuote(Reason::FaceHit);
                 game.timedTexts.push_back(Utilities::GetTimedText(possibleQuote, Reason::FaceHit));
             }
-
-            WaitFor(1.0f);  // FIXME MOVE TO GAME CONFIG
+            WaitFor(1.0f);
         } else {
-            WaitFor(.3f);  // FIXME MOVE TO GAME CONFIG
+            WaitFor(.3f);
         }
 
         if(!canMove) { return; }
-        Vector3 velocity = GetVelocity(deltaTime);
-        if (Utilities::SumVector3(velocity) == 0 && Utilities::SumVector3(nextRotationAxis) == 0) { return; }
 
         // Quantize the rotations so that we won't
         // accidently keep insignificant amounts of rotation.
@@ -91,7 +95,7 @@ void MrAngryCube::Update(float deltaTime)
             game.gameInfo.anger = std::min(game.gameInfo.maxAnger, ++game.gameInfo.anger);
         }
 
-        // Update all.
+        // // Update all.
         rotationAxis = nextRotationAxis;  // Update rotaion axis.
         game.gameInfo.lastRotationCount = totalRotationCount;  // Update last rotation count.
         speed = game.gameInfo.possibleSpeeds.at(game.gameInfo.anger);
@@ -135,7 +139,6 @@ bool MrAngryCube::IsFaceOnTheGround()
 
 bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
 {
-
     // Quantize rotations.
     bool result = (
         ((int)rotation.x) % 90 == 0 && rotationAxis.x != 0.0f ||
@@ -153,7 +156,6 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
 
 void MrAngryCube::WaitFor(float seconds)
 {
-
     if (canMove)
     {
         canMove = false;
