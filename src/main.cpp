@@ -16,23 +16,24 @@
 //     #define GLSL_VERSION 110
 // #endif
 
-
-std::string texturePath = "./assets/textures/texel_checker.png";
-std::string shaderPath  = "./assets/shaders/base.fs";
-std::string modelPath   = "./assets/models/mr_angry_cube_high_res.obj";
-
 int main(void)
 {
     const char* wd = GetWorkingDirectory();
 
-    int updateRate = 90;
+    int updateRate = 90;  
     #ifdef PLATFORM_WEB
         updateRate = 90;
         TraceLog(LOG_INFO, "Setting everything for webplatform...");
     #endif
 
     Game& game = Game::Get();
-    GameConfig gameConfig(texturePath, shaderPath, modelPath, 1024, 768, updateRate, DARKGRAY);
+
+    GameConfig gameConfig(960*2, 540*2, updateRate, DARKGRAY);
+    gameConfig.modelPaths["macDefault"] = "./assets/models/mr_angry_cube_high_res.obj";
+    gameConfig.texturePaths["macDefault"] = "./assets/textures/texel_checker.png";
+    gameConfig.texturePaths["mainMenuBackground"] = "./assets/textures/MrCube-GDD.jpg";
+    gameConfig.shaderPaths["macDefault"] = "./assets/shaders/base.fs";
+
     game.Init(&gameConfig);
 
     int returnCode = game.Run();

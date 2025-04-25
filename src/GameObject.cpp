@@ -4,12 +4,13 @@
 #include <typeinfo>
 
 
-GameObject::GameObject(const char* texturePath, const char* shaderPath, const char* modelPath)
-    : m_Texture(LoadTexture(texturePath)), m_Shader(LoadShader(0, shaderPath)), m_Model(LoadModel(modelPath))
+GameObject::GameObject(Model& model, Shader& shader, Texture& texture)
+    : m_Model(model), m_Shader(shader), m_Texture(texture)
 {
     m_Material = LoadMaterialDefault();
-    transform = MatrixIdentity();
     m_Material.shader = m_Shader;
+
+    transform = MatrixIdentity();
     SetMaterialTexture(&m_Material, MATERIAL_MAP_DIFFUSE, m_Texture);
 }
 

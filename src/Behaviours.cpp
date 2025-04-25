@@ -31,7 +31,11 @@ void SpawnBehaviours::RandomSpawnBehaviour()
     if (randX % 2 != 0) randX++;
     if (randZ % 2 != 0) randZ++;
 
-    Enemy* enemy = new Enemy(Game::Get().gameConfig->texturePath.c_str(), Game::Get().gameConfig->shaderPath.c_str(), Game::Get().gameConfig->modelPath.c_str());
+    Shader& shader = Game::Get().shaders["enemyDefault"];
+    Texture& texture = Game::Get().textures["enemyDefault"];
+    Model& model = Game::Get().models["enemyDefault"];
+
+    Enemy* enemy = new Enemy(model, shader, texture);
     enemy->SetPosition({(float)randX, .5, (float)randZ});
     Game::Get().Register(enemy);
 }

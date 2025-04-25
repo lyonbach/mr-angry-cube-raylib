@@ -2,6 +2,13 @@
 #include <algorithm>
 
 
+void DrawBackgroundTextureFitted(Texture& texture)
+{
+        Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+        Rectangle destination = { 0.0f, 0.0f, (float)GetScreenWidth(), (float)GetScreenHeight() };
+        DrawTexturePro(texture, source, destination, {0, 0}, 0, WHITE);
+}
+
 Game::Game()
 {
     Utilities::Log("Created Game singleton class.", "GAME");
@@ -28,14 +35,28 @@ void Game::Init(GameConfig* configuration)
     InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle.c_str());
     InitMenu();
     SetExitKey(0);  // Disable exit key.
+    
+    Utilities::Log("Loading textures...", "GAME");
+    textures["macDefault"] = LoadTexture(gameConfig->texturePaths["macDefault"].c_str());
+    textures["mainMenuBackground"] = LoadTexture(gameConfig->texturePaths["mainMenuBackground"].c_str());
+    textures["enemyDefault"] = textures["macDefault"];
+    Utilities::Log("Textures loaded.", "GAME");
 
+    Utilities::Log("Loading shaders...", "GAME");
+    shaders["macDefault"] = LoadShader(0, gameConfig->shaderPaths["macDefault"].c_str());
+    shaders["enemyDefault"] = shaders["macDefault"];
+    Utilities::Log("Shaders loaded.", "GAME");
+
+    Utilities::Log("Loading models...", "GAME");
+    models["macDefault"] = LoadModel(gameConfig->modelPaths["macDefault"].c_str());
+    // models["enemyDefault"];
+    Utilities::Log("Models loaded.", "GAME");
+    
     // Initialize main character.
-    mrAngryCube = new MrAngryCube(
-        gameConfig->texturePath.c_str(),
-        gameConfig->shaderPath.c_str(),
-        gameConfig->modelPath.c_str()
-    );
+    mrAngryCube = new MrAngryCube(models["macDefault"], shaders["macDefault"], textures["macDefault"]);
     Register(mrAngryCube);
+
+    LoadLevel("TestLevel");
     m_Initialized = true;
 }
 
@@ -59,6 +80,11 @@ void Game::InitMenu()
 void Game::SpawnEnemy()
 {
     m_GameMode.spawnBehaviour();
+}
+
+void Game::LoadLevel(const char* levelName)
+{
+    Utilities::Log("Loading:" + std::string(levelName), "GAME");
 }
 
 void Game::Register(GameObject* gameObject)
@@ -166,23 +192,8 @@ void Game::Render()
     ClearBackground(gameConfig->backgroundColor);
     switch (m_GameState)
     {
-        case GameState::MainMenu:
-        m_Menu->Update();
-        m_Menu->Render();
-        break;
         case GameState::Playing:
             m_CamController.Render();
-        break;
-        case GameState::Paused:
-        {
-            m_Menu->Update();
-            m_Menu->Render();
-        }
-        case GameState::GameOver:
-            ClearBackground(gameConfig->backgroundColor);
-        break;
-        default:
-            TraceLog(LOG_ERROR, "Unknown game state!");
         break;
     }
     RenderHud();
@@ -194,6 +205,14 @@ void Game::RenderHud()
     std::vector<std::string> textsToRender;
     switch (m_GameState)
     {
+        case GameState::MainMenu:
+        {
+            ClearBackground(gameConfig->backgroundColor);
+            DrawBackgroundTextureFitted(textures["mainMenuBackground"]);
+            m_Menu->Update();
+            m_Menu->Render();
+        }
+        break;
         case GameState::Playing:
         {
             for(auto it=timedTexts.begin(); it!=timedTexts.end();)
@@ -284,6 +303,7 @@ void Game::HandleKeyEvents()
     {
         SpawnEnemy();
     } else if (IsKeyPressed(KEY_ESCAPE)) {
+
         switch (m_GameState)
         {
             case GameState::Playing:

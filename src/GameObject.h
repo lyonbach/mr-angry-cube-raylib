@@ -2,6 +2,7 @@
 
 #include "raylib.h"
 #include "raymath.h"
+#include "GameConfig.h"
 #include <vector>
 
 class GameObject
@@ -9,7 +10,7 @@ class GameObject
 public:
     Matrix transform;
 
-    GameObject(const char* texturePath, const char* shaderPath, const char* modelPath);
+    GameObject(Model& model, Shader& shader, Texture& texture);
     ~GameObject();
     virtual void Render();
     virtual void Update(float lastUpdateTime);

@@ -2,22 +2,21 @@
 #include "Miscellaneous.h"
 #include "raylib.h"
 #include <string>
+#include <map>
 
-class GameConfig  // Singleton class
+class GameConfig
 {
 public:
-    std::string texturePath;
-    std::string shaderPath;
-    std::string modelPath;
+    std::map<std::string, std::string> texturePaths;
+    std::map<std::string, std::string> shaderPaths;
+    std::map<std::string, std::string> modelPaths;
     int screenWidth;
     int screenHeight;
     int updateSpeed;
     std::string windowTitle;
     Color backgroundColor;
+
     GameConfig(
-        std::string texturePath,
-        std::string shaderPath,
-        std::string modelPath,
         int screenWidth,
         int screenHeight,
         int updateSpeed,

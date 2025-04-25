@@ -10,8 +10,8 @@ Vector2 VecSin(Vector2 vec) {
     return (Vector2){sin(DEG2RAD * (45 + abs((int)vec.x) % 90)), sin(DEG2RAD * (45 + abs((int)vec.y % 90)))};
 }
 
-MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const char* modelPath)
-: GameObject(texturePath, shaderPath, modelPath)
+MrAngryCube::MrAngryCube(Model& model, Shader& shader, Texture& texture)
+    : GameObject(model, shader, texture)
 {
     rotation = { 0.0f, 0.0f, 0.0f };
     m_Size = 1.0f;
