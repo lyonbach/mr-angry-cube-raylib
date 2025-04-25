@@ -2,6 +2,13 @@
 #include <algorithm>
 
 
+void DrawBackgroundTextureFitted(Texture& texture)
+{
+        Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+        Rectangle destination = { 0.0f, 0.0f, (float)GetScreenWidth(), (float)GetScreenHeight() };
+        DrawTexturePro(texture, source, destination, {0, 0}, 0, WHITE);
+}
+
 Game::Game()
 {
     Utilities::Log("Created Game singleton class.", "GAME");
@@ -23,19 +30,33 @@ Game& Game::Get() {
 
 void Game::Init(GameConfig* configuration)
 {
-    m_GameState = GameState::Playing;
+    m_GameState = GameState::MainMenu;
     gameConfig = configuration;
     InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle.c_str());
     InitMenu();
     SetExitKey(0);  // Disable exit key.
+    
+    Utilities::Log("Loading textures...", "GAME");
+    textures["macDefault"] = LoadTexture(gameConfig->texturePaths["macDefault"].c_str());
+    textures["mainMenuBackground"] = LoadTexture(gameConfig->texturePaths["mainMenuBackground"].c_str());
+    textures["enemyDefault"] = textures["macDefault"];
+    Utilities::Log("Textures loaded.", "GAME");
 
+    Utilities::Log("Loading shaders...", "GAME");
+    shaders["macDefault"] = LoadShader(0, gameConfig->shaderPaths["macDefault"].c_str());
+    shaders["enemyDefault"] = shaders["macDefault"];
+    Utilities::Log("Shaders loaded.", "GAME");
+
+    Utilities::Log("Loading models...", "GAME");
+    models["macDefault"] = LoadModel(gameConfig->modelPaths["macDefault"].c_str());
+    // models["enemyDefault"];
+    Utilities::Log("Models loaded.", "GAME");
+    
     // Initialize main character.
-    mrAngryCube = new MrAngryCube(
-        gameConfig->texturePath.c_str(),
-        gameConfig->shaderPath.c_str(),
-        gameConfig->modelPath.c_str()
-    );
+    mrAngryCube = new MrAngryCube(models["macDefault"], shaders["macDefault"], textures["macDefault"]);
     Register(mrAngryCube);
+
+    LoadLevel("TestLevel");
     m_Initialized = true;
 }
 
@@ -59,6 +80,11 @@ void Game::InitMenu()
 void Game::SpawnEnemy()
 {
     m_GameMode.spawnBehaviour();
+}
+
+void Game::LoadLevel(const char* levelName)
+{
+    Utilities::Log("Loading:" + std::string(levelName), "GAME");
 }
 
 void Game::Register(GameObject* gameObject)
@@ -126,59 +152,32 @@ std::vector<Enemy*> Game::GetEnemies()
     return enemies;
 }
 
-void Game::Update()
+void Game::Update(float deltaTime)
 {
-    // Update only if playing.
-    if (m_GameState != GameState::Playing) { return; }
-
-    float deltaTime = GetTime() - gameInfo.lastUpdateTime;
-    if (deltaTime < 1.0f / gameConfig->updateSpeed) { return; }
-    for (auto& gameObject : gameObjects) { gameObject->Update(deltaTime); }
-
-    if (mrAngryCube->IsAtQuarterRotation())
+    if (m_GameState == GameState::Playing)
     {
-        const char* quote = "";
-        bool shouldGetAngrier = false;
-        int totalRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
-        if (gameInfo.angerIncrementCountdown <= 0 && totalRotationCount > 0)
+        m_CamController.Update(deltaTime, mrAngryCube);
+        for (auto& gameObject : gameObjects)
         {
-            // If countdown is zero and we have any rotation around any axis.
-            quote = "Dizzy! Getting angry!";
-            shouldGetAngrier = true;
-
-            // We also set the countdown to its default value.
-            gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
+            gameObject->Update(deltaTime);
         }
-
-        if (mrAngryCube->IsFaceOnTheGround())
-        {
-            quote = "My Face!";
-            shouldGetAngrier = true;
-        }
-
-        // FIXME Handle quote display -> TEMPORARY.
-        if (shouldGetAngrier && !mrAngryCube->isMoving)
-        {
-            if (Utilities::SumVector3(gameInfo.rotationCount) != gameInfo.lastRotationCount)
-            {
-                timedTexts.push_back(Utilities::GetTimedText(quote));
-                gameInfo.anger = std::min((int)gameInfo.possibleSpeeds.size() - 1, ++gameInfo.anger);
-                gameInfo.lastRotationCount = Utilities::SumVector3(gameInfo.rotationCount);
-            }
-        }
-
         for (Enemy* enemy : GetCollidingEnemies())
         {
             Unregister(enemy);
             gameInfo.score++;
             gameInfo.anger = std::max(0, --gameInfo.anger);
             gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
+            gameInfo.gameOverCountdown = gameInfo.defaultGameOverCountDown;
+
+            timedTexts.clear();
+            const char* quote = Utilities::GetQuote(Reason::Smash);
+            timedTexts.push_back(Utilities::GetTimedText(quote, Reason::Smash));
         }
-
-        mrAngryCube->speed = gameInfo.possibleSpeeds.at(gameInfo.anger);
+        if (gameInfo.gameOverCountdown <= 0)
+        {
+            m_GameState = GameState::GameOver;
+        }
     }
-
-    gameInfo.lastUpdateTime = GetTime();
 }
 
 void Game::Render()
@@ -193,22 +192,8 @@ void Game::Render()
     ClearBackground(gameConfig->backgroundColor);
     switch (m_GameState)
     {
-        case GameState::MainMenu:
-        m_Menu->Update();
-        m_Menu->Render();
-        break;
         case GameState::Playing:
             m_CamController.Render();
-        break;
-        case GameState::Paused:
-        {
-            // Do nothing.
-        }
-        case GameState::GameOver:
-            ClearBackground(gameConfig->backgroundColor);
-        break;
-        default:
-            TraceLog(LOG_ERROR, "Unknown game state!");
         break;
     }
     RenderHud();
@@ -220,9 +205,16 @@ void Game::RenderHud()
     std::vector<std::string> textsToRender;
     switch (m_GameState)
     {
+        case GameState::MainMenu:
+        {
+            ClearBackground(gameConfig->backgroundColor);
+            DrawBackgroundTextureFitted(textures["mainMenuBackground"]);
+            m_Menu->Update();
+            m_Menu->Render();
+        }
+        break;
         case GameState::Playing:
         {
-            // FIXME THIS IS NOT A GOOD WAY TO DO IT. THINK ABOUT THE EVENT SYSTEM.
             for(auto it=timedTexts.begin(); it!=timedTexts.end();)
             {
                 auto timedText = *it;
@@ -266,17 +258,22 @@ void Game::RenderHud()
             DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
         }
         break;
-
     }
+    DrawFPS(GetScreenWidth() - 200, 50);
 }
 
 int Game::Run()
 {
-    m_CamController.Run(mrAngryCube);
-    while (!WindowShouldClose())  // Main loop.
+    float deltaTime = 5.0f;
+    while (!WindowShouldClose())
     {
         HandleKeyEvents();
-        Update();
+        deltaTime = GetTime() - gameInfo.lastUpdateTime;
+        if(GetTime() - gameInfo.lastUpdateTime > 1.0f / gameConfig->updateSpeed)
+        {
+            Update(deltaTime);
+            gameInfo.lastUpdateTime = GetTime();
+        }
         Render();
     }
     return 0;
@@ -306,6 +303,7 @@ void Game::HandleKeyEvents()
     {
         SpawnEnemy();
     } else if (IsKeyPressed(KEY_ESCAPE)) {
+
         switch (m_GameState)
         {
             case GameState::Playing:

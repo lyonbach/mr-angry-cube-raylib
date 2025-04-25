@@ -1,8 +1,8 @@
 #include "Enemy.h"
 
 
-Enemy::Enemy(const char* texturePath, const char* shaderPath, const char* modelPath, float size, Color color)
-    : GameObject(texturePath, shaderPath, modelPath)
+Enemy::Enemy(Model& model, Shader& shader, Texture& texture, float size, Color color)
+    : GameObject(model, shader, texture)
 {
     m_Size = size;
     m_Color = color;

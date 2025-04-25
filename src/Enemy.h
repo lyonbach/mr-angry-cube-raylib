@@ -5,7 +5,7 @@
 class Enemy : public GameObject
 {
 public:
-    Enemy(const char* texturePath, const char* shaderPath, const char* modelPath, float size=1.0f, Color color=RED);
+    Enemy(Model& model, Shader& shader, Texture& texture, float size=1.0f, Color color=RED);
     virtual ~Enemy() = default;
     void Render() override;
     void Update(float deltaTime) override;

@@ -1,6 +1,5 @@
 #include "CameraController.h"
 #include "Game.h"
-#include <thread>
 
 
 CameraController::CameraController()
@@ -12,42 +11,44 @@ CameraController::CameraController()
     m_Camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 };
 
-void CameraController::Update(GameObject* targetObject)
+void CameraController::Update(float deltaTime, GameObject* targetObject)
 {
     if (targetObject == nullptr)
     {
         return;
     }
+    Game& game = Game::Get();
 
-    // FIXME FIND THE FORCE -> SHOULD BE PROPORTIONAL TO THE SQUARE OF THE DISTANCE
-    m_Camera.target = (Vector3){targetObject->transform.m12, targetObject->transform.m13, targetObject->transform.m14};
+    // Calculating the velocity from the last 20 position vectors.
+    // This means, we are trying to find out if the cube was just stopped.
+    Vector3 velocity = game.mrAngryCube->GetVelocity(deltaTime, 0, 20);
+    if (game.mrAngryCube->IsAtQuarterRotation() && (int)game.mrAngryCube->rotationAxis.y == 0 && Utilities::SumVector3(velocity) != 0)
+    {
+        float strength = game.mrAngryCube->IsFaceOnTheGround() ? .03f : .1f;
+        game.gameInfo.cameraShakeStrenght = strength + game.gameInfo.anger / 100.0f;
+        game.gameInfo.cameraShakeStrengthLastSet = GetTime();
+    } else 
+    {
+        game.gameInfo.cameraShakeStrenght = 0.0f;
+    }
+
+    Vector3 target = (Vector3){targetObject->transform.m12, targetObject->transform.m13, targetObject->transform.m14};
+    Vector3 &nextRotationAxis = Game::Get().mrAngryCube->nextRotationAxis;
+    
+    float offsetAmount = 5.0f;
+    Vector3 scaledNextRotationAxis = Vector3Scale(nextRotationAxis, offsetAmount);
+    std::swap(scaledNextRotationAxis.x, scaledNextRotationAxis.z);
+    scaledNextRotationAxis.x *= -1;
+    scaledNextRotationAxis.y = 0.0f;
+
+    Vector3 distance = Vector3Add(target, scaledNextRotationAxis) - m_Camera.target;
+    Vector3 update = Vector3Scale(distance, deltaTime * 2);
+    m_Camera.target = Vector3Add(m_Camera.target, update);
+
+    m_Camera.target.x += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;
+    m_Camera.target.y += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;
+    m_Camera.target.z += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;
     m_Camera.position = Vector3Add(m_Camera.target, chaseVector);
-
-}
-
-void CameraController::Run(GameObject* targetObject)
-{
-    std::thread([this, targetObject](){
-        
-        while (shouldRun && !WindowShouldClose())
-        {
-            if (canUpdate) { Update(targetObject); }
-
-            MrAngryCube* mrAngryCube = dynamic_cast<MrAngryCube*>(targetObject);
-            if (!mrAngryCube) { continue; }
-
-            Vector3 lastRotationCount = Game::Get().gameInfo.rotationCount;
-            float shakeStrength = mrAngryCube->IsFaceOnTheGround() ? 1.0f : .2f;
-            if (mrAngryCube->IsAtQuarterRotation() && mrAngryCube->isMoving &&
-            (lastRotationCount.x != mrAngryCube->rotation.x || lastRotationCount.z != mrAngryCube->rotation.z)
-            )
-            {
-                DoCameraShake(0.4f, shakeStrength, targetObject);
-            }
-            lastRotationCount = mrAngryCube->rotation;
-        }
-
-    }).detach();
 }
 
 void CameraController::Render()
@@ -56,26 +57,6 @@ void CameraController::Render()
     DrawGrid(200, 1.0f);
     for (auto& gameObject : Game::Get().gameObjects) { gameObject->Render(); }
     EndMode3D();
-}
-
-void CameraController::DoCameraShake(float duration, float strength, GameObject* targetObject)
-{
-    // FIXME I DONT LIKE THIS SOLUTION, IMPLEMENT APPLYING FORCE APPROACH.
-    std::thread([this, duration, strength, targetObject]() {
-        canUpdate = false;
-        int maxCount = 4;
-        float pause = duration / (maxCount * 2.0f);
-        for(int i = 0; i < maxCount; i++)
-        {
-            Update(targetObject);
-            m_Camera.target.x = targetObject->transform.m12 + 0.1f * strength * (maxCount - i);
-            std::this_thread::sleep_for(std::chrono::duration<float>(pause));
-            Update(targetObject);
-            m_Camera.target.x = targetObject->transform.m12 - 0.1f * strength * (maxCount - i);
-            std::this_thread::sleep_for(std::chrono::duration<float>(pause));
-        }
-        canUpdate = true;
-    }).detach();
 }
 
 Vector3 CameraController::GetFrontVector()

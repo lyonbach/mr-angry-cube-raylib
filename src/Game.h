@@ -10,6 +10,7 @@
 #include "MrAngryCube.h"
 #include "SimpleGui.h"
 #include <vector>
+#include <map>
 
 
 class MrAngryCube;
@@ -20,6 +21,10 @@ public:
     GameInfo gameInfo;
     std::vector<TimedText*> timedTexts;
     std::vector<GameObject*> gameObjects;
+    std::map<std::string, Shader> shaders;
+    std::map<std::string, Texture> textures;
+    std::map<std::string, Model> models;
+
     GameConfig* gameConfig = nullptr;
     MrAngryCube* mrAngryCube = nullptr;
 
@@ -30,7 +35,8 @@ public:
     void Register(GameObject* gameObject);
     void Unregister(GameObject* gameObject);
     void InitMenu();
-    void Update();
+    void Update(float deltaTime);
+    void LoadLevel(const char* levelName);
     void Render();
     void RenderHud();
     void HandleKeyEvents();

@@ -3,7 +3,6 @@
 #include "MrAngryCube.h"
 #include "raylib.h"
 #include "raymath.h"
-#include <thread>
 #include <string>
 
 
@@ -11,8 +10,8 @@ Vector2 VecSin(Vector2 vec) {
     return (Vector2){sin(DEG2RAD * (45 + abs((int)vec.x) % 90)), sin(DEG2RAD * (45 + abs((int)vec.y % 90)))};
 }
 
-MrAngryCube::MrAngryCube(const char* texturePath, const char* shaderPath, const char* modelPath)
-: GameObject(texturePath, shaderPath, modelPath)
+MrAngryCube::MrAngryCube(Model& model, Shader& shader, Texture& texture)
+    : GameObject(model, shader, texture)
 {
     rotation = { 0.0f, 0.0f, 0.0f };
     m_Size = 1.0f;
@@ -28,14 +27,81 @@ void MrAngryCube::Render()
 
 void MrAngryCube::Update(float deltaTime)
 {
-    if(!isMoving) {
-        return;
-    }
+    bool shouldGetAngry = false;
+    const char* possibleQuote = "";
 
-    // float l = Vector3Length(Vector3({transform.m4, transform.m5, transform.m6}));
-    // TraceLog(LOG_INFO, "%f", l);
+    // Update velocity array.
+    if (m_Positions.size() >= 20)
+    {
+        m_Positions.erase(m_Positions.begin());
+    }
+    m_Positions.push_back(GetPosition());
 
     Game& game = Game::Get();
+    if(IsAtQuarterRotation())
+    {
+        if (IsFaceOnTheGround())  // Handle when we hit the face.
+        {
+            game.gameInfo.angerIncrementCountdown = game.gameInfo.defaultAngerIncrementCountdown;
+            game.gameInfo.faceHits++;
+            shouldGetAngry = true;
+
+            if (game.timedTexts.size() <= 0)
+            {
+                possibleQuote = Utilities::GetQuote(Reason::FaceHit);
+                game.timedTexts.push_back(Utilities::GetTimedText(possibleQuote, Reason::FaceHit));
+            }
+            WaitFor(1.0f);
+        } else {
+            WaitFor(.3f);
+        }
+
+        if(!canMove) { return; }
+
+        // Quantize the rotations so that we won't
+        // accidently keep insignificant amounts of rotation.
+        rotation.x = round(rotation.x / 90.0f) * 90.0f;
+        rotation.y = round(rotation.y / 90.0f) * 90.0f;
+        rotation.z = round(rotation.z / 90.0f) * 90.0f;
+
+        // Update rotation count in the game information and decrement anger increment countdown.
+        int totalRotationCount = Utilities::SumVector3(game.gameInfo.rotationCount);
+        game.gameInfo.angerIncrementCountdown--;
+        game.gameInfo.rotationCount += Utilities::AbsVector3(rotationAxis);
+
+        if (game.gameInfo.angerIncrementCountdown <= 0 && totalRotationCount > 0)
+        {
+            shouldGetAngry = true;
+            game.gameInfo.angerIncrementCountdown = game.gameInfo.defaultAngerIncrementCountdown;
+            if (game.timedTexts.size() <= 0)
+            {
+                possibleQuote = Utilities::GetQuote(Reason::Dizzyness);
+                game.timedTexts.push_back(Utilities::GetTimedText(possibleQuote, Reason::Dizzyness));
+            }
+        }
+
+        if (game.gameInfo.anger == game.gameInfo.maxAnger)
+        {
+            game.gameInfo.gameOverCountdown--;
+            if (game.timedTexts.size() <= 0)
+            {
+                possibleQuote = Utilities::GetQuote(Reason::AlmostGameOver);
+                game.timedTexts.push_back(Utilities::GetTimedText(possibleQuote, Reason::AlmostGameOver));
+            }
+        }
+
+        if (shouldGetAngry)
+        {
+            game.gameInfo.anger = std::min(game.gameInfo.maxAnger, ++game.gameInfo.anger);
+        }
+
+        // // Update all.
+        rotationAxis = nextRotationAxis;  // Update rotaion axis.
+        game.gameInfo.lastRotationCount = totalRotationCount;  // Update last rotation count.
+        speed = game.gameInfo.possibleSpeeds.at(game.gameInfo.anger);
+
+    }
+
     // Update cube rotation. We basically calculate the cube vertical displacement and
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position.
@@ -53,25 +119,6 @@ void MrAngryCube::Update(float deltaTime)
     transform.m12 = -rotation.z / 90.0f * m_Size * 2;
     transform.m13 = deltaY.y * deltaY.x * m_Size;
     transform.m14 = rotation.x / 90.0f * m_Size * 2;
-
-    if(IsAtQuarterRotation())
-    {
-        rotation.x = round(rotation.x / 90.0f) * 90.0f;
-        rotation.y = round(rotation.y / 90.0f) * 90.0f;
-        rotation.z = round(rotation.z / 90.0f) * 90.0f;
-        game.gameInfo.rotationCount += Utilities::AbsVector3(rotationAxis);
-        game.gameInfo.angerIncrementCountdown += -(bool)Utilities::SumVector3(Game::Get().gameInfo.rotationCount);
-        rotationAxis = nextRotationAxis;
-
-        bool shouldGetAngrier = false;
-        if (IsFaceOnTheGround())
-        {
-            WaitForNonBlocking(.6f);  // FIXME MOVE TO GAME CONFIG
-            game.gameInfo.angerIncrementCountdown = game.gameInfo.defaultAngerIncrementCountdown;
-        } else {
-            WaitForNonBlocking(.2f);  // FIXME MOVE TO GAME CONFIG
-        }
-    }
 }
 
 bool MrAngryCube::IsFaceOnTheGround()
@@ -92,7 +139,6 @@ bool MrAngryCube::IsFaceOnTheGround()
 
 bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
 {
-
     // Quantize rotations.
     bool result = (
         ((int)rotation.x) % 90 == 0 && rotationAxis.x != 0.0f ||
@@ -108,11 +154,16 @@ bool MrAngryCube::IsAtQuarterRotation(bool ommitZero)
     return result;
 }
 
-const void MrAngryCube::WaitForNonBlocking(float seconds)
+void MrAngryCube::WaitFor(float seconds)
 {
-    isMoving = false;
-    std::thread([this, seconds]() {
-        std::this_thread::sleep_for(std::chrono::duration<float>(seconds));
-        isMoving = true;
-    }).detach();
+    if (canMove)
+    {
+        canMove = false;
+        m_LastMovementCheckTime = GetTime();
+    } else {
+        if(GetTime() - m_LastMovementCheckTime >= seconds)
+        {
+            canMove = true;
+        }
+    }
 }
