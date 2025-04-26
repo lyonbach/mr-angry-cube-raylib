@@ -5,10 +5,19 @@
 #include "GameConfig.h"
 #include <vector>
 
+
+enum class GameObjectState
+{
+    Alive,
+    Dead
+};
+
+
 class GameObject
 {
 public:
-    Matrix transform;
+    Matrix transform = MatrixIdentity();
+    GameObjectState state = GameObjectState::Alive;
 
     GameObject(Model& model, Shader& shader, Texture& texture);
     ~GameObject();

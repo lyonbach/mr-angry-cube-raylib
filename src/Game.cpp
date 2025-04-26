@@ -35,23 +35,24 @@ void Game::Init(GameConfig* configuration)
     InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle.c_str());
     InitMenu();
     SetExitKey(0);  // Disable exit key.
-    
-    Utilities::Log("Loading textures...", "GAME");
-    textures["macDefault"] = LoadTexture(gameConfig->texturePaths["macDefault"].c_str());
-    textures["mainMenuBackground"] = LoadTexture(gameConfig->texturePaths["mainMenuBackground"].c_str());
-    textures["enemyDefault"] = textures["macDefault"];
-    Utilities::Log("Textures loaded.", "GAME");
+
+
+    Utilities::Log("Loading models...", "GAME");
+    models["macDefault"] = LoadModel(gameConfig->modelPaths["macDefault"].c_str());
+    models["enemyDefault"] = LoadModel(gameConfig->modelPaths["enemyDefault"].c_str());
+    Utilities::Log("Models loaded.", "GAME");
 
     Utilities::Log("Loading shaders...", "GAME");
     shaders["macDefault"] = LoadShader(0, gameConfig->shaderPaths["macDefault"].c_str());
     shaders["enemyDefault"] = shaders["macDefault"];
     Utilities::Log("Shaders loaded.", "GAME");
 
-    Utilities::Log("Loading models...", "GAME");
-    models["macDefault"] = LoadModel(gameConfig->modelPaths["macDefault"].c_str());
-    // models["enemyDefault"];
-    Utilities::Log("Models loaded.", "GAME");
-    
+    Utilities::Log("Loading textures...", "GAME");
+    textures["macDefault"] = LoadTexture(gameConfig->texturePaths["macDefault"].c_str());
+    textures["mainMenuBackground"] = LoadTexture(gameConfig->texturePaths["mainMenuBackground"].c_str());
+    textures["enemyDefault"] = LoadTexture(gameConfig->texturePaths["enemyDefault"].c_str());
+    Utilities::Log("Textures loaded.", "GAME");
+
     // Initialize main character.
     mrAngryCube = new MrAngryCube(models["macDefault"], shaders["macDefault"], textures["macDefault"]);
     Register(mrAngryCube);
@@ -159,19 +160,30 @@ void Game::Update(float deltaTime)
         m_CamController.Update(deltaTime, mrAngryCube);
         for (auto& gameObject : gameObjects)
         {
+            Enemy* enemy = dynamic_cast<Enemy*>(gameObject);
+            if (enemy && enemy->state == GameObjectState::Dead) {
+                if (GetTime() - enemy->deathTime >= 5.0f)  // FIXME TO CONFIG
+                {
+                    Unregister(enemy);
+                    continue;
+                }
+            }
             gameObject->Update(deltaTime);
         }
+
         for (Enemy* enemy : GetCollidingEnemies())
         {
-            Unregister(enemy);
-            gameInfo.score++;
-            gameInfo.anger = std::max(0, --gameInfo.anger);
-            gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
-            gameInfo.gameOverCountdown = gameInfo.defaultGameOverCountDown;
-
-            timedTexts.clear();
-            const char* quote = Utilities::GetQuote(Reason::Smash);
-            timedTexts.push_back(Utilities::GetTimedText(quote, Reason::Smash));
+            if (enemy->state == GameObjectState::Alive)
+            {
+                gameInfo.score++;
+                gameInfo.anger = std::max(0, --gameInfo.anger);
+                gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
+                gameInfo.gameOverCountdown = gameInfo.defaultGameOverCountDown;
+                timedTexts.clear();
+                const char* quote = Utilities::GetQuote(Reason::Smash);
+                timedTexts.push_back(Utilities::GetTimedText(quote, Reason::Smash));
+                enemy->SetState(GameObjectState::Dead);
+            }
         }
         if (gameInfo.gameOverCountdown <= 0)
         {
@@ -264,7 +276,7 @@ void Game::RenderHud()
 
 int Game::Run()
 {
-    float deltaTime = 5.0f;
+    float deltaTime = 0.0f;
     while (!WindowShouldClose())
     {
         HandleKeyEvents();

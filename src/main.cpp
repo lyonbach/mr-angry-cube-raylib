@@ -22,15 +22,18 @@ int main(void)
 
     int updateRate = 90;  
     #ifdef PLATFORM_WEB
-        updateRate = 90;
+        updateRate = 120;
         TraceLog(LOG_INFO, "Setting everything for webplatform...");
     #endif
 
     Game& game = Game::Get();
 
-    GameConfig gameConfig(960*2, 540*2, updateRate, DARKGRAY);
+    // GameConfig gameConfig(960*2, 540*2, updateRate, DARKGRAY);
+    GameConfig gameConfig(960, 540, updateRate, DARKGRAY);
     gameConfig.modelPaths["macDefault"] = "./assets/models/mr_angry_cube_high_res.obj";
+    gameConfig.modelPaths["enemyDefault"] = "./assets/models/enemy.obj";
     gameConfig.texturePaths["macDefault"] = "./assets/textures/texel_checker.png";
+    gameConfig.texturePaths["enemyDefault"] = "./assets/textures/concrete.png";
     gameConfig.texturePaths["mainMenuBackground"] = "./assets/textures/MrCube-GDD.jpg";
     gameConfig.shaderPaths["macDefault"] = "./assets/shaders/base.fs";
 

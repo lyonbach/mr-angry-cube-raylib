@@ -36,6 +36,6 @@ void SpawnBehaviours::RandomSpawnBehaviour()
     Model& model = Game::Get().models["enemyDefault"];
 
     Enemy* enemy = new Enemy(model, shader, texture);
-    enemy->SetPosition({(float)randX, .5, (float)randZ});
+    enemy->SetPosition({(float)randX, 0.0f, (float)randZ});
     Game::Get().Register(enemy);
 }
