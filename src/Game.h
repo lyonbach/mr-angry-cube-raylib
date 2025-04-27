@@ -23,7 +23,7 @@ public:
     std::map<std::string, Model> models;
     std::map<std::string, Material> materials;
 
-    Vector3 currentRotationAxis{-1.0f, 0.0f, 0.0f}; // FIXME
+    Vector3 currentRotationAxis{1.0f, 0.0f, 0.0f}; // FIXME
     Vector3 nextRotationAxis;
 
     CameraController cameraController;

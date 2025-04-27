@@ -4,6 +4,18 @@
 #include <iomanip>
 #include <openssl/md5.h>
 
+void Utilities::Log(std::string message, std::string prefix, TraceLogLevel logLevel)
+{
+    TraceLog(logLevel, ("[" + prefix + "]: " + message).c_str());
+}
+
+void Utilities::Log(Vector3 vector, std::string prefix, TraceLogLevel logLevel)
+{
+    std::string message = "\nX: " + std::to_string(vector.x) + "\nY: " + std::to_string(vector.y) + "\nZ: " + std::to_string(vector.z);
+    Log(message, prefix, logLevel);
+}
+
+
 std::string Utilities::GenerateHash()
 {
     // Get the current time
@@ -24,10 +36,4 @@ std::string Utilities::GenerateHash()
     }
 
     return md5String.str();
-}
-
-
-void Utilities::Log(std::string message, std::string prefix, TraceLogLevel logLevel)
-{
-    TraceLog(logLevel, ("[" + prefix + "]: " + message).c_str());
 }

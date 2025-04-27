@@ -121,6 +121,11 @@ void Game::Update()
         cameraController.Update(m_deltaTime);
         m_LastUpdateTime = GetTime();
     }
+
+    if (m_Player->IsAtQuarterRotation(m_Player->rotation))
+    {
+        currentRotationAxis = nextRotationAxis;
+    }
 }
 
 void Game::HandleKeyEvents()
@@ -128,6 +133,24 @@ void Game::HandleKeyEvents()
     if(IsKeyPressed(KEY_R))
     {
         Utilities::Log("R pressed.", "GAME");
+    } else if(IsKeyPressed(KEY_W))
+    {
+        nextRotationAxis = { -1, 0, 0 };
+    } else if(IsKeyPressed(KEY_S))
+    {
+        nextRotationAxis = { 1, 0, 0 };
+    } else if(IsKeyPressed(KEY_A))
+    {
+        nextRotationAxis = { 0, 0, 1 };
+    } else if(IsKeyPressed(KEY_D))
+    {
+        nextRotationAxis = { 0, 0, -1 };
+    } else if (IsKeyPressed(KEY_Q))
+    {
+        nextRotationAxis = { 0, 1, 0 };
+    } else if (IsKeyPressed(KEY_E))
+    {
+        nextRotationAxis = { 0, -1, 0 };
     }
 }
 

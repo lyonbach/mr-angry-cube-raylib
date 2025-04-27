@@ -1,4 +1,6 @@
 #include "GameObject.h"
+#include "Behaviours.h"
+
 
 class MrAngryCube : public GameObject
 {
@@ -7,7 +9,10 @@ public:
     ~MrAngryCube() = default;
     void Render() override;
     void Update(float deltaTime) override;
+    bool IsAtQuarterRotation(Vector3& vector) const;
+    bool HasEverMoved() const;
 
+    bool canMove = true;
     float hypotenuse;
     float size;
     float halfSize;
