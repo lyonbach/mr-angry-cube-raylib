@@ -3,17 +3,26 @@
 #include <string>
 #include <map>
 
-class GameConfig
+struct GameConfig
 {
-public:
-    std::map<std::string, std::string> texturePaths;
-    std::map<std::string, std::string> shaderPaths;
-    std::map<std::string, std::string> modelPaths;
-    Vector2 screenSize;
-    Color backgroundColor;
-    int updateRate;
-    float updateTime;
-    const char* windowTitle;
+    std::map<std::string, std::string> texturePaths = {
+        {"macDefault", "./assets/textures/test.png"},
+        {"enemyDefault", "./assets/textures/concrete.png"},
+        {"mainMenuBackground", "./assets/textures/MrCube-GDD.jpg"}
+    };
 
-    GameConfig(Vector2 screenSize, Color backgroundColor);
+    std::map<std::string, std::string> shaderPaths = {
+        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"}
+    };
+
+    std::map<std::string, std::string> modelPaths = {
+        {"macDefault", "./assets/models/mr_angry_cube_high_res.obj"},
+        {"enemyDefault", "./assets/models/enemy.obj"}
+    };
+
+    Vector2 screenSize = {900, 540};
+    Color backgroundColor = BLACK;
+    float updateRate = 90.0f;
+    float updateTime = 1.0f / updateRate;
+    std::string windowTitle = "Mr. Angry Cube";
 };

@@ -15,17 +15,18 @@ Game::~Game()
         delete gameObject;
     }
     gameObjects.clear();
+    CloseWindow();
 }
 
-Game& Game::Get() {
+Game& Game::Get()
+{
     static Game instance;
     return instance;
 }
 
-void Game::Init(GameConfig* gameConfig)
+void Game::Init(GameConfig& config)
 {
-    gameConfig = gameConfig;
-    // SetConfigFlags(FLAG_WINDOW_OPENGL_CORE_PROFILE);
+    gameConfig = &config;
     InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
     // SetExitKey(0);  // Disable exit key.
 
@@ -44,7 +45,7 @@ void Game::Init(GameConfig* gameConfig)
         std::string vertexShaderPath = pair.second.substr(0, pair.second.find('|'));
         std::string fragmentShaderPath = pair.second.substr(pair.second.find('|') + 1);
         shaders[pair.first] = LoadShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
-        
+
         Utilities::Log("Material created for shader: " + pair.first, "GAME");
         Material material = LoadMaterialDefault();
         material.shader = shaders[pair.first];
@@ -82,10 +83,9 @@ void Game::Render()
     switch (gameState)
     {
     case GameState::Playing:
-        
         BeginDrawing();
             BeginMode3D(*cameraController.camera);
-                ClearBackground(DARKBLUE);
+                ClearBackground(gameConfig->backgroundColor);
                 DrawGrid(200, 1.0f);
                 for (GameObject* gameObject : gameObjects)
                 {
@@ -97,9 +97,13 @@ void Game::Render()
     }
 }
 
-void Game::Update(float lastLoopTime)
+void Game::Update()
 {
-    if(GetTime() - lastLoopTime >= gameConfig->updateTime);
+    m_deltaTime = GetTime() - m_LastUpdateTime;
+    if(m_deltaTime >= gameConfig->updateTime)
+    {
+        m_LastUpdateTime = GetTime();
+    }
 }
 
 void Game::HandleKeyEvents()
@@ -118,19 +122,16 @@ int Game::Run()
         Utilities::Log("Game is not initialized. Exiting...", "GAME", LOG_ERROR);
         return 1;
     }
-    
-    unsigned int returnCode = 0;
-    float lastLoopTime = GetTime();
-    
+
+    int returnCode = 0;
+
     gameState = GameState::Playing;
     while (!WindowShouldClose())  // Main loop.
     {
         HandleKeyEvents();
-        Update(lastLoopTime);
+        Update();
         Render();
-        lastLoopTime = GetTime();
     }
 
-    // CloseWindow();
     return returnCode;
 }
