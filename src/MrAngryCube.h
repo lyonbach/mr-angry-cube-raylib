@@ -1,5 +1,5 @@
 #include "GameObject.h"
-#include "Behaviours.h"
+#include "MoveBehaviour.h"
 
 
 class MrAngryCube : public GameObject
@@ -12,11 +12,14 @@ public:
     bool IsAtQuarterRotation(Vector3& vector) const;
     bool HasEverMoved() const;
 
+    // MoveBehaviourType moveBehaviourType = MoveBehaviourType::NormalMoveBehaviour;
+
     bool canMove = true;
     float hypotenuse;
     float size;
     float halfSize;
     float moveSpeed;
     Vector3 rotation;
-
+private:
+    MACNormalMoveBehaviour m_MoveBehaviour;
 };
