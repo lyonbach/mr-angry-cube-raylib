@@ -60,6 +60,7 @@ void Game::Init(GameConfig& config)
     }
 
     MrAngryCube* player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    m_Player = player;
     Register(player);
 
     m_Initialized = true;
@@ -78,6 +79,16 @@ void Game::Register(GameObject* newGameObject)
     gameObjects.push_back(newGameObject);
 }
 
+MrAngryCube* Game::GetPlayer()
+{
+    if (m_Player == nullptr)
+    {
+        Utilities::Log("Player object is not initialized!", "GAME", LOG_ERROR);
+        return nullptr;
+    }
+    return m_Player;
+}
+
 void Game::Render()
 {
     switch (gameState)
@@ -92,6 +103,7 @@ void Game::Render()
                     gameObject->Render();
                 }
             EndMode3D();
+            DrawFPS(50, 50);
         EndDrawing();
         break;
     }
@@ -102,6 +114,11 @@ void Game::Update()
     m_deltaTime = GetTime() - m_LastUpdateTime;
     if(m_deltaTime >= gameConfig->updateTime)
     {
+        for (GameObject* gameObject : gameObjects)
+        {
+            gameObject->Update(m_deltaTime);
+        }
+        cameraController.Update(m_deltaTime);
         m_LastUpdateTime = GetTime();
     }
 }

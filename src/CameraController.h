@@ -4,7 +4,10 @@
 class CameraController
 {
 public:
-    Camera* camera;
     CameraController();
     ~CameraController();
+    void Update(float deltaTime);
+    
+    Camera* camera;
+    Vector3 chaseVector{ 0.0f, 4.0f, 5.0f };
 };

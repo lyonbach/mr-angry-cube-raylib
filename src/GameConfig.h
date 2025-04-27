@@ -21,7 +21,7 @@ struct GameConfig
     };
 
     Vector2 screenSize = {900, 540};
-    Color backgroundColor = BLACK;
+    Color backgroundColor = DARKGRAY;
     float updateRate = 90.0f;
     float updateTime = 1.0f / updateRate;
     std::string windowTitle = "Mr. Angry Cube";

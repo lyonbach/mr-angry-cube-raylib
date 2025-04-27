@@ -7,6 +7,8 @@
 #include <map>
 
 
+class MrAngryCube;
+
 enum class GameState
 {
     Playing,
@@ -21,26 +23,31 @@ public:
     std::map<std::string, Model> models;
     std::map<std::string, Material> materials;
 
+    Vector3 currentRotationAxis{-1.0f, 0.0f, 0.0f}; // FIXME
+    Vector3 nextRotationAxis;
+
     CameraController cameraController;
     GameState gameState = GameState::Paused;
     GameConfig* gameConfig;
-
+    
     ~Game();
     static Game& Get();
     void Init(GameConfig& gameConfig);
     void Register(GameObject* newGameObject);
     void Unregister(GameObject* gameObject);
+    MrAngryCube* GetPlayer();
     void Render();
     void Update();
     void HandleKeyEvents();
     int Run();
     void Exit();
-
+    
     Game(const Game&) = delete;
     void operator=(const Game&) = delete;
-
+    
 private:
     Game();
+    MrAngryCube* m_Player;
     bool m_Initialized = false;
     float m_LastUpdateTime = 0.0f;
     float m_deltaTime = 0.0f;
