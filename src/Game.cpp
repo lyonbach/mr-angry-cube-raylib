@@ -1,13 +1,6 @@
+#include "MrAngryCube.h"
 #include "Game.h"
-#include <algorithm>
 
-
-void DrawBackgroundTextureFitted(Texture& texture)
-{
-        Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
-        Rectangle destination = { 0.0f, 0.0f, (float)GetScreenWidth(), (float)GetScreenHeight() };
-        DrawTexturePro(texture, source, destination, {0, 0}, 0, WHITE);
-}
 
 Game::Game()
 {
@@ -16,8 +9,9 @@ Game::Game()
 
 Game::~Game()
 {
-    for (auto& gameObject : gameObjects)
+    for (GameObject* gameObject : gameObjects)
     {
+        Utilities::Log("Deleting GameObject with id: " + gameObject->objectId, "GAME");
         delete gameObject;
     }
     gameObjects.clear();
@@ -28,322 +22,115 @@ Game& Game::Get() {
     return instance;
 }
 
-void Game::Init(GameConfig* configuration)
+void Game::Init(GameConfig* gameConfig)
 {
-    m_GameState = GameState::MainMenu;
-    gameConfig = configuration;
-    InitWindow(gameConfig->screenWidth, gameConfig->screenHeight, gameConfig->windowTitle.c_str());
-    InitMenu();
-    SetExitKey(0);  // Disable exit key.
+    gameConfig = gameConfig;
+    // SetConfigFlags(FLAG_WINDOW_OPENGL_CORE_PROFILE);
+    InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
+    // SetExitKey(0);  // Disable exit key.
 
-
-    Utilities::Log("Loading models...", "GAME");
-    models["macDefault"] = LoadModel(gameConfig->modelPaths["macDefault"].c_str());
-    models["enemyDefault"] = LoadModel(gameConfig->modelPaths["enemyDefault"].c_str());
-    Utilities::Log("Models loaded.", "GAME");
+    Utilities::Log("Loading models...", "GAME");  // Models.
+    for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
+    {
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
+        models[pair.first] = LoadModel(pair.second.c_str());
+    }
 
     Utilities::Log("Loading shaders...", "GAME");
-    shaders["macDefault"] = LoadShader(0, gameConfig->shaderPaths["macDefault"].c_str());
-    shaders["enemyDefault"] = shaders["macDefault"];
-    Utilities::Log("Shaders loaded.", "GAME");
+    for (std::pair<std::string, std::string> pair : gameConfig->shaderPaths)  // Shaders.
+    {
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
+
+        std::string vertexShaderPath = pair.second.substr(0, pair.second.find('|'));
+        std::string fragmentShaderPath = pair.second.substr(pair.second.find('|') + 1);
+        shaders[pair.first] = LoadShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+        
+        Utilities::Log("Material created for shader: " + pair.first, "GAME");
+        Material material = LoadMaterialDefault();
+        material.shader = shaders[pair.first];
+        materials[pair.first] = material;
+    }
 
     Utilities::Log("Loading textures...", "GAME");
-    textures["macDefault"] = LoadTexture(gameConfig->texturePaths["macDefault"].c_str());
-    textures["mainMenuBackground"] = LoadTexture(gameConfig->texturePaths["mainMenuBackground"].c_str());
-    textures["enemyDefault"] = LoadTexture(gameConfig->texturePaths["enemyDefault"].c_str());
-    Utilities::Log("Textures loaded.", "GAME");
+    for (std::pair<std::string, std::string> pair : gameConfig->texturePaths) // Textures.
+    {
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
+        textures[pair.first] = LoadTexture(pair.second.c_str());
+    }
 
-    // Initialize main character.
-    mrAngryCube = new MrAngryCube(models["macDefault"], shaders["macDefault"], textures["macDefault"]);
-    Register(mrAngryCube);
+    MrAngryCube* player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    Register(player);
 
-    LoadLevel("TestLevel");
     m_Initialized = true;
 }
 
-void Game::InitMenu()
+void Game::Register(GameObject* newGameObject)
 {
-    m_Menu = new Menu();
-    m_Menu->AddItem(
-        new PushButton("     Play     ",
-            gameConfig->screenWidth / 2,
-            gameConfig->screenHeight / 3,
-            [this](){ m_GameState = GameState::Playing; })
-    );
-    m_Menu->AddItem(
-        new PushButton("     Exit     ",
-            gameConfig->screenWidth / 2,
-            gameConfig->screenHeight / 3 + 50,
-            [](){ exit(0); })
-    );
-}
-
-void Game::SpawnEnemy()
-{
-    m_GameMode.spawnBehaviour();
-}
-
-void Game::LoadLevel(const char* levelName)
-{
-    Utilities::Log("Loading:" + std::string(levelName), "GAME");
-}
-
-void Game::Register(GameObject* gameObject)
-{
-    gameObjects.push_back(gameObject);
-}
-
-void Game::Unregister(GameObject* gameObject)
-{
-    auto it = std::remove(gameObjects.begin(), gameObjects.end(), gameObject);
-    if (it != gameObjects.end())
+    for (GameObject* gameObject : gameObjects)
     {
-        gameObjects.erase(it);
-    }
-}
-
-std::vector<Enemy*> Game::GetCollidingEnemies()
-{
-    std::vector<Enemy*> enemies;
-    if (gameObjects.empty())
-    {
-        return enemies;
-    }
-
-    if (!mrAngryCube)
-    {
-        return enemies;
-    }
-
-    Vector2 mrAngryCubePosition = { mrAngryCube->transform.m12, mrAngryCube->transform.m14 };
-
-    for (auto& gameObject : gameObjects)
-    {
-        if (Enemy* enemy = dynamic_cast<Enemy*>(gameObject))
+        if (gameObject->objectId == newGameObject->objectId)
         {
-            Vector2 enemyPosition = { enemy->transform.m12, enemy->transform.m14 };
-            if (fabs(mrAngryCubePosition.x - enemyPosition.x) < 0.1f && fabs(mrAngryCubePosition.y - enemyPosition.y) < 0.1f)
-            {
-                enemies.push_back(enemy);
-            }
+            Utilities::Log("Can not register object with id \"" + newGameObject->objectId + "\"!\nAlready registered.", "GAME", LOG_ERROR);
+            return;
         }
     }
-    return enemies;
-}
-
-std::vector<Enemy*> Game::GetEnemies()
-{
-    std::vector<Enemy*> enemies;
-    if (gameObjects.empty())
-    {
-        return enemies;
-    }
-    if (!mrAngryCube)
-    {
-        return enemies;
-    }
-
-    for (auto& gameObject : gameObjects)
-    {
-        if (Enemy* enemy = dynamic_cast<Enemy*>(gameObject))
-        {
-            enemies.push_back(enemy);
-        }
-    }
-    return enemies;
-}
-
-void Game::Update(float deltaTime)
-{
-    if (m_GameState == GameState::Playing)
-    {
-        m_CamController.Update(deltaTime, mrAngryCube);
-        for (auto& gameObject : gameObjects)
-        {
-            Enemy* enemy = dynamic_cast<Enemy*>(gameObject);
-            if (enemy && enemy->state == GameObjectState::Dead) {
-                if (GetTime() - enemy->deathTime >= 5.0f)  // FIXME TO CONFIG
-                {
-                    Unregister(enemy);
-                    continue;
-                }
-            }
-            gameObject->Update(deltaTime);
-        }
-
-        for (Enemy* enemy : GetCollidingEnemies())
-        {
-            if (enemy->state == GameObjectState::Alive)
-            {
-                gameInfo.score++;
-                gameInfo.anger = std::max(0, --gameInfo.anger);
-                gameInfo.angerIncrementCountdown = gameInfo.defaultAngerIncrementCountdown;
-                gameInfo.gameOverCountdown = gameInfo.defaultGameOverCountDown;
-                timedTexts.clear();
-                const char* quote = Utilities::GetQuote(Reason::Smash);
-                timedTexts.push_back(Utilities::GetTimedText(quote, Reason::Smash));
-                enemy->SetState(GameObjectState::Dead);
-            }
-        }
-        if (gameInfo.gameOverCountdown <= 0)
-        {
-            m_GameState = GameState::GameOver;
-        }
-    }
+    gameObjects.push_back(newGameObject);
 }
 
 void Game::Render()
 {
-    if (!m_Initialized)
+    switch (gameState)
     {
-        TraceLog(LOG_WARNING, "Game not initialized!");
-        return;
-    }
-
-    BeginDrawing();
-    ClearBackground(gameConfig->backgroundColor);
-    switch (m_GameState)
-    {
-        case GameState::Playing:
-            m_CamController.Render();
-        break;
-    }
-    RenderHud();
-    EndDrawing();
-}
-
-void Game::RenderHud()
-{
-    std::vector<std::string> textsToRender;
-    switch (m_GameState)
-    {
-        case GameState::MainMenu:
-        {
-            ClearBackground(gameConfig->backgroundColor);
-            DrawBackgroundTextureFitted(textures["mainMenuBackground"]);
-            m_Menu->Update();
-            m_Menu->Render();
-        }
-        break;
-        case GameState::Playing:
-        {
-            for(auto it=timedTexts.begin(); it!=timedTexts.end();)
-            {
-                auto timedText = *it;
-                if(GetTime() - timedText->lastCheckTime > timedText->duration)
+    case GameState::Playing:
+        
+        BeginDrawing();
+            BeginMode3D(*cameraController.camera);
+                ClearBackground(DARKBLUE);
+                DrawGrid(200, 1.0f);
+                for (GameObject* gameObject : gameObjects)
                 {
-                    it = timedTexts.erase(it);
-                } else {
-                    timedText->Draw();
-                    it++;
+                    gameObject->Render();
                 }
-            }
-
-            // Draw score. FIXME SHOULD BE IMPROVED
-            int fontSize = 20;
-            int percentage = (int)((float)gameInfo.anger / (gameInfo.possibleSpeeds.size() - 1) * 100);
-            int rotations = gameInfo.rotationCount.x + gameInfo.rotationCount.y + gameInfo.rotationCount.z;
-            textsToRender = {
-                std::string("Score: " + std::to_string(gameInfo.score)),
-                std::string("Anger: " + std::to_string(percentage) + "%"),
-                std::string("Enemies Alive: " + std::to_string(GetEnemies().size())),
-                std::string("Rotations: " + std::to_string(rotations))
-            };
-            for (size_t i = 0; i < textsToRender.size(); i++)
-            {
-                std::string text = textsToRender.at(i);
-                DrawText(text.c_str(), 2*fontSize, (2 + 2 * i) * fontSize, fontSize, YELLOW);
-            }
-        }
-        break;
-        case GameState::Paused:
-        {
-            int fontSize = 30;
-            const char* text = "GAME PAUSED";
-            DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
-        }
-        break;
-        case GameState::GameOver:
-        {
-            int fontSize = 30;
-            const char* text = "GAME OVER";
-            DrawText(text, (GetScreenWidth() - MeasureText(text, fontSize)) / 2, (GetScreenHeight() - fontSize) / 2, fontSize, WHITE);
-        }
+            EndMode3D();
+        EndDrawing();
         break;
     }
-    DrawFPS(GetScreenWidth() - 200, 50);
 }
 
-int Game::Run()
+void Game::Update(float lastLoopTime)
 {
-    float deltaTime = 0.0f;
-    while (!WindowShouldClose())
-    {
-        HandleKeyEvents();
-        deltaTime = GetTime() - gameInfo.lastUpdateTime;
-        if(GetTime() - gameInfo.lastUpdateTime > 1.0f / gameConfig->updateSpeed)
-        {
-            Update(deltaTime);
-            gameInfo.lastUpdateTime = GetTime();
-        }
-        Render();
-    }
-    return 0;
+    if(GetTime() - lastLoopTime >= gameConfig->updateTime);
 }
 
 void Game::HandleKeyEvents()
 {
-    if (IsKeyPressed(KEY_W))
+    if(IsKeyPressed(KEY_R))
     {
-        mrAngryCube->nextRotationAxis = m_CamController.GetRightVector();
-    } else if (IsKeyPressed(KEY_S))
-    {
-        mrAngryCube->nextRotationAxis = m_CamController.GetLeftVector();
-    } else if (IsKeyPressed(KEY_A))
-    {
-        mrAngryCube->nextRotationAxis = m_CamController.GetRearVector();
-    } else if (IsKeyPressed(KEY_D))
-    {
-        mrAngryCube->nextRotationAxis = m_CamController.GetFrontVector();
-    } else if (IsKeyPressed(KEY_E))
-    {
-        mrAngryCube->nextRotationAxis = { 0.0f, -1.0f, 0.0f };
-    } else if (IsKeyPressed(KEY_Q))
-    {
-        mrAngryCube->nextRotationAxis = { 0.0f, 1.0f, 0.0f };
-    } else if (IsKeyPressed(KEY_R))
-    {
-        SpawnEnemy();
-    } else if (IsKeyPressed(KEY_ESCAPE)) {
-
-        switch (m_GameState)
-        {
-            case GameState::Playing:
-                m_GameState = GameState::Paused;
-            break;
-
-            case GameState::Paused:
-                m_GameState = GameState::Playing;
-            break;
-
-            case GameState::GameOver:
-                m_GameState = GameState::MainMenu;
-
-            default:
-            break;
-        }
-    } else if (IsKeyPressed(KEY_RIGHT)) {
-        m_CamController.RotateCamera(RotationDirection::CW);
-    } else if (IsKeyPressed(KEY_LEFT)) {
-        m_CamController.RotateCamera(RotationDirection::CCW);
-    } else if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_UP)) {
-        m_CamController.RotateCamera(RotationDirection::CCW);
-        m_CamController.RotateCamera(RotationDirection::CCW);
+        Utilities::Log("R pressed.", "GAME");
     }
 }
 
-void Game::Exit()
+int Game::Run()
 {
-    CloseWindow();
-    exit(0);
+
+    if (!m_Initialized)
+    {
+        Utilities::Log("Game is not initialized. Exiting...", "GAME", LOG_ERROR);
+        return 1;
+    }
+    
+    unsigned int returnCode = 0;
+    float lastLoopTime = GetTime();
+    
+    gameState = GameState::Playing;
+    while (!WindowShouldClose())  // Main loop.
+    {
+        HandleKeyEvents();
+        Update(lastLoopTime);
+        Render();
+        lastLoopTime = GetTime();
+    }
+
+    // CloseWindow();
+    return returnCode;
 }

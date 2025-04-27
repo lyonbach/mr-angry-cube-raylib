@@ -2,36 +2,23 @@
 
 #include "raylib.h"
 #include "raymath.h"
-#include "GameConfig.h"
-#include <vector>
-
-
-enum class GameObjectState
-{
-    Alive,
-    Dead
-};
+#include <string>
 
 
 class GameObject
 {
 public:
     Matrix transform = MatrixIdentity();
-    GameObjectState state = GameObjectState::Alive;
+    Model* model = nullptr;
+    Texture* texture = nullptr;
+    Material* material = nullptr;
+    std::string objectId = "NO_ID";
 
-    GameObject(Model& model, Shader& shader, Texture& texture);
-    ~GameObject();
+    GameObject(Model* model, Material* material, Texture* texture);
+    virtual ~GameObject();
+    Vector3 GetPosition();
+    void SetPosition(Vector3 newPosition);
+
     virtual void Render();
     virtual void Update(float lastUpdateTime);
-    virtual void SetPosition(Vector3 position);
-    virtual Vector3 GetPosition();
-    virtual Vector3 GetVelocity(float deltaTime, size_t begin, size_t end);
-
-
-protected:
-    Model m_Model;
-    Texture m_Texture;
-    Shader m_Shader;
-    Material m_Material;
-    std::vector<Vector3> m_Positions;
 };

@@ -11,6 +11,7 @@ public:
     virtual ~Enemy() = default;
     void Render() override;
     void Update(float deltaTime) override;
+    void Update_(float deltaTime, GameObject* other);
     void SetPosition(Vector3 position) override;
     void SetState(GameObjectState newState);
 

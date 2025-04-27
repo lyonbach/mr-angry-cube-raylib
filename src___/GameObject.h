@@ -1,0 +1,37 @@
+#pragma once
+
+#include "raylib.h"
+#include "raymath.h"
+#include "GameConfig.h"
+#include <vector>
+
+
+enum class GameObjectState
+{
+    Alive,
+    Dead
+};
+
+
+class GameObject
+{
+public:
+    Matrix transform = MatrixIdentity();
+    GameObjectState state = GameObjectState::Alive;
+
+    GameObject(Model& model, Shader& shader, Texture& texture);
+    ~GameObject();
+    virtual void Render();
+    virtual void Update(float lastUpdateTime);
+    virtual void SetPosition(Vector3 position);
+    virtual Vector3 GetPosition();
+    virtual Vector3 GetVelocity(float deltaTime, size_t begin, size_t end);
+
+
+protected:
+    Model m_Model;
+    Texture m_Texture;
+    Shader m_Shader;
+    Material m_Material;
+    std::vector<Vector3> m_Positions;
+};
