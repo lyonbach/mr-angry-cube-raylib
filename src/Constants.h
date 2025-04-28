@@ -1,0 +1,14 @@
+#pragma once
+#include "raylib.h"
+
+const float CAMERA_CHASE_VECTOR_INCREMENT = .5f;
+const float CAMERA_VERTICAL_TOP_DOWN = 8.0f;
+const float CAMERA_VERTICAL_NORMAL = 4.0f;
+const float CAMERA_VERTICAL_CHASE = 2.0f;
+const float MAX_CAMERA_CHASE_DISTANCE = 20.0f;
+const float MIN_CAMERA_CHASE_DISTANCE = 2.0f;
+const float CAMERA_TARGET_UPDATE_SPEED_COEFF = 2.4f;
+const float CAMERA_UPDATE_SPEED_COEFF = 4 * CAMERA_TARGET_UPDATE_SPEED_COEFF;
+
+const Vector3 DEFAULT_CURRENT_ROTATION_AXIS = { 0.0, 0.0f, 0.0f };
+const Vector3 DEFAULT_NEXT_ROTATION_AXIS = { 0.0, 0.0f, 0.0f };

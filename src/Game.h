@@ -3,6 +3,7 @@
 #include "GameConfig.h"
 #include "GameObject.h"
 #include "Utilities.h"
+#include "Constants.h"
 #include <vector>
 #include <map>
 
@@ -23,8 +24,8 @@ public:
     std::map<std::string, Model> models;
     std::map<std::string, Material> materials;
 
-    Vector3 currentRotationAxis{-1.0f, 0.0f, 0.0f}; // FIXME
-    Vector3 nextRotationAxis;
+    Vector3 currentRotationAxis = DEFAULT_NEXT_ROTATION_AXIS;
+    Vector3 nextRotationAxis = DEFAULT_NEXT_ROTATION_AXIS;
 
     CameraController cameraController;
     GameState gameState = GameState::Paused;

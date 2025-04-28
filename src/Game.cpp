@@ -1,5 +1,6 @@
 #include "MrAngryCube.h"
 #include "Game.h"
+#include "Constants.h"
 
 
 Game::Game()
@@ -135,22 +136,40 @@ void Game::HandleKeyEvents()
         Utilities::Log("R pressed.", "GAME");
     } else if(IsKeyPressed(KEY_W))
     {
-        nextRotationAxis = { -1, 0, 0 };
+        nextRotationAxis = cameraController.GetRightVector();
     } else if(IsKeyPressed(KEY_S))
     {
-        nextRotationAxis = { 1, 0, 0 };
+        nextRotationAxis = cameraController.GetLeftVector();
     } else if(IsKeyPressed(KEY_A))
     {
-        nextRotationAxis = { 0, 0, 1 };
+        nextRotationAxis = cameraController.GetBackVector();
     } else if(IsKeyPressed(KEY_D))
     {
-        nextRotationAxis = { 0, 0, -1 };
+        nextRotationAxis = cameraController.GetFrontVector();
     } else if (IsKeyPressed(KEY_Q))
     {
         nextRotationAxis = { 0, 1, 0 };
     } else if (IsKeyPressed(KEY_E))
     {
         nextRotationAxis = { 0, -1, 0 };
+    } else if (IsKeyPressedRepeat(KEY_Z) || IsKeyPressed(KEY_Z))
+    {
+        cameraController.ZoomIn();
+    } else if (IsKeyPressedRepeat(KEY_X) || IsKeyPressed(KEY_X))
+    {
+        cameraController.ZoomOut();
+    } else if (IsKeyPressed(KEY_LEFT))
+    {
+        cameraController.LeftView();
+    } else if (IsKeyPressed(KEY_RIGHT))
+    {
+        cameraController.RightView();
+    } else if (IsKeyPressed(KEY_UP))
+    {
+        cameraController.MoveUp();
+    } else if (IsKeyPressed(KEY_DOWN))
+    {
+        cameraController.MoveDown();
     }
 }
 
