@@ -29,7 +29,7 @@ void Game::Init(GameConfig& config)
 {
     gameConfig = &config;
     InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
-    // SetExitKey(0);  // Disable exit key.
+    // SetExitKey(0);  // Disable exit key. FIXME GET BACK LATER
 
     Utilities::Log("Loading models...", "GAME");  // Models.
     for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
@@ -131,19 +131,29 @@ void Game::Update()
 
 void Game::HandleKeyEvents()
 {
-    if(IsKeyPressed(KEY_R))
+    if (IsKeyPressed(KEY_ZERO))
     {
-        Utilities::Log("R pressed.", "GAME");
-    } else if(IsKeyPressed(KEY_W))
+        m_Player->SetMoveBehaviour(MoveBehaviourName::NormalMoveBehaviour);
+    } else if (IsKeyPressed(KEY_ONE)) {
+        m_Player->SetMoveBehaviour(MoveBehaviourName::MoveBehaviourAngerLevel1);
+    } else if (IsKeyPressed(KEY_TWO)) {
+        m_Player->SetMoveBehaviour(MoveBehaviourName::MoveBehaviourAngerLevel2);
+    } else if (IsKeyPressed(KEY_THREE)) {
+        m_Player->SetMoveBehaviour(MoveBehaviourName::MoveBehaviourAngerLevel3);
+    } else if (IsKeyPressed(KEY_FOUR)) {
+        m_Player->SetMoveBehaviour(MoveBehaviourName::MoveBehaviourAngerLevel4);
+    } else if (IsKeyPressed(KEY_FIVE)) {
+        m_Player->SetMoveBehaviour(MoveBehaviourName::MoveBehaviourAngerLevelInsane);
+    } else if (IsKeyPressed(KEY_W))
     {
         nextRotationAxis = cameraController.GetRightVector();
-    } else if(IsKeyPressed(KEY_S))
+    } else if (IsKeyPressed(KEY_S))
     {
         nextRotationAxis = cameraController.GetLeftVector();
-    } else if(IsKeyPressed(KEY_A))
+    } else if (IsKeyPressed(KEY_A))
     {
         nextRotationAxis = cameraController.GetBackVector();
-    } else if(IsKeyPressed(KEY_D))
+    } else if (IsKeyPressed(KEY_D))
     {
         nextRotationAxis = cameraController.GetFrontVector();
     } else if (IsKeyPressed(KEY_Q))

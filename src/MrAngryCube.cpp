@@ -10,8 +10,21 @@ MrAngryCube::MrAngryCube(Model* model, Material* material, Texture* texture)
     size = 1.0f;
     halfSize =  size * .5f;
     hypotenuse = sqrt(halfSize * halfSize * 2);
-    moveSpeed = 1.0f;
+    m_MoveBehaviour = new MACMoveBehaviour();
+}
 
+void MrAngryCube::Render()
+{
+    DrawMesh(model->meshes[0], *material, transform);
+}
+
+void MrAngryCube::Update(float deltaTime)
+{
+    m_MoveBehaviour->Action(this);
+    if (IsAtQuarterRotation(rotation))
+    {
+        ApplyMoveBehaviourChange();
+    }
 }
 
 bool MrAngryCube::IsAtQuarterRotation(Vector3& rotation) const
@@ -34,12 +47,39 @@ bool MrAngryCube::HasEverMoved() const
     return result;
 }
 
-void MrAngryCube::Render()
+void MrAngryCube::SetMoveBehaviour(MoveBehaviourName behaviourName)  // FIXME THIS COULD BE BETTER
 {
-    DrawMesh(model->meshes[0], *material, transform);
+    Utilities::Log("Setting move behaviour to: " + std::to_string(static_cast<int>(behaviourName)), "MrAngryCube", LOG_DEBUG);
+    nextMoveBehaviourName = behaviourName;
 }
 
-void MrAngryCube::Update(float deltaTime)
+void MrAngryCube::ApplyMoveBehaviourChange()
 {
-    m_MoveBehaviour.Action(this);
+    switch (nextMoveBehaviourName)
+    {
+    case MoveBehaviourName::NormalMoveBehaviour:
+        m_MoveBehaviour->moveSpeed = 1.0f;
+        m_MoveBehaviour->timeUntilNextUpdate = 0.3f;
+    break;
+    case MoveBehaviourName::MoveBehaviourAngerLevel1:
+        m_MoveBehaviour->moveSpeed = 2.0f;
+        m_MoveBehaviour->timeUntilNextUpdate = 0.2f;
+    break;
+    case MoveBehaviourName::MoveBehaviourAngerLevel2:
+        m_MoveBehaviour->moveSpeed = 3.0f;
+        m_MoveBehaviour->timeUntilNextUpdate = 0.15f;
+    break;
+    case MoveBehaviourName::MoveBehaviourAngerLevel3:
+        m_MoveBehaviour->moveSpeed = 4.5f;
+        m_MoveBehaviour->timeUntilNextUpdate = 0.1f;
+    break;
+    case MoveBehaviourName::MoveBehaviourAngerLevel4:
+        m_MoveBehaviour->moveSpeed = 5.0f;
+        m_MoveBehaviour->timeUntilNextUpdate = 0.05f;
+    break;
+    case MoveBehaviourName::MoveBehaviourAngerLevelInsane:
+        m_MoveBehaviour->moveSpeed = 9.0f;
+        m_MoveBehaviour->timeUntilNextUpdate = 0.001f;
+    break;
+    }
 }

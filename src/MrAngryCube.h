@@ -11,8 +11,7 @@ public:
     void Update(float deltaTime) override;
     bool IsAtQuarterRotation(Vector3& vector) const;
     bool HasEverMoved() const;
-
-    // MoveBehaviourType moveBehaviourType = MoveBehaviourType::NormalMoveBehaviour;
+    void SetMoveBehaviour(MoveBehaviourName behaviourType);
 
     bool canMove = true;
     float hypotenuse;
@@ -20,6 +19,10 @@ public:
     float halfSize;
     float moveSpeed;
     Vector3 rotation;
+    MoveBehaviourName nextMoveBehaviourName;
+    MoveBehaviourName currentMoveBehaviourType;
+
 private:
-    MACNormalMoveBehaviour m_MoveBehaviour;
+    void ApplyMoveBehaviourChange();
+    MACMoveBehaviour* m_MoveBehaviour;
 };

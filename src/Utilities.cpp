@@ -2,7 +2,9 @@
 #include <ctime>
 #include <sstream>
 #include <iomanip>
-#include <openssl/md5.h>
+#ifndef PLATFORM_WEB
+    #include <openssl/md5.h>
+#endif
 
 void Utilities::Log(std::string message, std::string prefix, TraceLogLevel logLevel)
 {
@@ -15,7 +17,7 @@ void Utilities::Log(Vector3 vector, std::string prefix, TraceLogLevel logLevel)
     Log(message, prefix, logLevel);
 }
 
-
+#ifndef PLATFORM_WEB
 std::string Utilities::GenerateHash()
 {
     // Get the current time
@@ -37,3 +39,9 @@ std::string Utilities::GenerateHash()
 
     return md5String.str();
 }
+#else
+std::string Utilities::GenerateHash()
+{
+    return std::to_string(GetTime());
+}
+#endif

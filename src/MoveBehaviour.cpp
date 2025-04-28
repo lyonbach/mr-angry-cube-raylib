@@ -13,7 +13,7 @@ void QuantizeVector3(Vector3& vector)
     vector.z = round(vector.z * 2) / 2;
 }
 
-void MACNormalMoveBehaviour::Action(GameObject* gameObject)
+void MACMoveBehaviour::Action(GameObject* gameObject)
 {
 
     MrAngryCube* player = (MrAngryCube*)gameObject;
@@ -27,18 +27,18 @@ void MACNormalMoveBehaviour::Action(GameObject* gameObject)
     // update a 2d vector. We first divide the vector to half cube size then can multiply
     // the x and y values of the vector to update the cube vertical position.
     Vector3& rotationAxis = Game::Get().currentRotationAxis;
-    Vector3 nextRotation = Vector3Add(player->rotation, Vector3Scale(rotationAxis, player->moveSpeed));
+    Vector3 nextRotation = Vector3Add(player->rotation, Vector3Scale(rotationAxis, moveSpeed));
 
     if (player->IsAtQuarterRotation(player->rotation) && player->canMove)
     {
         player->canMove = false;
         QuantizeVector3(nextRotation);
-        lastSetCanMoveTime = GetTime();
+        m_LastSetCanMoveTime = GetTime();
     }
 
     if (!player->canMove)
     {
-        if (GetTime() - lastSetCanMoveTime >= timeUntilNextupdate) {
+        if (GetTime() - m_LastSetCanMoveTime >= timeUntilNextUpdate) {
             player->canMove = true;
         } else {
             return;
@@ -51,7 +51,7 @@ void MACNormalMoveBehaviour::Action(GameObject* gameObject)
     // and y stands for the rotation around z axis. We do not need the other axis since
     // rotation around y does not change the vertical position of the cube.
     // We can use the 2d vector to calculate the vertical position of the cube.
-    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * player->moveSpeed);
+    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * moveSpeed);
     Matrix nextTransform = MatrixMultiply(
         player->transform, MatrixRotateXYZ({incrementVector.x, incrementVector.y, incrementVector.z})
     );
@@ -61,4 +61,10 @@ void MACNormalMoveBehaviour::Action(GameObject* gameObject)
     nextTransform.m13 = deltaY.y * deltaY.x * player->size;
     nextTransform.m14 = nextRotation.x / 90.0f  * player->size * 2;
     player->transform = nextTransform;
+}
+
+void MACIdleMoveBehaviour::Action(GameObject* gameObject)
+{
+    Utilities::Log("HALLO!");
+    ((MrAngryCube*)gameObject)->canMove = true;
 }

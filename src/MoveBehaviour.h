@@ -4,25 +4,41 @@
 #include "GameObject.h"
 
 
-enum class MoveBehaviourType
+enum class MoveBehaviourName
 {
-    NormalMoveBehaviour
+    NormalMoveBehaviour,
+    MoveBehaviourAngerLevel1,
+    MoveBehaviourAngerLevel2,
+    MoveBehaviourAngerLevel3,
+    MoveBehaviourAngerLevel4,
+    MoveBehaviourAngerLevelInsane,
+    IdleMoveBehaviour
 };
 
 
-class MACMoveBehaviour
+class MACMoveBehaviourBase
 {
 public:
-    MACMoveBehaviour() = default;
-    ~MACMoveBehaviour() = default;
+    MACMoveBehaviourBase() = default;
+    ~MACMoveBehaviourBase() = default;
     virtual void Action(GameObject* gameObject) = 0;
 };
 
 
-class MACNormalMoveBehaviour : public MACMoveBehaviour
+class MACMoveBehaviour : public MACMoveBehaviourBase
 {
 public:
-    float lastSetCanMoveTime = 0.0f;
-    float timeUntilNextupdate = 1.0f;
+    float timeUntilNextUpdate = .3f;
+    float moveSpeed = 1.0f;
+    void Action(GameObject* gameObject) override;
+private:
+    float m_LastSetCanMoveTime = 0.0f;
+};
+
+class MACIdleMoveBehaviour : public MACMoveBehaviour
+{
+public:
+    float moveSpeed = 0.0f;
+    float timeUntilNextUpdate = .0f;
     void Action(GameObject* gameObject) override;
 };
