@@ -20,11 +20,28 @@ CameraController::~CameraController()
 
 void CameraController::Update(float deltaTime)
 {
+    MrAngryCube* player = Game::Get().GetPlayer();
     nextPositon = camera->target + chaseVector;
-    Vector3 distanceVectorTarget = Game::Get().GetPlayer()->GetPosition() - camera->target;
-    Vector3 distanceVectorPosition = nextPositon - camera->position;
+    Vector3 distanceVectorTarget = player->GetPosition() - camera->target;
     camera->target += distanceVectorTarget * deltaTime * CAMERA_TARGET_UPDATE_SPEED_COEFF;
+    
+
+    if(player->IsAtQuarterRotation(player->rotation) && player->canMove)
+    {
+        cameraShakeStrenght = STANDARD_CAMERA_SHAKE_STRENGTH;
+        if ((int)abs(Game::Get().currentRotationAxis.y == 1))
+        {
+            cameraShakeStrenght = 0.05f;
+        }
+    }
+    nextPositon.x += cameraShakeStrenght * GetRandomValue(-1, 1);
+    nextPositon.y += cameraShakeStrenght * GetRandomValue(-1, 1);
+    nextPositon.z += cameraShakeStrenght * GetRandomValue(-1, 1);
+    cameraShakeStrenght *= .8f;
+
+    Vector3 distanceVectorPosition = nextPositon - camera->position;
     camera->position += distanceVectorPosition * deltaTime * CAMERA_UPDATE_SPEED_COEFF;
+
 }
 
 void CameraController::ZoomIn()

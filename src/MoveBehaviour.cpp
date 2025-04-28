@@ -38,11 +38,8 @@ void MACMoveBehaviour::Action(GameObject* gameObject)
 
     if (!player->canMove)
     {
-        if (GetTime() - m_LastSetCanMoveTime >= timeUntilNextUpdate) {
-            player->canMove = true;
-        } else {
-            return;
-        }
+        if (GetTime() - m_LastSetCanMoveTime < timeUntilNextUpdate) { return; } 
+        player->canMove = true;
     }
 
     player->rotation = nextRotation;
@@ -63,8 +60,71 @@ void MACMoveBehaviour::Action(GameObject* gameObject)
     player->transform = nextTransform;
 }
 
-void MACIdleMoveBehaviour::Action(GameObject* gameObject)
+void MACNoRotateMoveBehaviour::Action(GameObject* gameObject)
 {
-    Utilities::Log("HALLO!");
-    ((MrAngryCube*)gameObject)->canMove = true;
+    MrAngryCube* player = (MrAngryCube*)gameObject;
+    if (!player)
+    {
+        Utilities::Log("Player object is null in MACNormalMoveBehaviour::Action", "MoveBehaviour", LOG_FATAL);
+        return;
+    }
+
+    Vector3& rotationAxis = Game::Get().currentRotationAxis;
+    Vector3 nextRotation = Vector3Add(player->rotation, Vector3Scale(rotationAxis, moveSpeed));
+
+    if (player->canMove)
+    {
+        player->canMove = false;
+        QuantizeVector3(nextRotation);
+        m_LastSetCanMoveTime = GetTime();
+    }
+
+    if (!player->canMove)
+    {
+        if (GetTime() - m_LastSetCanMoveTime < timeUntilNextUpdate) { return; } 
+        player->canMove = true;
+    }
+
+    player->rotation = nextRotation;
+
+
+    Vector3 incrementVector = Vector3Scale(rotationAxis, DEG2RAD * moveSpeed);
+    Matrix nextTransform = player->transform;
+
+    Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin({nextRotation.x, nextRotation.z}), player->hypotenuse), 1 / player->halfSize);
+    nextTransform.m12 = -nextRotation.z / 90.0f * player->size * 2;
+    // nextTransform.m13 = deltaY.y * deltaY.x * player->size;
+    nextTransform.m14 = nextRotation.x / 90.0f  * player->size * 2;
+    player->transform = nextTransform;
+}
+
+MACMoveBehaviourBase* MoveBehaviour::Get(MoveBehaviourName name)
+{
+    if (name == MoveBehaviourName::NormalMoveBehaviour)
+        return new MACMoveBehaviour();
+    else if (name == MoveBehaviourName::MoveBehaviourAngerLevel1)
+    {
+        return new MACMoveBehaviourAngerLevel1();
+    }
+    else if (name == MoveBehaviourName::MoveBehaviourAngerLevel2)
+    {
+        return new MACMoveBehaviourAngerLevel2();
+    }
+    else if (name == MoveBehaviourName::MoveBehaviourAngerLevel3)
+    {
+        return new MACMoveBehaviourAngerLevel3();
+    }
+    else if (name == MoveBehaviourName::MoveBehaviourAngerLevel4)
+    {
+        return new MACMoveBehaviourAngerLevel4();
+    } else if (name == MoveBehaviourName::MoveBehaviourAngerLevelInsane)
+    {
+        return new MACMoveBehaviourAngerLevel5();
+    } else if (name == MoveBehaviourName::NoRotateMoveBehaviour)
+    {
+        return new MACNoRotateMoveBehaviour();
+    }
+
+    return nullptr;
+
 }

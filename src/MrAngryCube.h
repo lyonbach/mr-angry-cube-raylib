@@ -19,10 +19,9 @@ public:
     float halfSize;
     float moveSpeed;
     Vector3 rotation;
-    MoveBehaviourName nextMoveBehaviourName;
-    MoveBehaviourName currentMoveBehaviourType;
+    MoveBehaviourName nextMoveBehaviourName = MoveBehaviourName::NoMoveBehaviour;
 
 private:
     void ApplyMoveBehaviourChange();
-    MACMoveBehaviour* m_MoveBehaviour;
+    MACMoveBehaviourBase* m_MoveBehaviour;
 };

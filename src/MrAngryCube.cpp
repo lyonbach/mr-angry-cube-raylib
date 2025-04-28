@@ -21,9 +21,10 @@ void MrAngryCube::Render()
 void MrAngryCube::Update(float deltaTime)
 {
     m_MoveBehaviour->Action(this);
-    if (IsAtQuarterRotation(rotation))
+    if (IsAtQuarterRotation(rotation) && nextMoveBehaviourName != MoveBehaviourName::NoMoveBehaviour)
     {
         ApplyMoveBehaviourChange();
+        nextMoveBehaviourName = MoveBehaviourName::NoMoveBehaviour;
     }
 }
 
@@ -49,37 +50,16 @@ bool MrAngryCube::HasEverMoved() const
 
 void MrAngryCube::SetMoveBehaviour(MoveBehaviourName behaviourName)  // FIXME THIS COULD BE BETTER
 {
-    Utilities::Log("Setting move behaviour to: " + std::to_string(static_cast<int>(behaviourName)), "MrAngryCube", LOG_DEBUG);
+    Utilities::Log("Setting move behaviour to: " + std::to_string(static_cast<int>(behaviourName)), "MrAngryCube", LOG_INFO);
     nextMoveBehaviourName = behaviourName;
 }
 
 void MrAngryCube::ApplyMoveBehaviourChange()
 {
-    switch (nextMoveBehaviourName)
-    {
-    case MoveBehaviourName::NormalMoveBehaviour:
-        m_MoveBehaviour->moveSpeed = 1.0f;
-        m_MoveBehaviour->timeUntilNextUpdate = 0.3f;
-    break;
-    case MoveBehaviourName::MoveBehaviourAngerLevel1:
-        m_MoveBehaviour->moveSpeed = 2.0f;
-        m_MoveBehaviour->timeUntilNextUpdate = 0.2f;
-    break;
-    case MoveBehaviourName::MoveBehaviourAngerLevel2:
-        m_MoveBehaviour->moveSpeed = 3.0f;
-        m_MoveBehaviour->timeUntilNextUpdate = 0.15f;
-    break;
-    case MoveBehaviourName::MoveBehaviourAngerLevel3:
-        m_MoveBehaviour->moveSpeed = 4.5f;
-        m_MoveBehaviour->timeUntilNextUpdate = 0.1f;
-    break;
-    case MoveBehaviourName::MoveBehaviourAngerLevel4:
-        m_MoveBehaviour->moveSpeed = 5.0f;
-        m_MoveBehaviour->timeUntilNextUpdate = 0.05f;
-    break;
-    case MoveBehaviourName::MoveBehaviourAngerLevelInsane:
-        m_MoveBehaviour->moveSpeed = 9.0f;
-        m_MoveBehaviour->timeUntilNextUpdate = 0.001f;
-    break;
-    }
+    MACMoveBehaviourBase* moveBehaviour = MoveBehaviour::Get(nextMoveBehaviourName);
+    if (moveBehaviour == nullptr){ return; }
+
+    Utilities::Log("Applying move behaviour", "MrAngryCube", LOG_INFO);
+    delete m_MoveBehaviour;
+    m_MoveBehaviour = moveBehaviour;
 }

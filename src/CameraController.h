@@ -21,6 +21,7 @@ public:
     Vector3 GetRightVector();
 
     Camera* camera;
+    float cameraShakeStrenght;
 
     std::vector<float> possibleCameraVerticalValues = {
         CAMERA_VERTICAL_CHASE,

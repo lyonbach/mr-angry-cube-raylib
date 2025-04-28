@@ -144,6 +144,8 @@ void Game::HandleKeyEvents()
         m_Player->SetMoveBehaviour(MoveBehaviourName::MoveBehaviourAngerLevel4);
     } else if (IsKeyPressed(KEY_FIVE)) {
         m_Player->SetMoveBehaviour(MoveBehaviourName::MoveBehaviourAngerLevelInsane);
+    } else if (IsKeyPressed(KEY_SIX)) {
+        m_Player->SetMoveBehaviour(MoveBehaviourName::NoRotateMoveBehaviour);
     } else if (IsKeyPressed(KEY_W))
     {
         nextRotationAxis = cameraController.GetRightVector();
