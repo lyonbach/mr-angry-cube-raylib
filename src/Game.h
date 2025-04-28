@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "Utilities.h"
 #include "Constants.h"
+#include "PhysicsObserver.h"
 #include <vector>
 #include <map>
 
@@ -30,6 +31,7 @@ public:
     CameraController cameraController;
     GameState gameState = GameState::Paused;
     GameConfig* gameConfig;
+    PhysicsObserver* physicsObserver;
     
     ~Game();
     static Game& Get();
@@ -49,6 +51,7 @@ public:
 private:
     Game();
     MrAngryCube* m_Player;
+    
     bool m_Initialized = false;
     float m_LastUpdateTime = 0.0f;
     float m_deltaTime = 0.0f;

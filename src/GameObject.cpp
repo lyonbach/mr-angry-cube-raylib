@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include "Utilities.h"
 
+
 GameObject::GameObject(Model* model, Material* material, Texture* texture)
     : model(model), material(material), texture(texture)
 {

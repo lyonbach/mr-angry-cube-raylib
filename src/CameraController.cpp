@@ -24,9 +24,8 @@ void CameraController::Update(float deltaTime)
     nextPositon = camera->target + chaseVector;
     Vector3 distanceVectorTarget = player->GetPosition() - camera->target;
     camera->target += distanceVectorTarget * deltaTime * CAMERA_TARGET_UPDATE_SPEED_COEFF;
-    
 
-    if(player->IsAtQuarterRotation(player->rotation) && player->canMove)
+    if(player->IsAtQuarterRotation(player->rotation) && abs(Vector3Length(Game::Get().physicsObserver->GetVelocity())) > .1f)
     {
         cameraShakeStrenght = STANDARD_CAMERA_SHAKE_STRENGTH;
         if ((int)abs(Game::Get().currentRotationAxis.y == 1))

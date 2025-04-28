@@ -64,6 +64,9 @@ void Game::Init(GameConfig& config)
     m_Player = player;
     Register(player);
 
+    physicsObserver = new PhysicsObserver();
+    physicsObserver->observed = player;
+
     m_Initialized = true;
 }
 
@@ -121,6 +124,7 @@ void Game::Update()
         }
         cameraController.Update(m_deltaTime);
         m_LastUpdateTime = GetTime();
+        physicsObserver->Update();
     }
 
     if (m_Player->IsAtQuarterRotation(m_Player->rotation))
