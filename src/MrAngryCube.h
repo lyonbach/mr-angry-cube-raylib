@@ -1,34 +1,31 @@
-#pragma once
-#include "Game.h"
 #include "GameObject.h"
-#include "Miscellaneous.h"
-#include "raylib.h"
-#include "raymath.h"
-#include <vector>
+#include "MoveBehaviour.h"
+#include "AngerControlBehavoir.h"
 
 
 class MrAngryCube : public GameObject
 {
 public:
-    Vector3 nextRotationAxis = { 0.0f, 0.0f, 0.0f };
-    Vector3 rotationAxis     = { 0.0f, 0.0f, 0.0f };
-    Vector3 rotation         = { 0.0f, 0.0f, 0.0f };
-    float speed              = 0.0f;
-    bool canMove             = false; 
-
-    MrAngryCube(Model& model, Shader& shader, Texture& texture);
-    virtual ~MrAngryCube() = default;
+    MrAngryCube(Model* model, Material* material, Texture* texture);
+    ~MrAngryCube();
     void Render() override;
     void Update(float deltaTime) override;
+    float GetAnger();
+    bool IsAtQuarterRotation(Vector3& vector) const;
+    bool HasEverMoved() const;
+    void SetMoveBehaviour(MoveBehaviourName behaviourType);
 
-    bool IsFaceOnTheGround();
-    bool IsAngry();
-    bool IsAtQuarterRotation(bool ommitZero=true);
-    void WaitFor(float seconds);
+    bool canMove = true;
+    float hypotenuse;
+    float size;
+    float halfSize;
+    float moveSpeed;
+    Vector3 rotation;
+    MoveBehaviourName nextMoveBehaviourName = MoveBehaviourName::NoMoveBehaviour;
+    MoveBehaviourName currentMoveBehaviourName = nextMoveBehaviourName;
 
 private:
-    float m_LastMovementCheckTime = 0.0f;
-    float m_Size = 0.0f;
-    float m_HalfSize = 0.0f;
-    float m_Hypotenuse = 0.0f;
+    void ApplyMoveBehaviourChange();
+    MACMoveBehaviourBase* m_MoveBehaviour;
+    NormalAngerControlBehaviour* m_AngerControlBehaviour;
 };

@@ -1,87 +1,111 @@
 #include "CameraController.h"
 #include "Game.h"
+#include "MrAngryCube.h"
 
 
 CameraController::CameraController()
 {
-    m_Camera.position = (Vector3){ 0.0f, 0.0f, 0.0f };  // Camera position
-    m_Camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
-    m_Camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-    m_Camera.fovy = 70.0f;                                // Camera field-of-view Y
-    m_Camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
-};
-
-void CameraController::Update(float deltaTime, GameObject* targetObject)
-{
-    if (targetObject == nullptr)
-    {
-        return;
-    }
-    Game& game = Game::Get();
-
-    // Calculating the velocity from the last 20 position vectors.
-    // This means, we are trying to find out if the cube was just stopped.
-    Vector3 velocity = game.mrAngryCube->GetVelocity(deltaTime, 0, 20);
-    if (game.mrAngryCube->IsAtQuarterRotation() && (int)game.mrAngryCube->rotationAxis.y == 0 && Utilities::SumVector3(velocity) != 0)
-    {
-        float strength = game.mrAngryCube->IsFaceOnTheGround() ? .03f : .1f;
-        game.gameInfo.cameraShakeStrenght = strength + game.gameInfo.anger / 100.0f;
-        game.gameInfo.cameraShakeStrengthLastSet = GetTime();
-    } else 
-    {
-        game.gameInfo.cameraShakeStrenght = 0.0f;
-    }
-
-    Vector3 target = (Vector3){targetObject->transform.m12, targetObject->transform.m13, targetObject->transform.m14};
-    Vector3 &nextRotationAxis = Game::Get().mrAngryCube->nextRotationAxis;
-    
-    float offsetAmount = 5.0f;
-    Vector3 scaledNextRotationAxis = Vector3Scale(nextRotationAxis, offsetAmount);
-    std::swap(scaledNextRotationAxis.x, scaledNextRotationAxis.z);
-    scaledNextRotationAxis.x *= -1;
-    scaledNextRotationAxis.y = 0.0f;
-
-    Vector3 distance = Vector3Add(target, scaledNextRotationAxis) - m_Camera.target;
-    Vector3 update = Vector3Scale(distance, deltaTime * 2);
-    m_Camera.target = Vector3Add(m_Camera.target, update);
-
-    m_Camera.target.x += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;
-    m_Camera.target.y += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;
-    m_Camera.target.z += GetRandomValue(-1, 1) * Game::Get().gameInfo.cameraShakeStrenght;
-    m_Camera.position = Vector3Add(m_Camera.target, chaseVector);
+    camera = new Camera();
+    camera->target = Vector3();
+    camera->position = chaseVector;
+    camera->up = Vector3{ 0.0f, 1.0f, 0.0f };
+    camera->fovy = 80.0f;
+    camera->projection = CAMERA_PERSPECTIVE;
 }
 
-void CameraController::Render()
+CameraController::~CameraController()
 {
-    BeginMode3D(m_Camera);
-    DrawGrid(200, 1.0f);
-    for (auto& gameObject : Game::Get().gameObjects) { gameObject->Render(); }
-    EndMode3D();
+    delete camera;
+}
+
+void CameraController::Update(float deltaTime)
+{
+    MrAngryCube* player = Game::Get().GetPlayer();
+    nextPositon = camera->target + chaseVector;
+    Vector3 distanceVectorTarget = player->GetPosition() - camera->target;
+    camera->target += distanceVectorTarget * deltaTime * CAMERA_TARGET_UPDATE_SPEED_COEFF;
+
+    if(player->IsAtQuarterRotation(player->rotation) && abs(Vector3Length(Game::Get().physicsObserver->GetVelocity())) > .1f)
+    {
+        cameraShakeStrenght = STANDARD_CAMERA_SHAKE_STRENGTH;
+        if ((int)abs(Game::Get().currentRotationAxis.y == 1))
+        {
+            cameraShakeStrenght = 0.05f;
+        }
+    }
+    nextPositon.x += cameraShakeStrenght * GetRandomValue(-1, 1);
+    nextPositon.y += cameraShakeStrenght * GetRandomValue(-1, 1);
+    nextPositon.z += cameraShakeStrenght * GetRandomValue(-1, 1);
+    cameraShakeStrenght *= .8f;
+
+    Vector3 distanceVectorPosition = nextPositon - camera->position;
+    camera->position += distanceVectorPosition * deltaTime * CAMERA_UPDATE_SPEED_COEFF;
+
+}
+
+void CameraController::ZoomIn()
+{
+    Utilities::Log("Zoom in requested...", "CameraController", LOG_DEBUG);
+    Vector3 targetChaseVector = Vector3Add(Vector3Scale(GetFrontVector(), CAMERA_CHASE_VECTOR_INCREMENT), chaseVector);
+    if(Vector3Length(GetFrontVector() * targetChaseVector) < MIN_CAMERA_CHASE_DISTANCE) { return; }
+    chaseVector = targetChaseVector;
+}
+
+void CameraController::ZoomOut()
+{
+    Utilities::Log("Zoom out requested...", "CameraController", LOG_DEBUG);
+    Vector3 targetChaseVector = Vector3Add(Vector3Scale(GetFrontVector(), -CAMERA_CHASE_VECTOR_INCREMENT), chaseVector);
+    if(Vector3Length(GetFrontVector() * targetChaseVector) > MAX_CAMERA_CHASE_DISTANCE) { return; }
+    chaseVector = targetChaseVector;
+}
+
+void CameraController::LeftView()
+{
+    Utilities::Log("Left view requested...", "CameraController", LOG_DEBUG);
+    Matrix rotation = MatrixRotateY(-PI / 2);
+    chaseVector = Vector3Transform(chaseVector, rotation);
+}
+
+void CameraController::RightView()
+{
+    Utilities::Log("Right view requested...", "CameraController", LOG_DEBUG);
+    Matrix rotation = MatrixRotateY(PI / 2);
+    chaseVector = Vector3Transform(chaseVector, rotation);
+}
+
+void CameraController::MoveUp()
+{
+    Utilities::Log("Moving camera up...", "CameraController", LOG_DEBUG);
+    cameraVerticalValueIndex = std::min(2, cameraVerticalValueIndex+1);
+    chaseVector.y = possibleCameraVerticalValues.at(cameraVerticalValueIndex);
+}
+
+void CameraController::MoveDown()
+{
+    Utilities::Log("Moving camera down...", "CameraController", LOG_DEBUG);
+    cameraVerticalValueIndex = std::max(0, cameraVerticalValueIndex-1);
+    chaseVector.y = possibleCameraVerticalValues.at(cameraVerticalValueIndex);
 }
 
 Vector3 CameraController::GetFrontVector()
 {
-    return Vector3Normalize(Vector3Scale(Vector3Multiply(Vector3({1.0f, 0.0f, 1.0f}), chaseVector), -1.0f));
+    return Vector3Normalize(Vector3Multiply(chaseVector, {-1, 0, -1}));
 }
 
-Vector3 CameraController::GetRearVector()
+Vector3 CameraController::GetBackVector()
 {
-    return Vector3Normalize(Vector3Multiply(chaseVector, Vector3({1.0f, 0.0f, 1.0f})));
-}
-
-Vector3 CameraController::GetLeftVector()
-{
-    return Vector3Normalize(Vector3CrossProduct(GetFrontVector(), {0.0f, 1.0f, 0.0f}));
+    return Vector3Normalize(Vector3Multiply(chaseVector, {1, 0, 1}));
 }
 
 Vector3 CameraController::GetRightVector()
 {
-    return Vector3Normalize(Vector3CrossProduct({0.0f, 1.0f, 0.0}, GetFrontVector()));
+    Vector3 upVector = {0.0f, 1.0f, 0.0f};
+    return Vector3CrossProduct(upVector, GetFrontVector());
 }
 
-void CameraController::RotateCamera(RotationDirection direction)
+Vector3 CameraController::GetLeftVector()
 {
-    float angle = direction == RotationDirection::CCW ? -90.0f : 90.0f;
-    chaseVector = Vector3RotateByAxisAngle(chaseVector, {0.0f, 1.0f, 0.0f}, DEG2RAD * angle);
-    chaseVector = Utilities::QuantizeVector3(chaseVector);
+    Vector3 upVector = {0.0f, 1.0f, 0.0f};
+    return Vector3CrossProduct(GetFrontVector(), upVector);
 }
+
