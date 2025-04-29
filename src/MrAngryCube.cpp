@@ -11,6 +11,13 @@ MrAngryCube::MrAngryCube(Model* model, Material* material, Texture* texture)
     halfSize =  size * .5f;
     hypotenuse = sqrt(halfSize * halfSize * 2);
     m_MoveBehaviour = new MACMoveBehaviour();
+    m_AngerControlBehaviour = new NormalAngerControlBehaviour();
+}
+MrAngryCube::~MrAngryCube()
+{
+    GameObject::~GameObject();
+    delete m_MoveBehaviour;
+    delete m_AngerControlBehaviour;
 }
 
 void MrAngryCube::Render()
@@ -20,12 +27,25 @@ void MrAngryCube::Render()
 
 void MrAngryCube::Update(float deltaTime)
 {
+    m_AngerControlBehaviour->Update();
     m_MoveBehaviour->Action(this);
+    if (m_AngerControlBehaviour->anger >= MAXIMUM_ANGER)
+    {
+        auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
+        int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();
+        nextMoveBehaviourName = allBehaviours[(idx + 1) % allBehaviours.size()];
+        m_AngerControlBehaviour->anger = MINIMUM_ANGER;
+    }
+
     if (IsAtQuarterRotation(rotation) && nextMoveBehaviourName != MoveBehaviourName::NoMoveBehaviour)
     {
         ApplyMoveBehaviourChange();
-        nextMoveBehaviourName = MoveBehaviourName::NoMoveBehaviour;
     }
+}
+
+float MrAngryCube::GetAnger()
+{
+    return m_AngerControlBehaviour->anger;
 }
 
 bool MrAngryCube::IsAtQuarterRotation(Vector3& rotation) const
@@ -62,4 +82,6 @@ void MrAngryCube::ApplyMoveBehaviourChange()
     Utilities::Log("Applying move behaviour", "MrAngryCube", LOG_INFO);
     delete m_MoveBehaviour;
     m_MoveBehaviour = moveBehaviour;
+    currentMoveBehaviourName = nextMoveBehaviourName;
+    nextMoveBehaviourName = MoveBehaviourName::NoMoveBehaviour;
 }

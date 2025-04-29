@@ -128,3 +128,23 @@ MACMoveBehaviourBase* MoveBehaviour::Get(MoveBehaviourName name)
     return nullptr;
 
 }
+
+const std::vector<MoveBehaviourName> MoveBehaviour::GetAllBehaviourNames()
+{
+    return {
+        MoveBehaviourName::NoMoveBehaviour,
+        MoveBehaviourName::NormalMoveBehaviour,
+        MoveBehaviourName::MoveBehaviourAngerLevel1,
+        MoveBehaviourName::MoveBehaviourAngerLevel2,
+        MoveBehaviourName::MoveBehaviourAngerLevel3,
+        MoveBehaviourName::MoveBehaviourAngerLevel4,
+        MoveBehaviourName::MoveBehaviourAngerLevelInsane,
+        MoveBehaviourName::NoRotateMoveBehaviour,
+        MoveBehaviourName::IdleMoveBehaviour
+    };
+}
+
+const int MoveBehaviour::MoveBehaviourCount()
+{
+    return GetAllBehaviourNames().size();
+}

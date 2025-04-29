@@ -12,7 +12,7 @@ struct GameConfig
     };
 
     std::map<std::string, std::string> shaderPaths = {
-        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"}
+        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/outline.fs"}
     };
 
     std::map<std::string, std::string> modelPaths = {
@@ -20,7 +20,9 @@ struct GameConfig
         {"enemyDefault", "./assets/models/enemy.obj"}
     };
 
-    Vector2 screenSize = {900, 540};
+    // Vector2 screenSize = {1920 / 2, 1200 / 2};  FIXME REMOVE, TEMP FOR TESTING
+    Vector2 screenSize = {1920, 1200};
+    bool fullScreen = true;
     Color backgroundColor = DARKGRAY;
     float updateRate = 90.0f;
     float updateTime = 1.0f / updateRate;

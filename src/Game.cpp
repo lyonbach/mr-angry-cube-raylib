@@ -12,10 +12,14 @@ Game::~Game()
 {
     for (GameObject* gameObject : gameObjects)
     {
-        Utilities::Log("Deleting GameObject with id: " + gameObject->objectId, "GAME");
+        Utilities::Log("Deleting GameObject with id: " + gameObject->objectId, "Game");
         delete gameObject;
     }
     gameObjects.clear();
+
+    delete physicsObserver;
+    delete hud;
+
     CloseWindow();
 }
 
@@ -31,6 +35,9 @@ void Game::Init(GameConfig& config)
     InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
     // SetExitKey(0);  // Disable exit key. FIXME GET BACK LATER
 
+    ToggleFullscreen();
+
+    // Initialize models, shaders, textures and materials.
     Utilities::Log("Loading models...", "GAME");  // Models.
     for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
     {
@@ -60,12 +67,15 @@ void Game::Init(GameConfig& config)
         textures[pair.first] = LoadTexture(pair.second.c_str());
     }
 
+    // Initialize game objects.
     MrAngryCube* player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
     m_Player = player;
     Register(player);
 
     physicsObserver = new PhysicsObserver();
     physicsObserver->observed = player;
+
+    hud = new Hud();    
 
     m_Initialized = true;
 }
@@ -107,6 +117,8 @@ void Game::Render()
                     gameObject->Render();
                 }
             EndMode3D();
+
+            hud->Render();
             DrawFPS(50, 50);
         EndDrawing();
         break;
@@ -115,14 +127,14 @@ void Game::Render()
 
 void Game::Update()
 {
-    m_deltaTime = GetTime() - m_LastUpdateTime;
-    if(m_deltaTime >= gameConfig->updateTime)
+    m_DeltaTime = GetTime() - m_LastUpdateTime;
+    if(m_DeltaTime >= gameConfig->updateTime)
     {
         for (GameObject* gameObject : gameObjects)
         {
-            gameObject->Update(m_deltaTime);
+            gameObject->Update(m_DeltaTime);
         }
-        cameraController.Update(m_deltaTime);
+        cameraController.Update(m_DeltaTime);
         m_LastUpdateTime = GetTime();
         physicsObserver->Update();
     }

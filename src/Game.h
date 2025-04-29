@@ -1,10 +1,11 @@
 #pragma once
 #include "CameraController.h"
+#include "Constants.h"
 #include "GameConfig.h"
 #include "GameObject.h"
-#include "Utilities.h"
-#include "Constants.h"
+#include "Hud.h"
 #include "PhysicsObserver.h"
+#include "Utilities.h"
 #include <vector>
 #include <map>
 
@@ -32,7 +33,8 @@ public:
     GameState gameState = GameState::Paused;
     GameConfig* gameConfig;
     PhysicsObserver* physicsObserver;
-    
+    Hud* hud;
+
     ~Game();
     static Game& Get();
     void Init(GameConfig& gameConfig);
@@ -44,15 +46,16 @@ public:
     void HandleKeyEvents();
     int Run();
     void Exit();
-    
+
     Game(const Game&) = delete;
     void operator=(const Game&) = delete;
-    
+
 private:
     Game();
     MrAngryCube* m_Player;
-    
+
     bool m_Initialized = false;
     float m_LastUpdateTime = 0.0f;
-    float m_deltaTime = 0.0f;
+    float m_DeltaTime = 0.0f;
+    unsigned int m_Anger = MINIMUM_ANGER;
 };

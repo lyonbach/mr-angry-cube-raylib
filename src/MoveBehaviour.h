@@ -101,4 +101,6 @@ public:
 namespace MoveBehaviour
 {
     MACMoveBehaviourBase* Get(MoveBehaviourName name);
+    const std::vector<MoveBehaviourName> GetAllBehaviourNames();
+    const int MoveBehaviourCount();
 };
