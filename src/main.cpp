@@ -6,10 +6,7 @@
 int main()
 {
     const char* wd = GetWorkingDirectory();
-
-    // Create game configuration.
-    GameConfig gameConfig;
-
+    GameConfig gameConfig("game.ini");
     Game* gameInstance = &Game::Get();
     gameInstance->Init(gameConfig);
     return gameInstance->Run();

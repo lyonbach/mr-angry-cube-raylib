@@ -17,6 +17,12 @@ void Utilities::Log(Vector3 vector, std::string prefix, TraceLogLevel logLevel)
     Log(message, prefix, logLevel);
 }
 
+void Utilities::Log(Vector2 vector, std::string prefix, TraceLogLevel logLevel)
+{
+    std::string message = "\nX: " + std::to_string(vector.x) + "\nY: " + std::to_string(vector.y);
+    Log(message, prefix, logLevel);
+}
+
 #ifndef PLATFORM_WEB
 std::string Utilities::GenerateHash()
 {

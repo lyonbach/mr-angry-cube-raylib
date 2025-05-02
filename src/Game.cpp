@@ -5,7 +5,7 @@
 
 Game::Game()
 {
-    Utilities::Log("Created Game singleton class.", "GAME");
+    Utilities::Log("Created Game singleton class.", "Game");
 }
 
 Game::~Game()
@@ -34,8 +34,8 @@ void Game::Init(GameConfig& config)
     gameConfig = &config;
     InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
     // SetExitKey(0);  // Disable exit key. FIXME GET BACK LATER
-
-    ToggleFullscreen();
+    
+    if (gameConfig->fullScreen) { ToggleFullscreen(); }
 
     // Initialize models, shaders, textures and materials.
     Utilities::Log("Loading models...", "GAME");  // Models.

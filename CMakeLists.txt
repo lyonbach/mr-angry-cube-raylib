@@ -39,3 +39,19 @@ foreach(FOLDER ${FOLDERS})
     endif()
 endforeach()
 
+# Copy configuration file to main folder
+set(INI_FILE_NAME "game.ini")
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/${INI_FILE_NAME}"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${INI_FILE_NAME}"
+)
+
+# Find OpenSSL
+find_package(OpenSSL REQUIRED)
+
+# Include OpenSSL headers
+include_directories(${OPENSSL_INCLUDE_DIR})
+
+# Link OpenSSL libraries
+target_link_libraries(${PROJECT_NAME} OpenSSL::SSL OpenSSL::Crypto)
