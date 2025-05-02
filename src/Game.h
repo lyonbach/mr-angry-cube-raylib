@@ -4,6 +4,7 @@
 #include "GameConfig.h"
 #include "GameObject.h"
 #include "Hud.h"
+#include "Gui.h"
 #include "PhysicsObserver.h"
 #include "Utilities.h"
 #include <vector>
@@ -34,6 +35,7 @@ public:
     GameConfig* gameConfig;
     PhysicsObserver* physicsObserver;
     Hud* hud;
+    MainMenu* mainMenu;
 
     ~Game();
     static Game& Get();

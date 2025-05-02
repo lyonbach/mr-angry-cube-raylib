@@ -1,6 +1,7 @@
 #include "MrAngryCube.h"
 #include "Game.h"
 #include "Constants.h"
+#include "Gui.h"
 
 
 Game::Game()
@@ -10,17 +11,14 @@ Game::Game()
 
 Game::~Game()
 {
+    
+    delete physicsObserver;
+    
     for (GameObject* gameObject : gameObjects)
     {
-        Utilities::Log("Deleting GameObject with id: " + gameObject->objectId, "Game");
-        delete gameObject;
+        Utilities::Log("DELETION SHOULD BE EXTENDED WITH SMART POINTERS", "Game", LOG_WARNING);
     }
     gameObjects.clear();
-
-    delete physicsObserver;
-    delete hud;
-
-    CloseWindow();
 }
 
 Game& Game::Get()
@@ -75,7 +73,8 @@ void Game::Init(GameConfig& config)
     physicsObserver = new PhysicsObserver();
     physicsObserver->observed = player;
 
-    hud = new Hud();    
+    // hud = new Hud();
+    mainMenu = new MainMenu();
 
     m_Initialized = true;
 }
@@ -117,8 +116,9 @@ void Game::Render()
                     gameObject->Render();
                 }
             EndMode3D();
-
-            hud->Render();
+                
+            mainMenu->RenderAndUpdate();
+            // hud->Render();
             DrawFPS(50, 50);
         EndDrawing();
         break;
@@ -134,9 +134,14 @@ void Game::Update()
         {
             gameObject->Update(m_DeltaTime);
         }
+        
         cameraController.Update(m_DeltaTime);
         m_LastUpdateTime = GetTime();
-        physicsObserver->Update();
+
+        if (physicsObserver!= nullptr)
+        {
+            physicsObserver->Update();
+        }
     }
 
     if (m_Player->IsAtQuarterRotation(m_Player->rotation))
