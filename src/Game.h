@@ -15,6 +15,7 @@ class MrAngryCube;
 
 enum class GameState
 {
+    MainMenu,
     Playing,
     Paused
 };

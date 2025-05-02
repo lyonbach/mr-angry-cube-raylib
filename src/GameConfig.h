@@ -15,7 +15,7 @@ struct GameConfig
     std::map<std::string, std::string> texturePaths = {  // TODO MOVE TO game.ini
         {"macDefault", "./assets/textures/test.png"},
         {"enemyDefault", "./assets/textures/concrete.png"},
-        {"mainMenuBackground", "./assets/textures/MrCube-GDD.jpg"}
+        {"mainMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"}
     };
 
     std::map<std::string, std::string> shaderPaths = {  // TODO MOVE TO game.ini

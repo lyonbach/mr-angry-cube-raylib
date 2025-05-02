@@ -1,17 +1,43 @@
 #define RAYGUI_IMPLEMENTATION
 #include "Gui.h"
 
+MainMenu::MainMenu()
+{
+    buttonStates = {
+        {"new_game", false},
+        {"load_level", false},
+        {"exit_game", false}
+    };
+}
+
 void MainMenu::RenderAndUpdate()
 {
-    DrawRectangle(rectangle.x, rectangle.y, rectangle.width, rectangle.height, color);
-    GuiButton(
-        {rectangle.x + (rectangle.width / 2 - buttonWidth / 2), rectangle.y + 30, (float)buttonWidth, (float)buttonHeight},
+    buttonStates["new_game"] = GuiButton(
+        {(float)GetScreenWidth() / 6,
+         rectangle.y + 30, (float)buttonWidth,
+        (float)buttonHeight},
         "New Game"
+    );
+    buttonStates["load_game"] = GuiButton(
+        {(float)GetScreenWidth() / 6,
+         rectangle.y + 30 + 10 + buttonHeight,
+        (float)buttonWidth, (float)buttonHeight},
+        "Load Level"
+    );
+    buttonStates["exit_game"] = GuiButton(
+        {(float)GetScreenWidth() / 6,
+         rectangle.y + 30 + 2*(10 + buttonHeight),
+        (float)buttonWidth, (float)buttonHeight},
+        "Exit Game"
     );
 }
 
+std::map<std::string, bool> MainMenu::GetButtonStates()
+{
+    return buttonStates;
+}
 
-// Gui::Init()
-// {
-//     GuiLoadStyle;
-// }
+void Gui::Init()
+{
+    GuiLoadStyle("gui/style_rltech.rgs");
+}

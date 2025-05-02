@@ -31,7 +31,7 @@ void Game::Init(GameConfig& config)
 {
     gameConfig = &config;
     InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
-    // SetExitKey(0);  // Disable exit key. FIXME GET BACK LATER
+    SetExitKey(0);
     
     if (gameConfig->fullScreen) { ToggleFullscreen(); }
 
@@ -74,8 +74,10 @@ void Game::Init(GameConfig& config)
     physicsObserver->observed = player;
 
     // hud = new Hud();
+    Gui::Init();
     mainMenu = new MainMenu();
 
+    
     m_Initialized = true;
 }
 
@@ -104,55 +106,82 @@ MrAngryCube* Game::GetPlayer()
 
 void Game::Render()
 {
+    BeginDrawing();
     switch (gameState)
     {
-    case GameState::Playing:
-        BeginDrawing();
-            BeginMode3D(*cameraController.camera);
-                ClearBackground(gameConfig->backgroundColor);
-                DrawGrid(200, 1.0f);
-                for (GameObject* gameObject : gameObjects)
-                {
-                    gameObject->Render();
-                }
-            EndMode3D();
-                
-            mainMenu->RenderAndUpdate();
-            // hud->Render();
-            DrawFPS(50, 50);
-        EndDrawing();
+    case GameState::MainMenu:
+    {
+
+        Texture* texture = &textures["mainMenuBackground"];
+        float offsetX = (GetScreenWidth() - texture->width) / 2;
+        float offsetY = (GetScreenHeight() - texture->height) / 2;
+        DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
+        mainMenu->RenderAndUpdate();
         break;
     }
+    case GameState::Playing:
+    {
+        BeginMode3D(*cameraController.camera);
+        ClearBackground(gameConfig->backgroundColor);
+        DrawGrid(200, 1.0f);
+        for (GameObject* gameObject : gameObjects)
+        {
+            gameObject->Render();
+        }
+        EndMode3D();
+        DrawFPS(50, 50);
+        break;}
+    }
+    EndDrawing();
 }
 
 void Game::Update()
 {
-    m_DeltaTime = GetTime() - m_LastUpdateTime;
-    if(m_DeltaTime >= gameConfig->updateTime)
+    switch (gameState)
     {
-        for (GameObject* gameObject : gameObjects)
+    case GameState::MainMenu:
+        if (mainMenu->buttonStates["new_game"]) { gameState = GameState::Playing; }
+        break;
+    case GameState::Playing:
+        m_DeltaTime = GetTime() - m_LastUpdateTime;
+        if(m_DeltaTime >= gameConfig->updateTime)
         {
-            gameObject->Update(m_DeltaTime);
-        }
-        
-        cameraController.Update(m_DeltaTime);
-        m_LastUpdateTime = GetTime();
+            for (GameObject* gameObject : gameObjects)
+            {
+                gameObject->Update(m_DeltaTime);
+            }
+            
+            cameraController.Update(m_DeltaTime);
+            m_LastUpdateTime = GetTime();
 
-        if (physicsObserver!= nullptr)
-        {
-            physicsObserver->Update();
+            if (physicsObserver!= nullptr)
+            {
+                physicsObserver->Update();
+            }
         }
+
+        if (m_Player->IsAtQuarterRotation(m_Player->rotation))
+        {
+            currentRotationAxis = nextRotationAxis;
+        }
+        break;
+    default:
+        break;
     }
 
-    if (m_Player->IsAtQuarterRotation(m_Player->rotation))
-    {
-        currentRotationAxis = nextRotationAxis;
-    }
 }
 
 void Game::HandleKeyEvents()
 {
-    if (IsKeyPressed(KEY_ZERO))
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        if (gameState == GameState::Playing)
+        {
+            gameState = GameState::Paused;
+        } else if (gameState == GameState::Paused)
+        {
+            gameState = GameState::Playing;
+        }
+    } else if (IsKeyPressed(KEY_ZERO))
     {
         m_Player->SetMoveBehaviour(MoveBehaviourName::NormalMoveBehaviour);
     } else if (IsKeyPressed(KEY_ONE)) {
@@ -217,7 +246,7 @@ int Game::Run()
 
     int returnCode = 0;
 
-    gameState = GameState::Playing;
+    gameState = GameState::MainMenu;
     while (!WindowShouldClose())  // Main loop.
     {
         HandleKeyEvents();
