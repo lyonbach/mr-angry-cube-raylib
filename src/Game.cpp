@@ -1,26 +1,24 @@
 #include "MrAngryCube.h"
 #include "Game.h"
 #include "Constants.h"
+#include "Gui.h"
 
 
 Game::Game()
 {
-    Utilities::Log("Created Game singleton class.", "GAME");
+    Utilities::Log("Created Game singleton class.", "Game");
 }
 
 Game::~Game()
 {
-    for (GameObject* gameObject : gameObjects)
-    {
-        Utilities::Log("Deleting GameObject with id: " + gameObject->objectId, "Game");
-        delete gameObject;
-    }
-    gameObjects.clear();
 
     delete physicsObserver;
-    delete hud;
 
-    CloseWindow();
+    for (GameObject* gameObject : gameObjects)
+    {
+        Utilities::Log("DELETION SHOULD BE EXTENDED WITH SMART POINTERS", "Game", LOG_WARNING);
+    }
+    gameObjects.clear();
 }
 
 Game& Game::Get()
@@ -33,19 +31,19 @@ void Game::Init(GameConfig& config)
 {
     gameConfig = &config;
     InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
-    // SetExitKey(0);  // Disable exit key. FIXME GET BACK LATER
+    // SetExitKey(0);
 
-    ToggleFullscreen();
+    if (gameConfig->fullScreen) { ToggleFullscreen(); }
 
     // Initialize models, shaders, textures and materials.
-    Utilities::Log("Loading models...", "GAME");  // Models.
+    Utilities::Log("Loading models...", "Game");  // Models.
     for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
     {
         Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
         models[pair.first] = LoadModel(pair.second.c_str());
     }
 
-    Utilities::Log("Loading shaders...", "GAME");
+    Utilities::Log("Loading shaders...", "Game");
     for (std::pair<std::string, std::string> pair : gameConfig->shaderPaths)  // Shaders.
     {
         Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
@@ -75,7 +73,11 @@ void Game::Init(GameConfig& config)
     physicsObserver = new PhysicsObserver();
     physicsObserver->observed = player;
 
-    hud = new Hud();    
+    // hud = new Hud();
+    Gui::Init();
+    mainMenu = new MainMenu();
+    pauseMenu = new PauseMenu();
+
 
     m_Initialized = true;
 }
@@ -105,49 +107,108 @@ MrAngryCube* Game::GetPlayer()
 
 void Game::Render()
 {
+    BeginDrawing();
+    ClearBackground(gameConfig->backgroundColor);
     switch (gameState)
     {
-    case GameState::Playing:
-        BeginDrawing();
-            BeginMode3D(*cameraController.camera);
-                ClearBackground(gameConfig->backgroundColor);
-                DrawGrid(200, 1.0f);
-                for (GameObject* gameObject : gameObjects)
-                {
-                    gameObject->Render();
-                }
-            EndMode3D();
+        case GameState::MainMenu:
+        {
 
-            hud->Render();
-            DrawFPS(50, 50);
-        EndDrawing();
-        break;
+            Texture* texture = &textures["mainMenuBackground"];
+            float offsetX = (GetScreenWidth() - texture->width) / 2;
+            float offsetY = (GetScreenHeight() - texture->height) / 2;
+            DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
+            mainMenu->Render();
+            break;
+        }
+
+        case GameState::Playing:
+        {
+            BeginMode3D(*cameraController.camera);
+            DrawGrid(200, 1.0f);
+            for (GameObject* gameObject : gameObjects)
+            {
+                gameObject->Render();
+            }
+            EndMode3D();
+            break;
+        }
+
+        case GameState::Paused:
+        {
+            pauseMenu->Render();
+        }
     }
+    EndDrawing();
 }
 
 void Game::Update()
 {
-    m_DeltaTime = GetTime() - m_LastUpdateTime;
-    if(m_DeltaTime >= gameConfig->updateTime)
+    switch (gameState)
     {
-        for (GameObject* gameObject : gameObjects)
+        case GameState::MainMenu:
         {
-            gameObject->Update(m_DeltaTime);
+            if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
+            {
+                gameState = GameState::Playing;
+            } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+            {
+                m_ShouldRun = false;
+            }
+            mainMenu->Update();
+            break;
         }
-        cameraController.Update(m_DeltaTime);
-        m_LastUpdateTime = GetTime();
-        physicsObserver->Update();
-    }
 
-    if (m_Player->IsAtQuarterRotation(m_Player->rotation))
-    {
-        currentRotationAxis = nextRotationAxis;
+        case GameState::Paused:
+        {
+            if (pauseMenu->buttonStates["Continue"])
+            {
+                gameState = GameState::Playing;
+            } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+            {
+                m_ShouldRun = false;
+            }
+            pauseMenu->Update();
+            break;
+        }
+        case GameState::Playing:
+        {
+            m_DeltaTime = GetTime() - m_LastUpdateTime;
+            if(m_DeltaTime >= gameConfig->updateTime)
+            {
+                for (GameObject* gameObject : gameObjects)
+                {
+                    gameObject->Update(m_DeltaTime);
+                }
+
+                cameraController.Update(m_DeltaTime);
+                m_LastUpdateTime = GetTime();
+
+                if (physicsObserver!= nullptr)
+                {
+                    physicsObserver->Update();
+                }
+            }
+            if (m_Player->IsAtQuarterRotation(m_Player->rotation))
+            {
+                currentRotationAxis = nextRotationAxis;
+            }
+            break;
+        }
     }
 }
 
 void Game::HandleKeyEvents()
 {
-    if (IsKeyPressed(KEY_ZERO))
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        if (gameState == GameState::Playing)
+        {
+            gameState = GameState::Paused;
+        } else if (gameState == GameState::Paused)
+        {
+            gameState = GameState::Playing;
+        }
+    } else if (IsKeyPressed(KEY_ZERO))
     {
         m_Player->SetMoveBehaviour(MoveBehaviourName::NormalMoveBehaviour);
     } else if (IsKeyPressed(KEY_ONE)) {
@@ -211,13 +272,44 @@ int Game::Run()
     }
 
     int returnCode = 0;
-
-    gameState = GameState::Playing;
-    while (!WindowShouldClose())  // Main loop.
+    gameState = GameState::MainMenu;
+    while (m_ShouldRun)  // Main loop.
     {
-        HandleKeyEvents();
-        Update();
-        Render();
+        try {
+            HandleKeyEvents();
+        } catch (const std::exception& e) {
+            Utilities::Log("Exception caught in main loop: " + std::string(e.what()), "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        } catch (...) {
+            Utilities::Log("Unknown exception caught in main loop.", "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        }
+
+        try {
+            Update();
+        } catch (const std::exception& e) {
+            Utilities::Log("Exception caught during update: " + std::string(e.what()), "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        } catch (...) {
+            Utilities::Log("Unknown exception caught during update.", "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        }
+
+        try {
+            Render();
+        } catch (const std::exception& e) {
+            Utilities::Log("Exception caught during render: " + std::string(e.what()), "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        } catch (...) {
+            Utilities::Log("Unknown exception caught during render.", "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        }
     }
 
     return returnCode;

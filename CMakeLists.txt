@@ -14,10 +14,15 @@ endforeach()
 add_executable(${PROJECT_NAME} ${CPP_SOURCES})
 
 set(RAYLIB_INCLUDE_DIR "./vendor/raylib/src")
+set(RAYGUI_INCLUDE_DIR "./vendor/raygui/src")
+set(RAYINI_INCLUDE_DIR "./vendor/rini/src")
 set(RAYLIB_LIB_DIR "./vendor/raylib/src")
 
 # Includes raylib
-include_directories(${RAYLIB_INCLUDE_DIR})
+include_directories(
+    ${RAYLIB_INCLUDE_DIR}
+    ${RAYGUI_INCLUDE_DIR}
+    ${RAYINI_INCLUDE_DIR})
 
 # Link raylib library
 target_link_directories(${PROJECT_NAME} PUBLIC ${RAYLIB_LIB_DIR})
@@ -39,3 +44,10 @@ foreach(FOLDER ${FOLDERS})
     endif()
 endforeach()
 
+# Copy configuration file to main folder
+set(INI_FILE_NAME "game.ini")
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/${INI_FILE_NAME}"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${INI_FILE_NAME}"
+)

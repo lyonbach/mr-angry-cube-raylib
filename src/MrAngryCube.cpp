@@ -33,7 +33,7 @@ void MrAngryCube::Update(float deltaTime)
     {
         auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
         int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();
-        nextMoveBehaviourName = allBehaviours[(idx + 1) % allBehaviours.size()];
+        SetMoveBehaviour(allBehaviours[(idx + 1) % allBehaviours.size()]);
         m_AngerControlBehaviour->anger = MINIMUM_ANGER;
     }
 

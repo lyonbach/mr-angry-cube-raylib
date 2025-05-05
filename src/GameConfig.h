@@ -1,30 +1,41 @@
 #pragma once
+#define RINI_IMPLEMENTATION
 #include "raylib.h"
 #include <string>
 #include <map>
 
+
 struct GameConfig
 {
-    std::map<std::string, std::string> texturePaths = {
+    GameConfig();
+    GameConfig(const char* configPath);
+    void LogConfig();
+    void Init();
+
+    std::map<std::string, std::string> texturePaths = {  // TODO MOVE TO game.ini
         {"macDefault", "./assets/textures/test.png"},
         {"enemyDefault", "./assets/textures/concrete.png"},
-        {"mainMenuBackground", "./assets/textures/MrCube-GDD.jpg"}
+        {"mainMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"}
     };
 
-    std::map<std::string, std::string> shaderPaths = {
-        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/outline.fs"}
+    std::map<std::string, std::string> shaderPaths = {  // TODO MOVE TO game.ini
+        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"},
     };
 
-    std::map<std::string, std::string> modelPaths = {
+    std::map<std::string, std::string> modelPaths = {  // TODO MOVE TO game.ini
         {"macDefault", "./assets/models/mr_angry_cube_high_res.obj"},
         {"enemyDefault", "./assets/models/enemy.obj"}
     };
 
-    // Vector2 screenSize = {1920 / 2, 1200 / 2};  FIXME REMOVE, TEMP FOR TESTING
-    Vector2 screenSize = {1920, 1200};
-    bool fullScreen = true;
-    Color backgroundColor = DARKGRAY;
+    const char* configPath;
+    Vector2 screenSize = {640, 480};
+    bool fullScreen = 0;
     float updateRate = 90.0f;
-    float updateTime = 1.0f / updateRate;
+    float warmUpTime = 2.0f;
+    float updateTime;
+
+    bool configured = false;
+    Color backgroundColor = DARKGRAY;
     std::string windowTitle = "Mr. Angry Cube";
+
 };
