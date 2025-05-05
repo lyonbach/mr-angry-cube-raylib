@@ -5,7 +5,8 @@
 #include <vector>
 #include <map>
 
-class MainMenu
+
+class Menu
 {
 public:
     int buttonWidth = 250;
@@ -13,16 +14,30 @@ public:
     int menuWidth = 500;
     int menuHeight = 250;
     std::map<std::string, bool> buttonStates;
-
-    MainMenu();
-    void RenderAndUpdate();
-    std::map<std::string, bool> GetButtonStates();
-
+    Color color = ColorAlpha(RED, .8);
+    Color borderColor = ColorAlpha(BLACK, .8);
     Rectangle rectangle = {
         (float)((GetScreenWidth() - menuWidth) / 2), (float)((GetScreenHeight() - menuHeight)) / 2,
     menuWidth, menuHeight};
-    Color color = ColorAlpha(RED, .8);
-    Color borderColor = ColorAlpha(BLACK, .8);
+
+    std::map<std::string, bool> GetButtonStates();
+    void Render();
+    void Update();
+
+};
+
+
+class MainMenu : public Menu
+{
+public:
+    MainMenu();
+};
+
+
+class PauseMenu : public Menu
+{
+public:
+    PauseMenu();
 };
 
 

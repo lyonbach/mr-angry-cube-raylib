@@ -1,41 +1,52 @@
 #define RAYGUI_IMPLEMENTATION
 #include "Gui.h"
+#include "Constants.h"
+
+std::map<std::string, bool> Menu::GetButtonStates()
+{
+    return buttonStates;
+}
+
+void Menu::Render()
+{
+    int i = 0;
+    for (auto& pair : buttonStates)
+    {
+        buttonStates[pair.first] = GuiButton({
+            (float)GetScreenWidth() / 8,
+            GetScreenHeight() - (rectangle.y + 70 * i),
+            (float)buttonWidth, (float)buttonHeight},
+            pair.first.c_str()
+           );
+        ++i;
+    }
+}
+
+void Menu::Update()
+{
+    for (auto& pair : buttonStates)
+    {
+        buttonStates[pair.first] = false;
+    }
+}
 
 MainMenu::MainMenu()
 {
     buttonStates = {
-        {"new_game", false},
-        {"load_level", false},
-        {"exit_game", false}
+        { NEW_GAME_BUTTON_TEXT, false },
+        { LOAD_LEVEL_BUTTON_TEXT, false },
+        { EXIT_GAME_BUTTON_TEXT, false },
     };
 }
 
-void MainMenu::RenderAndUpdate()
+PauseMenu::PauseMenu()
 {
-    buttonStates["new_game"] = GuiButton(
-        {(float)GetScreenWidth() / 6,
-         rectangle.y + 30, (float)buttonWidth,
-        (float)buttonHeight},
-        "New Game"
-    );
-    buttonStates["load_game"] = GuiButton(
-        {(float)GetScreenWidth() / 6,
-         rectangle.y + 30 + 10 + buttonHeight,
-        (float)buttonWidth, (float)buttonHeight},
-        "Load Level"
-    );
-    buttonStates["exit_game"] = GuiButton(
-        {(float)GetScreenWidth() / 6,
-         rectangle.y + 30 + 2*(10 + buttonHeight),
-        (float)buttonWidth, (float)buttonHeight},
-        "Exit Game"
-    );
+    buttonStates = {
+        { CONTINUE_BUTTON_TEXT, false },
+        { EXIT_GAME_BUTTON_TEXT, false },
+    };
 }
 
-std::map<std::string, bool> MainMenu::GetButtonStates()
-{
-    return buttonStates;
-}
 
 void Gui::Init()
 {

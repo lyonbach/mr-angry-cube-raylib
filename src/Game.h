@@ -32,11 +32,12 @@ public:
     Vector3 nextRotationAxis = DEFAULT_NEXT_ROTATION_AXIS;
 
     CameraController cameraController;
-    GameState gameState = GameState::Paused;
+    GameState gameState = GameState::MainMenu;
     GameConfig* gameConfig;
     PhysicsObserver* physicsObserver;
     Hud* hud;
     MainMenu* mainMenu;
+    PauseMenu* pauseMenu;
 
     ~Game();
     static Game& Get();
@@ -58,6 +59,7 @@ private:
     MrAngryCube* m_Player;
 
     bool m_Initialized = false;
+    bool m_ShouldRun = true;
     float m_LastUpdateTime = 0.0f;
     float m_DeltaTime = 0.0f;
     unsigned int m_Anger = MINIMUM_ANGER;

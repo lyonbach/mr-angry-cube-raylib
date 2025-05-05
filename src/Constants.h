@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include <string>
 
 constexpr float CAMERA_CHASE_VECTOR_INCREMENT = .5f;
 constexpr float CAMERA_VERTICAL_TOP_DOWN = 8.0f;
@@ -17,3 +18,8 @@ constexpr unsigned int MAXIMUM_ANGER = 10;
 
 constexpr Vector3 DEFAULT_CURRENT_ROTATION_AXIS = { 0.0, 0.0f, 0.0f };
 constexpr Vector3 DEFAULT_NEXT_ROTATION_AXIS = { 0.0, 0.0f, 0.0f };
+
+const std::string NEW_GAME_BUTTON_TEXT = "New Game";
+const std::string LOAD_LEVEL_BUTTON_TEXT = "Load Level";
+const std::string EXIT_GAME_BUTTON_TEXT = "Exit Game";
+const std::string CONTINUE_BUTTON_TEXT = "Continue";

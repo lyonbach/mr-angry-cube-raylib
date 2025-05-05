@@ -19,7 +19,7 @@ struct GameConfig
     };
 
     std::map<std::string, std::string> shaderPaths = {  // TODO MOVE TO game.ini
-        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/outline.fs"}
+        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"},
     };
 
     std::map<std::string, std::string> modelPaths = {  // TODO MOVE TO game.ini
