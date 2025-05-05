@@ -43,6 +43,7 @@ PauseMenu::PauseMenu()
 {
     buttonStates = {
         { CONTINUE_BUTTON_TEXT, false },
+        { RETURN_TO_MAIN_MENU_TEXT, false },
         { EXIT_GAME_BUTTON_TEXT, false },
     };
 }

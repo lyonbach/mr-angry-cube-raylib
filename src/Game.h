@@ -7,6 +7,7 @@
 #include "Gui.h"
 #include "PhysicsObserver.h"
 #include "Utilities.h"
+#include "Level.h"
 #include <vector>
 #include <map>
 
@@ -17,7 +18,8 @@ enum class GameState
 {
     MainMenu,
     Playing,
-    Paused
+    Paused,
+    LevelSelection
 };
 
 class Game {
@@ -33,17 +35,19 @@ public:
 
     CameraController cameraController;
     GameState gameState = GameState::MainMenu;
-    GameConfig* gameConfig;
-    PhysicsObserver* physicsObserver;
-    Hud* hud;
-    MainMenu* mainMenu;
-    PauseMenu* pauseMenu;
+    GameConfig* gameConfig = nullptr;
+    PhysicsObserver* physicsObserver = nullptr;
+    MainMenu* mainMenu = nullptr;
+    PauseMenu* pauseMenu = nullptr;
+    bool currentLevel = false;
 
     ~Game();
     static Game& Get();
     void Init(GameConfig& gameConfig);
     void Register(GameObject* newGameObject);
     void Unregister(GameObject* gameObject);
+    void LoadLevel(std::string filePath);
+
     MrAngryCube* GetPlayer();
     void Render();
     void Update();
