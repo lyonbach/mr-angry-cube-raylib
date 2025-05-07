@@ -73,6 +73,8 @@ void Game::Init(GameConfig& config)
 
     Gui::Init();
 
+    hud = new Hud();
+
     m_Initialized = true;
 }
 
@@ -127,6 +129,7 @@ void Game::Render()
         }
         GetPlayer()->Render();
         EndMode3D();
+    hud->Render();
     EndDrawing();
 }
 
@@ -211,6 +214,9 @@ void Game::HandleKeyEvents()
     } else if (IsKeyPressed(KEY_DOWN))
     {
         cameraController.MoveDown();
+    } else if (IsKeyPressed(KEY_H))
+    {
+        hud->visible = !hud->visible;
     }
 }
 
@@ -255,14 +261,16 @@ int Game::Run()
                     gameState = GameState::LevelSelection;
                 }
                 mainMenu->Update();
-                
+
                 ClearBackground(gameConfig->backgroundColor);
                 BeginDrawing();
-                    Texture* texture = &textures["mainMenuBackground"];
-                    float offsetX = (GetScreenWidth() - texture->width) / 2;
-                    float offsetY = (GetScreenHeight() - texture->height) / 2;
-                    DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-                    mainMenu->Render();
+                // FIXME MOVE THIS TO MENU RENDER 
+                Texture* texture = &textures["mainMenuBackground"];
+                float offsetX = (GetScreenWidth() - texture->width) / 2;
+                float offsetY = (GetScreenHeight() - texture->height) / 2;
+                DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
+                // FIXME MOVE THIS TO MENU RENDER 
+                mainMenu->Render();
                 EndDrawing();
                 break;
             }
@@ -279,8 +287,16 @@ int Game::Run()
                 } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
                 {
                     gameState = GameState::MainMenu;
+                    UnloadLevel();
                 }
                 pauseMenu->Update();
+
+                // FIXME MOVE THIS TO MENU RENDER 
+                Texture* texture = &textures["levelSelectionMenuBackground"];
+                float offsetX = (GetScreenWidth() - texture->width) / 2;
+                float offsetY = (GetScreenHeight() - texture->height) / 2;
+                DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
+                // FIXME MOVE THIS TO MENU RENDER 
                 BeginDrawing();
                 pauseMenu->Render();
                 EndDrawing();
@@ -293,14 +309,21 @@ int Game::Run()
                 {
                     LoadLevel(levelMenu->levels[levelMenu->selected]);
                     gameState = GameState::Playing;
+                } else if (levelMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
+                {
+                    UnloadLevel();
+                    gameState = GameState::MainMenu;
                 }
                 levelMenu->Update();
+
                 ClearBackground(gameConfig->backgroundColor);
                 BeginDrawing();
+                // FIXME MOVE THIS TO MENU RENDER 
                 Texture* texture = &textures["levelSelectionMenuBackground"];
                 float offsetX = (GetScreenWidth() - texture->width) / 2;
                 float offsetY = (GetScreenHeight() - texture->height) / 2;
                 DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
+                // FIXME MOVE THIS TO MENU RENDER 
                 levelMenu->Render();
                 EndDrawing();
                 break;

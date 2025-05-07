@@ -41,6 +41,7 @@ public:
     PauseMenu* pauseMenu = nullptr;
     LevelMenu* levelMenu = nullptr;
     Level* currentLevel = nullptr;
+    Hud* hud = nullptr;
 
     ~Game();
     static Game& Get();

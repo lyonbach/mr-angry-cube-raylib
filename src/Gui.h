@@ -10,16 +10,19 @@
 class Menu
 {
 public:
-    int buttonWidth = 250;
-    int buttonHeight = 50;
-    int menuWidth = 500;
-    int menuHeight = 250;
+    float offsetY = 20.0f;
+    float buttonWidth = 250.0f;
+    float buttonHeight = 50.0f;
+    float menuWidth = 500.0f;
+    float menuHeight = 250.0f;
+    float menuX = static_cast<float>(GetScreenWidth() / 8);
+    float menuY = static_cast<float>((GetScreenHeight() - menuHeight) / 2);
+
     std::map<std::string, bool> buttonStates;
     Color color = ColorAlpha(RED, .8);
     Color borderColor = ColorAlpha(BLACK, .8);
-    Rectangle rectangle = {
-        (float)((GetScreenWidth() - menuWidth) / 2), (float)((GetScreenHeight() - menuHeight)) / 2,
-    static_cast<float>(menuWidth), static_cast<float>(menuHeight)};
+    
+    Rectangle rectangle = { menuX, menuY, menuWidth, menuHeight };
 
     std::map<std::string, bool> GetButtonStates();
     void Render();
@@ -45,6 +48,7 @@ public:
 class LevelMenu : public Menu
 {
 public:
+    float comboBoxY = GetScreenHeight() - 20.0 - (rectangle.y + (buttonHeight + offsetY) * 2);
     std::vector<std::string> levels;
     std::string levelsText;
     int selected = 0;

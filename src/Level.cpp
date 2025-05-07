@@ -47,11 +47,12 @@ Level::Level(std::string levelName, Game* game)
     }
     levelFile.close();
     loaded = true;
+    name = levelName;
 }
 
 Level::~Level()
 {
-    Utilities::Log("Destroying " + levelName + "...", "Level");
+    Utilities::Log("Destroying " + name + "...", "Level");
     Game::Get().currentLevel = nullptr;
     for (auto obj : staticObjects)
     {
