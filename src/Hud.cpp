@@ -5,9 +5,9 @@
 
 void Hud::Render()
 {
+    if (!visible) { return; }
+
     DrawFPS(50, 50);
-
-
     int fontSize = (int)(GetScreenHeight() / 25.0f);
 
     MrAngryCube* player = Game::Get().GetPlayer();
@@ -18,7 +18,7 @@ void Hud::Render()
     Vector3 position = player->GetPosition();
     float anger = Game::Get().GetPlayer()->GetAnger();
     
-    DrawText(("Anger to Behaviour Inc.: " + std::to_string(anger)).c_str(), 50, GetScreenHeight() - 250, fontSize, YELLOW);
+    DrawText(("Behaviour Inc. Counter: " + std::to_string(anger)).c_str(), 50, GetScreenHeight() - 250, fontSize, YELLOW);
     DrawText(("Rot: " + Hud::Vector3ToString(rotation)).c_str(), 50, GetScreenHeight() - 200, fontSize, YELLOW);
     DrawText(("Vel: " + Hud::Vector3ToString(velocity)).c_str(), 50, GetScreenHeight() - 150, fontSize, YELLOW);
     DrawText(("Pos: " + Hud::Vector3ToString(position)).c_str(), 50, GetScreenHeight() - 100, fontSize, YELLOW);

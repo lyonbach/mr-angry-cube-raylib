@@ -1,6 +1,6 @@
 #include "GameObject.h"
 #include "MoveBehaviour.h"
-#include "AngerControlBehavoir.h"
+#include "AngerControlBehaviour.h"
 
 
 class MrAngryCube : public GameObject
@@ -10,7 +10,8 @@ public:
     ~MrAngryCube();
     void Render() override;
     void Update(float deltaTime) override;
-    float GetAnger();
+    float GetAnger() const;
+    void SetAnger(float newAnger);
     bool IsAtQuarterRotation(Vector3& vector) const;
     bool HasEverMoved() const;
     void SetMoveBehaviour(MoveBehaviourName behaviourType);

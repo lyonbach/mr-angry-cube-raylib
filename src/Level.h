@@ -10,7 +10,7 @@ class Game;
 class Level
 {
 public:
-    std::string levelName;
+    std::string name;
     std::vector<GameObject*> staticObjects;  // We store the static object and dynamic object transforms on level load.
     std::vector<GameObject*> dynamicObjects;
     Level(std::string filePath, Game* game);

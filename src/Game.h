@@ -13,6 +13,7 @@
 
 
 class MrAngryCube;
+class Level;
 
 enum class GameState
 {
@@ -24,7 +25,6 @@ enum class GameState
 
 class Game {
 public:
-    std::vector<GameObject*> gameObjects;
     std::map<std::string, Shader> shaders;
     std::map<std::string, Texture> textures;
     std::map<std::string, Model> models;
@@ -39,16 +39,18 @@ public:
     PhysicsObserver* physicsObserver = nullptr;
     MainMenu* mainMenu = nullptr;
     PauseMenu* pauseMenu = nullptr;
-    bool currentLevel = false;
+    LevelMenu* levelMenu = nullptr;
+    Level* currentLevel = nullptr;
+    Hud* hud = nullptr;
 
     ~Game();
     static Game& Get();
     void Init(GameConfig& gameConfig);
-    void Register(GameObject* newGameObject);
-    void Unregister(GameObject* gameObject);
     void LoadLevel(std::string filePath);
+    void UnloadLevel();
 
     MrAngryCube* GetPlayer();
+    void ResetPlayer();
     void Render();
     void Update();
     void HandleKeyEvents();
