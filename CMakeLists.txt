@@ -51,3 +51,15 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     "${CMAKE_CURRENT_SOURCE_DIR}/${INI_FILE_NAME}"
     "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${INI_FILE_NAME}"
 )
+
+# Copy levels to assets/levels
+set(LEVELS_FOLDER "levels")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${LEVELS_FOLDER}")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LEVELS_FOLDER}"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets/${LEVELS_FOLDER}"
+    )
+else()
+    message(WARNING "Directory ${CMAKE_CURRENT_SOURCE_DIR}/${LEVELS_FOLDER} does not exist. Skipping copy.")
+endif()

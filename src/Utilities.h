@@ -9,5 +9,6 @@ namespace Utilities
     void Log(Vector3 vector, std::string prefix="CUSTOM", TraceLogLevel logLevel=LOG_INFO);
     void Log(Vector2 vector, std::string prefix="CUSTOM", TraceLogLevel logLevel=LOG_INFO);
     std::string GenerateHash();
+    std::string GetFilePath(std::string levelName);
 }
 

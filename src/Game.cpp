@@ -3,6 +3,7 @@
 #include "Constants.h"
 #include "Gui.h"
 #include "StaticObject.h"
+#include <stdexcept>
 
 
 Game::Game()
@@ -89,19 +90,17 @@ void Game::Register(GameObject* newGameObject)
 void Game::LoadLevel(std::string filePath)
 {
     Utilities::Log("Loading level from " + filePath + "...", "Game");
-    Level* level = new Level("");
-
-    for (Matrix& transform : level->staticObjects)
+    Level* level = new Level(filePath, this);
+    if (!level->loaded)
     {
-        Model* model = &models["column"];
-        Texture* texture = &textures["enemyDefault"];
-        Material* material = &materials["staticObjectDefault"];
-        StaticObject* object = new StaticObject(model, material, texture);
-        object->transform = transform;
-        Register(object);
-        currentLevel = true;
+        Utilities::Log("Level not found: " + filePath, "Game", LOG_WARNING);
+        return;
     }
-
+    currentLevel = level;
+    for (auto obj : level->staticObjects)
+    {
+        // Register(obj);
+    }
 }
 
 MrAngryCube* Game::GetPlayer()
@@ -301,7 +300,11 @@ int Game::Run()
             {
                 if (!currentLevel)
                 {
-                    LoadLevel("");
+                    LoadLevel("Level-1");
+                    if (!currentLevel)
+                    {
+                        gameState = GameState::MainMenu;
+                    }
                     continue;
                 }
 
