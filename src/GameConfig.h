@@ -13,18 +13,21 @@ struct GameConfig
     void Init();
 
     std::map<std::string, std::string> texturePaths = {  // TODO MOVE TO game.ini
-        {"macDefault", "./assets/textures/test.png"},
-        {"enemyDefault", "./assets/textures/concrete.png"},
-        {"mainMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"}
+        {"macDefault", "./assets/textures/concrete.png"},
+        {"enemyDefault", "./assets/textures/texel_checker_crayon.png"},
+        {"mainMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"},
+        {"levelSelectionMenuBackground", "./assets/textures/test.png"}  // TODO REAL GAME ASSET.
     };
 
     std::map<std::string, std::string> shaderPaths = {  // TODO MOVE TO game.ini
         {"macDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"},
+        {"staticObjectDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"},
     };
 
     std::map<std::string, std::string> modelPaths = {  // TODO MOVE TO game.ini
         {"macDefault", "./assets/models/mr_angry_cube_high_res.obj"},
-        {"enemyDefault", "./assets/models/enemy.obj"}
+        {"enemyDefault", "./assets/models/enemy.obj"},
+        {"column", "./assets/models/column.obj"}
     };
 
     const char* configPath;

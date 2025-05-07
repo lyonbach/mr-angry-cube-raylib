@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include <string>
 
+
 constexpr float CAMERA_CHASE_VECTOR_INCREMENT = .5f;
 constexpr float CAMERA_VERTICAL_TOP_DOWN = 8.0f;
 constexpr float CAMERA_VERTICAL_NORMAL = 4.0f;
@@ -23,3 +24,5 @@ const std::string NEW_GAME_BUTTON_TEXT = "New Game";
 const std::string LOAD_LEVEL_BUTTON_TEXT = "Load Level";
 const std::string EXIT_GAME_BUTTON_TEXT = "Exit Game";
 const std::string CONTINUE_BUTTON_TEXT = "Continue";
+const std::string RETURN_TO_MAIN_MENU_TEXT = "Return To Main Menu";
+

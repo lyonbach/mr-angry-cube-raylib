@@ -20,5 +20,5 @@ public:
     void SetPosition(Vector3 newPosition);
 
     virtual void Render();
-    virtual void Update(float lastUpdateTime);
+    virtual void Update(float deltaTime);
 };

@@ -2,6 +2,8 @@
 #include "Game.h"
 #include "Constants.h"
 #include "Gui.h"
+#include "StaticObject.h"
+#include <stdexcept>
 
 
 Game::Game()
@@ -11,13 +13,7 @@ Game::Game()
 
 Game::~Game()
 {
-
     delete physicsObserver;
-
-    for (GameObject* gameObject : gameObjects)
-    {
-        Utilities::Log("DELETION SHOULD BE EXTENDED WITH SMART POINTERS", "Game", LOG_WARNING);
-    }
     gameObjects.clear();
 }
 
@@ -31,7 +27,7 @@ void Game::Init(GameConfig& config)
 {
     gameConfig = &config;
     InitWindow(gameConfig->screenSize.x, gameConfig->screenSize.y, "Mr. Angry Cube (DEV)");
-    // SetExitKey(0);
+    SetExitKey(0);
 
     if (gameConfig->fullScreen) { ToggleFullscreen(); }
 
@@ -73,11 +69,7 @@ void Game::Init(GameConfig& config)
     physicsObserver = new PhysicsObserver();
     physicsObserver->observed = player;
 
-    // hud = new Hud();
     Gui::Init();
-    mainMenu = new MainMenu();
-    pauseMenu = new PauseMenu();
-
 
     m_Initialized = true;
 }
@@ -95,6 +87,22 @@ void Game::Register(GameObject* newGameObject)
     gameObjects.push_back(newGameObject);
 }
 
+void Game::LoadLevel(std::string filePath)
+{
+    Utilities::Log("Loading level from " + filePath + "...", "Game");
+    Level* level = new Level(filePath, this);
+    if (!level->loaded)
+    {
+        Utilities::Log("Level not found: " + filePath, "Game", LOG_WARNING);
+        return;
+    }
+    currentLevel = level;
+    for (auto obj : level->staticObjects)
+    {
+        // Register(obj);
+    }
+}
+
 MrAngryCube* Game::GetPlayer()
 {
     if (m_Player == nullptr)
@@ -109,92 +117,37 @@ void Game::Render()
 {
     BeginDrawing();
     ClearBackground(gameConfig->backgroundColor);
-    switch (gameState)
-    {
-        case GameState::MainMenu:
+        BeginMode3D(*cameraController.camera);
+        DrawGrid(200, 1.0f);
+        for (GameObject* gameObject : gameObjects)
         {
-
-            Texture* texture = &textures["mainMenuBackground"];
-            float offsetX = (GetScreenWidth() - texture->width) / 2;
-            float offsetY = (GetScreenHeight() - texture->height) / 2;
-            DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-            mainMenu->Render();
-            break;
+            gameObject->Render();
         }
-
-        case GameState::Playing:
-        {
-            BeginMode3D(*cameraController.camera);
-            DrawGrid(200, 1.0f);
-            for (GameObject* gameObject : gameObjects)
-            {
-                gameObject->Render();
-            }
-            EndMode3D();
-            break;
-        }
-
-        case GameState::Paused:
-        {
-            pauseMenu->Render();
-        }
-    }
+        EndMode3D();
     EndDrawing();
 }
 
 void Game::Update()
 {
-    switch (gameState)
+    m_DeltaTime = GetTime() - m_LastUpdateTime;
+    if(m_DeltaTime >= gameConfig->updateTime)
     {
-        case GameState::MainMenu:
+        for (GameObject* gameObject : gameObjects)
         {
-            if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
-            {
-                gameState = GameState::Playing;
-            } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
-            {
-                m_ShouldRun = false;
-            }
-            mainMenu->Update();
-            break;
+            gameObject->Update(m_DeltaTime);
         }
 
-        case GameState::Paused:
-        {
-            if (pauseMenu->buttonStates["Continue"])
-            {
-                gameState = GameState::Playing;
-            } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
-            {
-                m_ShouldRun = false;
-            }
-            pauseMenu->Update();
-            break;
-        }
-        case GameState::Playing:
-        {
-            m_DeltaTime = GetTime() - m_LastUpdateTime;
-            if(m_DeltaTime >= gameConfig->updateTime)
-            {
-                for (GameObject* gameObject : gameObjects)
-                {
-                    gameObject->Update(m_DeltaTime);
-                }
+        cameraController.Update(m_DeltaTime);
+        m_LastUpdateTime = GetTime();
 
-                cameraController.Update(m_DeltaTime);
-                m_LastUpdateTime = GetTime();
-
-                if (physicsObserver!= nullptr)
-                {
-                    physicsObserver->Update();
-                }
-            }
-            if (m_Player->IsAtQuarterRotation(m_Player->rotation))
-            {
-                currentRotationAxis = nextRotationAxis;
-            }
-            break;
+        if (physicsObserver!= nullptr)
+        {
+            physicsObserver->Update();
         }
+    }
+    if (m_Player->IsAtQuarterRotation(m_Player->rotation))
+    {
+        currentRotationAxis = nextRotationAxis;
     }
 }
 
@@ -287,29 +240,108 @@ int Game::Run()
             break;
         }
 
-        try {
-            Update();
-        } catch (const std::exception& e) {
-            Utilities::Log("Exception caught during update: " + std::string(e.what()), "Game", LOG_ERROR);
-            returnCode = 1;
-            break;
-        } catch (...) {
-            Utilities::Log("Unknown exception caught during update.", "Game", LOG_ERROR);
-            returnCode = 1;
-            break;
+        switch (gameState)
+        {
+            case GameState::MainMenu:
+            {
+                if (mainMenu == nullptr) { mainMenu = new MainMenu(); }
+                if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
+                {
+                    gameState = GameState::Playing;
+                } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+                {
+                    m_ShouldRun = false;
+                } else if (mainMenu->buttonStates[LOAD_LEVEL_BUTTON_TEXT])
+                {
+                    gameState = GameState::LevelSelection;
+                }
+                mainMenu->Update();
+
+                BeginDrawing();
+                    Texture* texture = &textures["mainMenuBackground"];
+                    float offsetX = (GetScreenWidth() - texture->width) / 2;
+                    float offsetY = (GetScreenHeight() - texture->height) / 2;
+                    DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
+                    mainMenu->Render();
+                EndDrawing();
+                continue;
+            }
+            case GameState::Paused:
+            {
+                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(); }
+                if (pauseMenu->buttonStates["Continue"])
+                {
+                    gameState = GameState::Playing;
+                } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+                {
+                    m_ShouldRun = false;
+                } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_TEXT])
+                {
+                    gameState = GameState::MainMenu;
+                }
+                pauseMenu->Update();
+                BeginDrawing();
+                pauseMenu->Render();
+                EndDrawing();
+                continue;
+            }
+            case GameState::LevelSelection:
+            {
+                BeginDrawing();
+                Texture* texture = &textures["levelSelectionMenuBackground"];
+                float offsetX = (GetScreenWidth() - texture->width) / 2;
+                float offsetY = (GetScreenHeight() - texture->height) / 2;
+                DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
+
+                EndDrawing();
+                break;
+            }
+            case GameState::Playing:
+            {
+                if (!currentLevel)
+                {
+                    LoadLevel("Level-1");
+                    if (!currentLevel)
+                    {
+                        gameState = GameState::MainMenu;
+                    }
+                    continue;
+                }
+
+                try {
+                    Update();
+                } catch (const std::exception& e) {
+                    Utilities::Log("Exception caught during update: " + std::string(e.what()), "Game", LOG_ERROR);
+                    returnCode = 1;
+                    break;
+                } catch (...) {
+                    Utilities::Log("Unknown exception caught during update.", "Game", LOG_ERROR);
+                    returnCode = 1;
+                    break;
+                }
+
+                try {
+                    Render();
+                } catch (const std::exception& e) {
+                    Utilities::Log("Exception caught during render: " + std::string(e.what()), "Game", LOG_ERROR);
+                    returnCode = 1;
+                    break;
+                } catch (...) {
+                    Utilities::Log("Unknown exception caught during render.", "Game", LOG_ERROR);
+                    returnCode = 1;
+                    break;
+                }
+                break;
+            }
         }
 
-        try {
-            Render();
-        } catch (const std::exception& e) {
-            Utilities::Log("Exception caught during render: " + std::string(e.what()), "Game", LOG_ERROR);
-            returnCode = 1;
-            break;
-        } catch (...) {
-            Utilities::Log("Unknown exception caught during render.", "Game", LOG_ERROR);
-            returnCode = 1;
-            break;
-        }
+        delete pauseMenu;
+        delete mainMenu;
+        pauseMenu = nullptr;
+        mainMenu = nullptr;
+
+        if (WindowShouldClose()){ break; }
+
     }
 
     return returnCode;
