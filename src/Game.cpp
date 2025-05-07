@@ -264,8 +264,8 @@ int Game::Run()
                     DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
                     mainMenu->Render();
                 EndDrawing();
-                continue;
-            }
+                // continue;
+            } break;
             case GameState::Paused:
             {
                 if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(); }
@@ -283,8 +283,8 @@ int Game::Run()
                 BeginDrawing();
                 pauseMenu->Render();
                 EndDrawing();
-                continue;
-            }
+                // continue;
+            } break;
             case GameState::LevelSelection:
             {
                 BeginDrawing();
@@ -304,9 +304,13 @@ int Game::Run()
                     if (!currentLevel)
                     {
                         gameState = GameState::MainMenu;
-                    }
-                    continue;
+                    } break;
                 }
+
+                delete pauseMenu;
+                delete mainMenu;
+                pauseMenu = nullptr;
+                mainMenu = nullptr;
 
                 try {
                     Update();
@@ -335,10 +339,7 @@ int Game::Run()
             }
         }
 
-        delete pauseMenu;
-        delete mainMenu;
-        pauseMenu = nullptr;
-        mainMenu = nullptr;
+
 
         if (WindowShouldClose()){ break; }
 

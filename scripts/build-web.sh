@@ -53,7 +53,7 @@ done
 echo "[2][3]->Copying files..."
 # mkdir -p
 mkdir -p $TARGET_PATH/assets
-for folder in "models" "shaders" "textures";
+for folder in "models" "shaders" "textures" "levels";
 do
     mkdir -p $TARGET_PATH/assets/$folder
     for file in $(ls $PROJECT_ROOT/$folder);
@@ -67,6 +67,24 @@ do
     done
 done
 
+# Copy game.ini
+if [ -f "$PROJECT_ROOT/game.ini" ]; then
+    echo "Copying game.ini...";
+    cp $PROJECT_ROOT/game.ini $TARGET_PATH;
+    if [ $? -eq 1 ]; then
+        echo "Could not copy game.ini...";
+        exit 1;
+    fi
+else
+    echo "game.ini not found. Skipping...";
+fi
+
+RAYGUI_PATH=$PROJECT_ROOT/vendor/raygui
+echo Using raygui from: "$RAYGUI_PATH"
+
+RINI_PATH=$PROJECT_ROOT/vendor/rini
+echo Using rini from "$RINI_PATH"
+
 echo $CPP_FILES_ARG;
 echo "[2][4]-> Succesfully generated the arguments.";
 
@@ -75,6 +93,8 @@ cd $PROJECT_ROOT/build-web
 em++ $CPP_FILES \
     -o $TARGET_PATH/index.html \
     -I$RAYLIB_PATH/include \
+    -I$RAYGUI_PATH/src \
+    -I$RINI_PATH/src \
     -I$PROJECT_ROOT/src \
     -L$RAYLIB_PATH \
     -lraylib \
@@ -87,7 +107,9 @@ em++ $CPP_FILES \
     -DPLATFORM_WEB \
     --preload-file assets/models \
     --preload-file assets/shaders \
-    --preload-file assets/textures
+    --preload-file assets/textures \
+    --preload-file assets/levels \
+    --preload-file game.ini
 
 if [ $? -eq 0 ]; then
     echo "[2][5]-> Build was succesful!";

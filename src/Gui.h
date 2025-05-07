@@ -18,7 +18,7 @@ public:
     Color borderColor = ColorAlpha(BLACK, .8);
     Rectangle rectangle = {
         (float)((GetScreenWidth() - menuWidth) / 2), (float)((GetScreenHeight() - menuHeight)) / 2,
-    menuWidth, menuHeight};
+    static_cast<float>(menuWidth), static_cast<float>(menuHeight)};
 
     std::map<std::string, bool> GetButtonStates();
     void Render();

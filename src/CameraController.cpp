@@ -28,7 +28,7 @@ void CameraController::Update(float deltaTime)
     if(player->IsAtQuarterRotation(player->rotation) && abs(Vector3Length(Game::Get().physicsObserver->GetVelocity())) > .1f)
     {
         cameraShakeStrenght = STANDARD_CAMERA_SHAKE_STRENGTH;
-        if ((int)abs(Game::Get().currentRotationAxis.y == 1))
+        if ((int)abs(Game::Get().currentRotationAxis.y) == 1)
         {
             cameraShakeStrenght = 0.05f;
         }
