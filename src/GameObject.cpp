@@ -13,18 +13,18 @@ GameObject::~GameObject()
 {
     if (model != nullptr)
     {
-        UnloadModel(*model);
-        model = nullptr;
+        // UnloadModel(*model);  // FIXME
+        // model = nullptr;  // FIXME
     }
     if (material != nullptr)
     {
-        UnloadMaterial(*material);
-        material = nullptr;
+        // UnloadMaterial(*material);  // FIXME
+        // material = nullptr;  // FIXME
     }
     if (texture != nullptr)
     {
-        UnloadTexture(*texture);
-        texture = nullptr;
+        // UnloadTexture(*texture);  // FIXME
+        // texture = nullptr;  // FIXME
     }
 }
 

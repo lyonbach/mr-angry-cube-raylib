@@ -5,6 +5,12 @@
 #include "StaticObject.h"
 #include <stdexcept>
 
+bool AssertLevelLoaded()
+{
+    return (Game::Get().currentLevel != nullptr); // true = loaded
+}
+#define LEVEL_LOADED_GUARD if (!AssertLevelLoaded()) { return; }
+
 
 Game::Game()
 {
@@ -14,7 +20,6 @@ Game::Game()
 Game::~Game()
 {
     delete physicsObserver;
-    gameObjects.clear();
 }
 
 Game& Game::Get()
@@ -61,46 +66,34 @@ void Game::Init(GameConfig& config)
         textures[pair.first] = LoadTexture(pair.second.c_str());
     }
 
-    // Initialize game objects.
-    MrAngryCube* player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
-    m_Player = player;
-    Register(player);
+    m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
 
     physicsObserver = new PhysicsObserver();
-    physicsObserver->observed = player;
+    physicsObserver->observed = m_Player;
 
     Gui::Init();
 
     m_Initialized = true;
 }
 
-void Game::Register(GameObject* newGameObject)
+void Game::UnloadLevel()
 {
-    for (GameObject* gameObject : gameObjects)
-    {
-        if (gameObject->objectId == newGameObject->objectId)
-        {
-            Utilities::Log("Can not register object with id \"" + newGameObject->objectId + "\"!\nAlready registered.", "GAME", LOG_ERROR);
-            return;
-        }
-    }
-    gameObjects.push_back(newGameObject);
+    delete currentLevel;
+    currentLevel = nullptr;
+    ResetPlayer();
 }
 
-void Game::LoadLevel(std::string filePath)
+void Game::LoadLevel(std::string levelName)
 {
-    Utilities::Log("Loading level from " + filePath + "...", "Game");
-    Level* level = new Level(filePath, this);
+    UnloadLevel();
+    Utilities::Log("Loading level: " + levelName + "...", "Game");
+    Level* level = new Level(levelName, this);
     if (!level->loaded)
     {
-        Utilities::Log("Level not found: " + filePath, "Game", LOG_WARNING);
+        Utilities::Log("Level not found: " + levelName, "Game", LOG_WARNING);
         return;
     }
     currentLevel = level;
-    for (auto obj : level->staticObjects)
-    {
-        // Register(obj);
-    }
 }
 
 MrAngryCube* Game::GetPlayer()
@@ -113,16 +106,26 @@ MrAngryCube* Game::GetPlayer()
     return m_Player;
 }
 
+void Game::ResetPlayer()
+{
+    delete m_Player;
+    m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    nextRotationAxis = Vector3();
+}
+
 void Game::Render()
 {
+    if (currentLevel == nullptr) { Utilities::Log("Call to render without loading a level!", "Game", LOG_ERROR); return; }
+
     BeginDrawing();
     ClearBackground(gameConfig->backgroundColor);
         BeginMode3D(*cameraController.camera);
         DrawGrid(200, 1.0f);
-        for (GameObject* gameObject : gameObjects)
+        for (GameObject* gameObject : currentLevel->staticObjects)
         {
             gameObject->Render();
         }
+        GetPlayer()->Render();
         EndMode3D();
     EndDrawing();
 }
@@ -132,11 +135,7 @@ void Game::Update()
     m_DeltaTime = GetTime() - m_LastUpdateTime;
     if(m_DeltaTime >= gameConfig->updateTime)
     {
-        for (GameObject* gameObject : gameObjects)
-        {
-            gameObject->Update(m_DeltaTime);
-        }
-
+        GetPlayer()->Update(m_DeltaTime);
         cameraController.Update(m_DeltaTime);
         m_LastUpdateTime = GetTime();
 
@@ -256,7 +255,8 @@ int Game::Run()
                     gameState = GameState::LevelSelection;
                 }
                 mainMenu->Update();
-
+                
+                ClearBackground(gameConfig->backgroundColor);
                 BeginDrawing();
                     Texture* texture = &textures["mainMenuBackground"];
                     float offsetX = (GetScreenWidth() - texture->width) / 2;
@@ -268,6 +268,7 @@ int Game::Run()
             }
             case GameState::Paused:
             {
+                ClearBackground(gameConfig->backgroundColor);
                 if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(); }
                 if (pauseMenu->buttonStates["Continue"])
                 {
@@ -275,7 +276,7 @@ int Game::Run()
                 } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
                 {
                     m_ShouldRun = false;
-                } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_TEXT])
+                } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
                 {
                     gameState = GameState::MainMenu;
                 }
@@ -287,12 +288,20 @@ int Game::Run()
             }
             case GameState::LevelSelection:
             {
+                if (levelMenu  == nullptr) { levelMenu = new LevelMenu(); }
+                if (levelMenu->buttonStates[SELECT_LEVEL_BUTTON_TEXT])
+                {
+                    LoadLevel(levelMenu->levels[levelMenu->selected]);
+                    gameState = GameState::Playing;
+                }
+                levelMenu->Update();
+                ClearBackground(gameConfig->backgroundColor);
                 BeginDrawing();
                 Texture* texture = &textures["levelSelectionMenuBackground"];
                 float offsetX = (GetScreenWidth() - texture->width) / 2;
                 float offsetY = (GetScreenHeight() - texture->height) / 2;
                 DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-
+                levelMenu->Render();
                 EndDrawing();
                 break;
             }
@@ -307,8 +316,10 @@ int Game::Run()
                     } break;
                 }
 
+                delete levelMenu;
                 delete pauseMenu;
                 delete mainMenu;
+                levelMenu = nullptr;
                 pauseMenu = nullptr;
                 mainMenu = nullptr;
 
@@ -337,8 +348,6 @@ int Game::Run()
                 }
             }
         }
-
-
 
         if (WindowShouldClose()){ break; }
 

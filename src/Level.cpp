@@ -37,8 +37,8 @@ Level::Level(std::string levelName, Game* game)
         if (objType == "s")
         {
             StaticObject* object = new StaticObject(&game->models[objName], &game->materials["staticObjectDefault"], &game->textures["enemyDefault"]);
-            game->Register(object);
             object->SetPosition(position);
+            staticObjects.push_back(object);
         } else if (objType == "d")
         {
             Utilities::Log("NOT YET IMPLEMENTED!");
@@ -51,5 +51,11 @@ Level::Level(std::string levelName, Game* game)
 
 Level::~Level()
 {
-    Utilities::Log("Destroying level...", "Level");
+    Utilities::Log("Destroying " + levelName + "...", "Level");
+    Game::Get().currentLevel = nullptr;
+    for (auto obj : staticObjects)
+    {
+        delete obj;
+    }
+    staticObjects.clear();
 }

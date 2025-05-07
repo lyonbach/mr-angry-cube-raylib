@@ -1,4 +1,4 @@
-#include "AngerControlBehavoir.h"
+#include "AngerControlBehaviour.h"
 #include "Utilities.h"
 
 

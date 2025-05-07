@@ -43,9 +43,14 @@ void MrAngryCube::Update(float deltaTime)
     }
 }
 
-float MrAngryCube::GetAnger()
+float MrAngryCube::GetAnger() const
 {
     return m_AngerControlBehaviour->anger;
+}
+
+void MrAngryCube::SetAnger(float newAnger)
+{
+    m_AngerControlBehaviour->anger = newAnger;
 }
 
 bool MrAngryCube::IsAtQuarterRotation(Vector3& rotation) const

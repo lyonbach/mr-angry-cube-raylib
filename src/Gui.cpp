@@ -1,6 +1,8 @@
 #define RAYGUI_IMPLEMENTATION
 #include "Gui.h"
 #include "Constants.h"
+#include <algorithm>
+
 
 std::map<std::string, bool> Menu::GetButtonStates()
 {
@@ -43,8 +45,47 @@ PauseMenu::PauseMenu()
 {
     buttonStates = {
         { CONTINUE_BUTTON_TEXT, false },
-        { RETURN_TO_MAIN_MENU_TEXT, false },
+        { RETURN_TO_MAIN_MENU_BUTTON_TEXT, false },
         { EXIT_GAME_BUTTON_TEXT, false },
+    };
+}
+
+LevelMenu::LevelMenu()
+{
+    buttonStates = {
+        { SELECT_LEVEL_BUTTON_TEXT, false }
+    };
+
+    for (const auto& entry : std::filesystem::directory_iterator("./assets/levels"))
+    {
+        if (entry.is_regular_file())
+        {
+            levels.push_back(entry.path().filename().stem().string());
+        }
+    }
+    std::sort(levels.begin(), levels.end());
+
+    levelsText = "";
+    for (size_t i = 0; i < levels.size(); ++i)
+    {
+        levelsText += levels[i];
+        if (i < levels.size() - 1)
+        {
+            levelsText += ";";
+        }
+    }
+
+}
+
+void LevelMenu::Render()
+{
+    Menu::Render();
+    Rectangle rectangle_ = (Rectangle){(float)GetScreenWidth()/3, (float)GetScreenHeight()/3, (float)buttonWidth, (float)buttonHeight}; 
+    clicked = GuiComboBox(rectangle_, levelsText.c_str(), &selected);
+    if(clicked)
+    {
+        selected++;
+        selected = selected % levels.size();
     };
 }
 

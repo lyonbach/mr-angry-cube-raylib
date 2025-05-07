@@ -2,8 +2,9 @@
 #include "raylib.h"
 #include "raygui.h"
 #include "Utilities.h"
-#include <vector>
+#include <filesystem>
 #include <map>
+#include <vector>
 
 
 class Menu
@@ -38,6 +39,18 @@ class PauseMenu : public Menu
 {
 public:
     PauseMenu();
+};
+
+
+class LevelMenu : public Menu
+{
+public:
+    std::vector<std::string> levels;
+    std::string levelsText;
+    int selected = 0;
+    int clicked = 0;
+    LevelMenu();
+    void Render();
 };
 
 

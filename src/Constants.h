@@ -24,5 +24,6 @@ const std::string NEW_GAME_BUTTON_TEXT = "New Game";
 const std::string LOAD_LEVEL_BUTTON_TEXT = "Load Level";
 const std::string EXIT_GAME_BUTTON_TEXT = "Exit Game";
 const std::string CONTINUE_BUTTON_TEXT = "Continue";
-const std::string RETURN_TO_MAIN_MENU_TEXT = "Return To Main Menu";
+const std::string RETURN_TO_MAIN_MENU_BUTTON_TEXT = "Return To Main Menu";
+const std::string SELECT_LEVEL_BUTTON_TEXT = "Select";
 
