@@ -21,12 +21,15 @@ public:
     std::map<std::string, bool> buttonStates;
     Color color = ColorAlpha(RED, .8);
     Color borderColor = ColorAlpha(BLACK, .8);
-    
     Rectangle rectangle = { menuX, menuY, menuWidth, menuHeight };
-
     std::map<std::string, bool> GetButtonStates();
+
+    Menu(Texture& background);
     void Render();
     void Update();
+
+private:
+    Texture& m_BackgroundTexture;
 
 };
 
@@ -34,14 +37,14 @@ public:
 class MainMenu : public Menu
 {
 public:
-    MainMenu();
+    MainMenu(Texture& background);
 };
 
 
 class PauseMenu : public Menu
 {
 public:
-    PauseMenu();
+    PauseMenu(Texture& background);
 };
 
 
@@ -53,7 +56,8 @@ public:
     std::string levelsText;
     int selected = 0;
     int clicked = 0;
-    LevelMenu();
+
+    LevelMenu(Texture& background);
     void Render();
 };
 

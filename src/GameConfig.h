@@ -16,7 +16,7 @@ struct GameConfig
         {"macDefault", "./assets/textures/concrete.png"},
         {"enemyDefault", "./assets/textures/texel_checker_crayon.png"},
         {"mainMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"},
-        {"levelSelectionMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"}  // TODO REAL GAME ASSET.
+        {"levelSelectionMenuBackground", "./assets/textures/mr-angry-cube-artwork-level-select.png"}  // TODO REAL GAME ASSET.
     };
 
     std::map<std::string, std::string> shaderPaths = {  // TODO MOVE TO game.ini

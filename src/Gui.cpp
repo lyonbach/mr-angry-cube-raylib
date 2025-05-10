@@ -9,8 +9,22 @@ std::map<std::string, bool> Menu::GetButtonStates()
     return buttonStates;
 }
 
+
+Menu::Menu(Texture& background)
+    : m_BackgroundTexture(background)
+{}
+
 void Menu::Render()
 {
+
+    // Calculate offset and scale
+    float imageWidth = m_BackgroundTexture.width;
+    float imageHeight = m_BackgroundTexture.height;
+    float screenWidth = GetScreenWidth();
+    float screenHeight = GetScreenHeight();
+    float scale = screenWidth >= screenHeight ? screenWidth / imageWidth : screenHeight / imageHeight;
+
+    DrawTextureEx(m_BackgroundTexture, {0, 0}, 0, scale, WHITE);
     int i = 0;
     for (auto& pair : buttonStates)
     {
@@ -32,7 +46,8 @@ void Menu::Update()
     }
 }
 
-MainMenu::MainMenu()
+MainMenu::MainMenu(Texture& background)
+    : Menu(background)
 {
     buttonStates = {
         { NEW_GAME_BUTTON_TEXT, false },
@@ -41,7 +56,8 @@ MainMenu::MainMenu()
     };
 }
 
-PauseMenu::PauseMenu()
+PauseMenu::PauseMenu(Texture& background)
+    : Menu(background)
 {
     buttonStates = {
         { CONTINUE_BUTTON_TEXT, false },
@@ -50,7 +66,8 @@ PauseMenu::PauseMenu()
     };
 }
 
-LevelMenu::LevelMenu()
+LevelMenu::LevelMenu(Texture& background)
+    : Menu(background)
 {
     buttonStates = {
         { SELECT_LEVEL_BUTTON_TEXT, false },

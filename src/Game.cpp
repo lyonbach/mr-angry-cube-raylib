@@ -134,6 +134,71 @@ void Game::Render()
     EndDrawing();
 }
 
+void Game::RenderMenu(Menu* menu)
+{
+    ClearBackground(gameConfig->backgroundColor);
+    BeginDrawing();
+    switch (gameState)
+    {
+        case GameState::MainMenu:
+        {
+            mainMenu->Update();
+            mainMenu->Render();
+            if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
+            {
+                gameState = GameState::Playing;
+                delete mainMenu;
+                mainMenu = nullptr;
+            } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+            {
+                m_ShouldRun = false;
+                delete mainMenu;
+                mainMenu = nullptr;
+            } else if (mainMenu->buttonStates[LOAD_LEVEL_BUTTON_TEXT])
+            {
+                gameState = GameState::LevelSelection;
+                delete mainMenu;
+                mainMenu = nullptr;
+            }
+            break;
+        }
+        case GameState::Paused:
+        {
+            ClearBackground(gameConfig->backgroundColor);
+            if (pauseMenu->buttonStates["Continue"])
+            {
+                gameState = GameState::Playing;
+            } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+            {
+                m_ShouldRun = false;
+            } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
+            {
+                gameState = GameState::MainMenu;
+                UnloadLevel();
+            }
+            pauseMenu->Update();
+            pauseMenu->Render();
+            break;
+        }
+        case GameState::LevelSelection:
+        {
+            if (levelMenu->buttonStates[SELECT_LEVEL_BUTTON_TEXT])
+            {
+                LoadLevel(levelMenu->levels[levelMenu->selected]);
+                gameState = GameState::Playing;
+            } else if (levelMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
+            {
+                UnloadLevel();
+                gameState = GameState::MainMenu;
+            }
+            levelMenu->Update();
+            levelMenu->Render();
+            break;
+        }
+    }
+    EndDrawing();
+}
+
 void Game::Update()
 {
     m_DeltaTime = GetTime() - m_LastUpdateTime;
@@ -223,13 +288,11 @@ void Game::HandleKeyEvents()
 
 int Game::Run()
 {
-
     if (!m_Initialized)
     {
         Utilities::Log("Game is not initialized. Exiting...", "GAME", LOG_ERROR);
         return 1;
     }
-
     int returnCode = 0;
     gameState = GameState::MainMenu;
     while (m_ShouldRun)  // Main loop.
@@ -245,88 +308,24 @@ int Game::Run()
             returnCode = 1;
             break;
         }
-
         switch (gameState)
         {
             case GameState::MainMenu:
             {
-                if (mainMenu == nullptr) { mainMenu = new MainMenu(); }
-                if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
-                {
-                    gameState = GameState::Playing;
-                } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
-                {
-                    m_ShouldRun = false;
-                } else if (mainMenu->buttonStates[LOAD_LEVEL_BUTTON_TEXT])
-                {
-                    gameState = GameState::LevelSelection;
-                }
-                mainMenu->Update();
-
-                ClearBackground(gameConfig->backgroundColor);
-                BeginDrawing();
-                // FIXME MOVE THIS TO MENU RENDER 
-                Texture* texture = &textures["mainMenuBackground"];
-                float offsetX = (GetScreenWidth() - texture->width) / 2;
-                float offsetY = (GetScreenHeight() - texture->height) / 2;
-                DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-                // FIXME MOVE THIS TO MENU RENDER 
-                mainMenu->Render();
-                EndDrawing();
+                if (mainMenu == nullptr) { mainMenu = new MainMenu(textures["mainMenuBackground"]); }
+                RenderMenu(mainMenu);
                 break;
             }
             case GameState::Paused:
             {
-                ClearBackground(gameConfig->backgroundColor);
-                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(); }
-                if (pauseMenu->buttonStates["Continue"])
-                {
-                    gameState = GameState::Playing;
-                } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
-                {
-                    m_ShouldRun = false;
-                } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
-                {
-                    gameState = GameState::MainMenu;
-                    UnloadLevel();
-                }
-                pauseMenu->Update();
-
-                // FIXME MOVE THIS TO MENU RENDER 
-                Texture* texture = &textures["levelSelectionMenuBackground"];
-                float offsetX = (GetScreenWidth() - texture->width) / 2;
-                float offsetY = (GetScreenHeight() - texture->height) / 2;
-                DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-                // FIXME MOVE THIS TO MENU RENDER 
-                BeginDrawing();
-                pauseMenu->Render();
-                EndDrawing();
+                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(textures["levelSelectionMenuBackground"]); }
+                RenderMenu(pauseMenu);
                 break;
             }
             case GameState::LevelSelection:
             {
-                if (levelMenu  == nullptr) { levelMenu = new LevelMenu(); }
-                if (levelMenu->buttonStates[SELECT_LEVEL_BUTTON_TEXT])
-                {
-                    LoadLevel(levelMenu->levels[levelMenu->selected]);
-                    gameState = GameState::Playing;
-                } else if (levelMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
-                {
-                    UnloadLevel();
-                    gameState = GameState::MainMenu;
-                }
-                levelMenu->Update();
-
-                ClearBackground(gameConfig->backgroundColor);
-                BeginDrawing();
-                // FIXME MOVE THIS TO MENU RENDER 
-                Texture* texture = &textures["levelSelectionMenuBackground"];
-                float offsetX = (GetScreenWidth() - texture->width) / 2;
-                float offsetY = (GetScreenHeight() - texture->height) / 2;
-                DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-                // FIXME MOVE THIS TO MENU RENDER 
-                levelMenu->Render();
-                EndDrawing();
+                if (levelMenu == nullptr) { levelMenu = new LevelMenu(textures["levelSelectionMenuBackground"]); }
+                RenderMenu(levelMenu);
                 break;
             }
             case GameState::Playing:
@@ -340,15 +339,17 @@ int Game::Run()
                     } break;
                 }
 
-                delete levelMenu;
-                delete pauseMenu;
-                delete mainMenu;
-                levelMenu = nullptr;
-                pauseMenu = nullptr;
-                mainMenu = nullptr;
+                if (levelMenu) {
+                    delete levelMenu;
+                    levelMenu = nullptr;
 
+                }
+                if (pauseMenu) {
+                    delete pauseMenu;
+                    pauseMenu = nullptr;
+                }
                 try {
-                    Update();
+                    if (m_ShouldUpdate){ Update(); }
                 } catch (const std::exception& e) {
                     Utilities::Log("Exception caught during update: " + std::string(e.what()), "Game", LOG_ERROR);
                     returnCode = 1;
@@ -372,10 +373,7 @@ int Game::Run()
                 }
             }
         }
-
         if (WindowShouldClose()){ break; }
-
     }
-
     return returnCode;
 }

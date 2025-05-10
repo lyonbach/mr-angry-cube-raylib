@@ -52,6 +52,7 @@ public:
     MrAngryCube* GetPlayer();
     void ResetPlayer();
     void Render();
+    void RenderMenu(Menu* menu);
     void Update();
     void HandleKeyEvents();
     int Run();
@@ -66,6 +67,7 @@ private:
 
     bool m_Initialized = false;
     bool m_ShouldRun = true;
+    bool m_ShouldUpdate = true;
     float m_LastUpdateTime = 0.0f;
     float m_DeltaTime = 0.0f;
     unsigned int m_Anger = MINIMUM_ANGER;
