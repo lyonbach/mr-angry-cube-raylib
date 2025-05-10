@@ -29,12 +29,13 @@ void MrAngryCube::Update(float deltaTime)
 {
     m_AngerControlBehaviour->Update();
     m_MoveBehaviour->Action(this);
-    if (m_AngerControlBehaviour->anger >= MAXIMUM_ANGER)
+    if (m_AngerControlBehaviour->angerCounter >= MAXIMUM_ANGER)
     {
         auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
-        int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();
+        // int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();
+        unsigned int idx = GetMoveBehaviourIndex();
         SetMoveBehaviour(allBehaviours[(idx + 1) % allBehaviours.size()]);
-        m_AngerControlBehaviour->anger = MINIMUM_ANGER;
+        m_AngerControlBehaviour->angerCounter = MINIMUM_ANGER;
     }
 
     if (IsAtQuarterRotation(rotation) && nextMoveBehaviourName != MoveBehaviourName::NoMoveBehaviour)
@@ -45,12 +46,18 @@ void MrAngryCube::Update(float deltaTime)
 
 float MrAngryCube::GetAnger() const
 {
-    return m_AngerControlBehaviour->anger;
+    return m_AngerControlBehaviour->angerCounter;
+}
+
+unsigned int MrAngryCube::GetMoveBehaviourIndex() const
+{
+    auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
+    return std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();
 }
 
 void MrAngryCube::SetAnger(float newAnger)
 {
-    m_AngerControlBehaviour->anger = newAnger;
+    m_AngerControlBehaviour->angerCounter = newAnger;
 }
 
 bool MrAngryCube::IsAtQuarterRotation(Vector3& rotation) const

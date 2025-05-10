@@ -20,15 +20,22 @@ CameraController::~CameraController()
 
 void CameraController::Update(float deltaTime)
 {
-    MrAngryCube* player = Game::Get().GetPlayer();
+    Game& game = Game::Get();
+    MrAngryCube* player = game.GetPlayer();
     nextPositon = camera->target + chaseVector;
-    Vector3 distanceVectorTarget = player->GetPosition() - camera->target;
+    Vector3 negativeSpaceVector = {0.0f, 0.0f, 0.0f};
+    if (!abs(game.currentRotationAxis.y))
+    {
+        negativeSpaceVector = Vector3RotateByAxisAngle(game.currentRotationAxis, {0.0f, 1.0f, 0.0f}, DEG2RAD*-90.0);
+        negativeSpaceVector *= (player->GetMoveBehaviourIndex() + 1) * 1.5f;
+    }
+    Vector3 distanceVectorTarget = player->GetPosition() - camera->target + negativeSpaceVector;
     camera->target += distanceVectorTarget * deltaTime * CAMERA_TARGET_UPDATE_SPEED_COEFF;
 
-    if(player->IsAtQuarterRotation(player->rotation) && abs(Vector3Length(Game::Get().physicsObserver->GetVelocity())) > .1f)
+    if(player->IsAtQuarterRotation(player->rotation) && abs(Vector3Length(game.physicsObserver->GetVelocity())) > .1f)
     {
         cameraShakeStrenght = STANDARD_CAMERA_SHAKE_STRENGTH;
-        if ((int)abs(Game::Get().currentRotationAxis.y) == 1)
+        if ((int)abs(game.currentRotationAxis.y) == 1)
         {
             cameraShakeStrenght = 0.05f;
         }
