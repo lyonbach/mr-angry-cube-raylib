@@ -26,6 +26,7 @@ void GameConfig::LogConfig()
     Utilities::Log("  FullScreen: " + std::string(fullScreen ? "true" : "false"), "GameConfig", LOG_INFO);
     Utilities::Log("  ScreenSize: (" + std::to_string(screenSize.x) + ", " + std::to_string(screenSize.y) + ")", "GameConfig", LOG_INFO);
     Utilities::Log("  WarmUpTime: " + std::to_string(warmUpTime) + " (seconds)", "GameConfig", LOG_INFO);
+    Utilities::Log("  UpdateRate: " + std::to_string(updateRate) + " (times/seconds)", "GameConfig", LOG_INFO);
     Utilities::Log("  UpdateTime: " + std::to_string(updateTime) + " (seconds)", "GameConfig", LOG_INFO);
 }
 
@@ -35,6 +36,7 @@ void GameConfig::Init()
     fullScreen = rini_get_config_value(config, "FULLSCREEN");
     screenSize.x = rini_get_config_value(config, "WIDTH");
     screenSize.y = rini_get_config_value(config, "HEIGHT");
+    updateRate = rini_get_config_value(config, "UPDATE_RATE");
 
     int warmUpTime_ = rini_get_config_value(config, "WARMUP_TIME");
     if (warmUpTime_) {
@@ -47,6 +49,7 @@ void GameConfig::Init()
         Utilities::Log("Key: " + std::string(key) + ", Value: " + std::string(text) + ", Description: " + std::string(desc), "GameConfig", LOG_INFO);
     }
 
+    Utilities::Log(std::to_string(updateRate));
     updateTime = 1.0f / updateRate;
     configured = true;
 }

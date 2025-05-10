@@ -112,6 +112,7 @@ void Game::ResetPlayer()
 {
     delete m_Player;
     m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    physicsObserver->observed = m_Player;
     nextRotationAxis = Vector3();
 }
 

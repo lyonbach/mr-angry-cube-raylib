@@ -25,7 +25,7 @@ struct GameConfig
     };
 
     std::map<std::string, std::string> modelPaths = {  // TODO MOVE TO game.ini
-        {"macDefault", "./assets/models/mr_angry_cube_high_res.obj"},
+        {"macDefault", "./assets/models/mr_angry_cube.obj"},
         {"enemyDefault", "./assets/models/enemy.obj"},
         {"column", "./assets/models/column.obj"}
     };
