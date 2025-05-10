@@ -134,7 +134,7 @@ void Game::Render()
     EndDrawing();
 }
 
-void Game::RenderMenu(Menu* menu)
+void Game::HandleGui(Menu* menu)
 {
     ClearBackground(gameConfig->backgroundColor);
     BeginDrawing();
@@ -313,19 +313,19 @@ int Game::Run()
             case GameState::MainMenu:
             {
                 if (mainMenu == nullptr) { mainMenu = new MainMenu(textures["mainMenuBackground"]); }
-                RenderMenu(mainMenu);
+                HandleGui(mainMenu);
                 break;
             }
             case GameState::Paused:
             {
                 if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(textures["levelSelectionMenuBackground"]); }
-                RenderMenu(pauseMenu);
+                HandleGui(pauseMenu);
                 break;
             }
             case GameState::LevelSelection:
             {
                 if (levelMenu == nullptr) { levelMenu = new LevelMenu(textures["levelSelectionMenuBackground"]); }
-                RenderMenu(levelMenu);
+                HandleGui(levelMenu);
                 break;
             }
             case GameState::Playing:

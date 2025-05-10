@@ -52,7 +52,7 @@ public:
     MrAngryCube* GetPlayer();
     void ResetPlayer();
     void Render();
-    void RenderMenu(Menu* menu);
+    void HandleGui(Menu* menu);
     void Update();
     void HandleKeyEvents();
     int Run();
