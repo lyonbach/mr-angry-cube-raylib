@@ -22,15 +22,28 @@ void Menu::Render()
     float imageHeight = m_BackgroundTexture.height;
     float screenWidth = GetScreenWidth();
     float screenHeight = GetScreenHeight();
-    float scale = screenWidth >= screenHeight ? screenWidth / imageWidth : screenHeight / imageHeight;
+    float backgroundOffsetY = 0.0f;
+    float backgroundOffsetX = 0.0f;
+    float scale;
 
-    DrawTextureEx(m_BackgroundTexture, {0, 0}, 0, scale, WHITE);
+    if (screenWidth >= screenHeight)
+    {
+        scale = screenWidth / imageWidth;
+        backgroundOffsetY = (float)(int)((screenHeight - imageHeight*scale) / 2);
+    }
+    else
+    {
+        scale = screenHeight / imageHeight;
+        backgroundOffsetX = (float)(int)((screenWidth - imageWidth*scale) / 2);
+    }
+
+    DrawTextureEx(m_BackgroundTexture, {backgroundOffsetX, backgroundOffsetY}, 0, scale, WHITE);
     int i = 0;
     for (auto& pair : buttonStates)
     {
         buttonStates[pair.first] = GuiButton({
             rectangle.x,
-            GetScreenHeight() - (rectangle.y + (buttonHeight + offsetY) * i),
+            GetScreenHeight() - (rectangle.y + (buttonHeight + buttonOffsetY) * i),
             (float)buttonWidth, (float)buttonHeight},
             pair.first.c_str()
            );

@@ -10,7 +10,7 @@
 class Menu
 {
 public:
-    float offsetY = 20.0f;
+    float buttonOffsetY = 20.0f;
     float buttonWidth = 250.0f;
     float buttonHeight = 50.0f;
     float menuWidth = 500.0f;
@@ -51,7 +51,7 @@ public:
 class LevelMenu : public Menu
 {
 public:
-    float comboBoxY = GetScreenHeight() - 20.0 - (rectangle.y + (buttonHeight + offsetY) * 2);
+    float comboBoxY = GetScreenHeight() - 20.0 - (rectangle.y + (buttonHeight + buttonOffsetY) * 2);
     std::vector<std::string> levels;
     std::string levelsText;
     int selected = 0;
