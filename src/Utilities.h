@@ -3,10 +3,10 @@
 #include <string>
 #include <functional>
 
-class TimedEvent
+class ScheduledEvent
 {
 public:
-    TimedEvent(std::function<void()> callback, float time);
+    ScheduledEvent(std::function<void()> callback, float time);
     void Update();
     std::function<void()> callbackFunction;
     float setTime;
@@ -22,5 +22,6 @@ namespace Utilities
     std::string GenerateHash();
     std::string GetFilePath(std::string levelName);
     void ScheduleEvent(std::function<void()> callback, float time);
+    void ScheduleWarmUp();
 }
 

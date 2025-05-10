@@ -26,16 +26,26 @@ std::string Utilities::GenerateHash()
 
 void Utilities::ScheduleEvent(std::function<void()> callback, float time)
 {
-    TimedEvent* timedEvent = new TimedEvent(callback, time);
+    ScheduledEvent* timedEvent = new ScheduledEvent(callback, time);
     Game::Get().timedEvents.push_back(timedEvent);
 }
 
-TimedEvent::TimedEvent(std::function<void()> callback, float time) : callbackFunction(callback), waitTime(time)
+void Utilities::ScheduleWarmUp()
+{
+    Game& game = Game::Get();
+    Utilities::Log("Scheduling warmup...", "Utilities", LOG_INFO);  // FIXME Those should be debug.
+    Utilities::ScheduleEvent(
+        [](){ Utilities::Log("Warmup finished...", "Utilities", LOG_INFO);  // FIXME Those should be debug.
+        Game::Get().shouldRender = true;
+        }, game.gameConfig->warmUpTime );
+}
+
+ScheduledEvent::ScheduledEvent(std::function<void()> callback, float time) : callbackFunction(callback), waitTime(time)
 {
     setTime = GetTime();
 }
 
-void TimedEvent::Update()
+void ScheduledEvent::Update()
 {
     if (triggered) { return; }
     if (GetTime() - setTime >= waitTime)

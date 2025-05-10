@@ -147,18 +147,13 @@ void Game::HandleGui(Menu* menu)
             if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
             {
                 gameState = GameState::Playing;
-                m_ShouldRender = false;
-
-                Utilities::ScheduleEvent(
-                    [](){ Utilities::Log("Warmup finished...");
-                    Game::Get().m_ShouldRender = true;
-                    }, gameConfig->warmUpTime );
-
+                shouldRender = false;
+                Utilities::ScheduleWarmUp();                
                 delete mainMenu;
                 mainMenu = nullptr;
             } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
             {
-                m_ShouldRun = false;
+                shouldRun = false;
                 delete mainMenu;
                 mainMenu = nullptr;
             } else if (mainMenu->buttonStates[LOAD_LEVEL_BUTTON_TEXT])
@@ -177,7 +172,7 @@ void Game::HandleGui(Menu* menu)
                 gameState = GameState::Playing;
             } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
             {
-                m_ShouldRun = false;
+                shouldRun = false;
             } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
             {
                 gameState = GameState::MainMenu;
@@ -293,6 +288,19 @@ void Game::HandleKeyEvents()
     }
 }
 
+void Game::HandleScheduledEvents()
+{
+        for (ScheduledEvent* e : timedEvents)
+        {
+            if (e->triggered) {
+                timedEvents.erase(std::remove(timedEvents.begin(), timedEvents.end(), e), timedEvents.end());
+                delete e;
+                continue;
+            }
+            e->Update();
+        }
+}
+
 int Game::Run()
 {
     if (!m_Initialized)
@@ -302,7 +310,7 @@ int Game::Run()
     }
     int returnCode = 0;
     gameState = GameState::MainMenu;
-    while (m_ShouldRun)  // Main loop.
+    while (shouldRun)  // Main loop.
     {
         try {
             HandleKeyEvents();
@@ -315,6 +323,19 @@ int Game::Run()
             returnCode = 1;
             break;
         }
+
+        try {
+            HandleScheduledEvents();
+        } catch (const std::exception& e) {
+            Utilities::Log("Exception caught during timed events handling: " + std::string(e.what()), "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        } catch (...) {
+            Utilities::Log("Unknown exception caught during timed events handling.", "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        }
+
         switch (gameState)
         {
             case GameState::MainMenu:
@@ -356,7 +377,7 @@ int Game::Run()
                     pauseMenu = nullptr;
                 }
                 try {
-                    if (m_ShouldUpdate){ Update(); }
+                    if (shouldUpdate){ Update(); }
                 } catch (const std::exception& e) {
                     Utilities::Log("Exception caught during update: " + std::string(e.what()), "Game", LOG_ERROR);
                     returnCode = 1;
@@ -368,7 +389,7 @@ int Game::Run()
                 }
 
                 try {
-                    if (m_ShouldRender){ Render(); }
+                    if (shouldRender){ Render(); }
                 } catch (const std::exception& e) {
                     Utilities::Log("Exception caught during render: " + std::string(e.what()), "Game", LOG_ERROR);
                     returnCode = 1;
@@ -381,17 +402,6 @@ int Game::Run()
             }
         }
         if (WindowShouldClose()){ break; }
-
-        for (TimedEvent* e : timedEvents)
-        {
-            if (e->triggered) {
-                timedEvents.erase(std::remove(timedEvents.begin(), timedEvents.end(), e), timedEvents.end());
-                delete e;
-                continue;
-            }
-            e->Update();
-        }
-
     }  // End main loop.
     return returnCode;
 }

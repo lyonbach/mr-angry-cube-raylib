@@ -25,11 +25,15 @@ enum class GameState
 
 class Game {
 public:
+    bool shouldRun = true;
+    bool shouldUpdate = true;
+    bool shouldRender = true;
+
     std::map<std::string, Shader> shaders;
     std::map<std::string, Texture> textures;
     std::map<std::string, Model> models;
     std::map<std::string, Material> materials;
-    std::vector<TimedEvent*> timedEvents;
+    std::vector<ScheduledEvent*> timedEvents;
 
     Vector3 currentRotationAxis = DEFAULT_NEXT_ROTATION_AXIS;
     Vector3 nextRotationAxis = DEFAULT_NEXT_ROTATION_AXIS;
@@ -56,6 +60,7 @@ public:
     void HandleGui(Menu* menu);
     void Update();
     void HandleKeyEvents();
+    void HandleScheduledEvents();
     int Run();
     void Exit();
 
@@ -67,9 +72,6 @@ private:
     MrAngryCube* m_Player;
 
     bool m_Initialized = false;
-    bool m_ShouldRun = true;
-    bool m_ShouldUpdate = true;
-    bool m_ShouldRender = true;
     float m_LastUpdateTime = 0.0f;
     float m_DeltaTime = 0.0f;
     unsigned int m_Anger = MINIMUM_ANGER;
