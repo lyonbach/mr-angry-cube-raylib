@@ -2,4 +2,4 @@
 
 I wanted to learn more about game math and started to create my game idea. Let us see where it goes!<br>
 
-![Mr. Angry Cube](mr-angry-cube-artwork.png)
+![Mr. Angry Cube](./textures/mr-angry-cube-artwork.png)

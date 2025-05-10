@@ -11,6 +11,7 @@ public:
     void Render() override;
     void Update(float deltaTime) override;
     float GetAnger() const;
+    unsigned int GetMoveBehaviourIndex() const;
     void SetAnger(float newAnger);
     bool IsAtQuarterRotation(Vector3& vector) const;
     bool HasEverMoved() const;

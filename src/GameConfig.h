@@ -14,9 +14,9 @@ struct GameConfig
 
     std::map<std::string, std::string> texturePaths = {  // TODO MOVE TO game.ini
         {"macDefault", "./assets/textures/concrete.png"},
-        {"enemyDefault", "./assets/textures/texel_checker_crayon.png"},
+        {"objectTest", "./assets/textures/texel_checker_crayon.png"},
         {"mainMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"},
-        {"levelSelectionMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"}  // TODO REAL GAME ASSET.
+        {"levelSelectionMenuBackground", "./assets/textures/mr-angry-cube-artwork-level-select.png"}  // TODO REAL GAME ASSET.
     };
 
     std::map<std::string, std::string> shaderPaths = {  // TODO MOVE TO game.ini
@@ -25,9 +25,11 @@ struct GameConfig
     };
 
     std::map<std::string, std::string> modelPaths = {  // TODO MOVE TO game.ini
-        {"macDefault", "./assets/models/mr_angry_cube_high_res.obj"},
+        {"macDefault", "./assets/models/mr_angry_cube.obj"},
         {"enemyDefault", "./assets/models/enemy.obj"},
-        {"column", "./assets/models/column.obj"}
+        {"column", "./assets/models/column.obj"},
+        {"tileSmall", "./assets/models/tileSmall.obj"},
+        {"tileMedium", "./assets/models/tileMedium.obj"},
     };
 
     const char* configPath;

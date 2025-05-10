@@ -1,7 +1,18 @@
 #pragma once
 #include "raylib.h"
 #include <string>
+#include <functional>
 
+class ScheduledEvent
+{
+public:
+    ScheduledEvent(std::function<void()> callback, float time);
+    void Update();
+    std::function<void()> callbackFunction;
+    float setTime;
+    float waitTime;
+    bool triggered = false;
+};
 
 namespace Utilities
 {
@@ -10,5 +21,7 @@ namespace Utilities
     void Log(Vector2 vector, std::string prefix="CUSTOM", TraceLogLevel logLevel=LOG_INFO);
     std::string GenerateHash();
     std::string GetFilePath(std::string levelName);
+    void ScheduleEvent(std::function<void()> callback, float time);
+    void ScheduleWarmUp();
 }
 

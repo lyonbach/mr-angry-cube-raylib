@@ -32,4 +32,5 @@ public:
 
     Vector3 chaseVector{ 0.0f, 4.0f, 5.0f };
     Vector3 nextPositon{ 0.0f, 4.0f, 5.0f };
+    Vector3 nextTarget { 0.0f, 0.0f, 0.0f };
 };

@@ -4,6 +4,7 @@
 class DefaultAngerControlBehaviour
 {
 public:
+    unsigned int angerCounter = 0;
     unsigned int anger = 0;
     virtual void Update();
 

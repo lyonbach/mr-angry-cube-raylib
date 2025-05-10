@@ -10,7 +10,7 @@
 class Menu
 {
 public:
-    float offsetY = 20.0f;
+    float buttonOffsetY = 20.0f;
     float buttonWidth = 250.0f;
     float buttonHeight = 50.0f;
     float menuWidth = 500.0f;
@@ -21,12 +21,15 @@ public:
     std::map<std::string, bool> buttonStates;
     Color color = ColorAlpha(RED, .8);
     Color borderColor = ColorAlpha(BLACK, .8);
-    
     Rectangle rectangle = { menuX, menuY, menuWidth, menuHeight };
-
     std::map<std::string, bool> GetButtonStates();
+
+    Menu(Texture& background);
     void Render();
     void Update();
+
+private:
+    Texture& m_BackgroundTexture;
 
 };
 
@@ -34,26 +37,27 @@ public:
 class MainMenu : public Menu
 {
 public:
-    MainMenu();
+    MainMenu(Texture& background);
 };
 
 
 class PauseMenu : public Menu
 {
 public:
-    PauseMenu();
+    PauseMenu(Texture& background);
 };
 
 
 class LevelMenu : public Menu
 {
 public:
-    float comboBoxY = GetScreenHeight() - 20.0 - (rectangle.y + (buttonHeight + offsetY) * 2);
+    float comboBoxY = GetScreenHeight() - 20.0 - (rectangle.y + (buttonHeight + buttonOffsetY) * 2);
     std::vector<std::string> levels;
     std::string levelsText;
     int selected = 0;
     int clicked = 0;
-    LevelMenu();
+
+    LevelMenu(Texture& background);
     void Render();
 };
 

@@ -1,4 +1,5 @@
 #include "Utilities.h"
+#include "Game.h"
 
 
 void Utilities::Log(std::string message, std::string prefix, TraceLogLevel logLevel)
@@ -21,4 +22,38 @@ void Utilities::Log(Vector2 vector, std::string prefix, TraceLogLevel logLevel)
 std::string Utilities::GenerateHash()
 {
     return std::to_string(GetTime());  // Use current time as object id.
+}
+
+void Utilities::ScheduleEvent(std::function<void()> callback, float time)
+{
+    ScheduledEvent* timedEvent = new ScheduledEvent(callback, time);
+    Game::Get().timedEvents.push_back(timedEvent);
+}
+
+void Utilities::ScheduleWarmUp()
+{
+    Game& game = Game::Get();
+    Utilities::Log("Scheduling warmup...", "Utilities", LOG_INFO);  // FIXME Those should be debug.
+    Utilities::ScheduleEvent(
+        [](){ Utilities::Log("Warmup finished...", "Utilities", LOG_INFO);  // FIXME Those should be debug.
+        Game::Get().shouldRender = true;
+        }, game.gameConfig->warmUpTime );
+}
+
+ScheduledEvent::ScheduledEvent(std::function<void()> callback, float time) : callbackFunction(callback), waitTime(time)
+{
+    setTime = GetTime();
+}
+
+void ScheduledEvent::Update()
+{
+    if (triggered) { return; }
+    if (GetTime() - setTime >= waitTime)
+    {
+        triggered = true;
+        if (callbackFunction != nullptr)
+        {
+            callbackFunction();
+        }
+    }
 }

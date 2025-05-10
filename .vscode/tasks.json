@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Build",
+			"command": "cd ${workspaceFolder}/build && cmake .. && make -j8",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		},
+		{
+			"type": "shell",
+			"label": "Clean and Build",
+			"command": "cd ${workspaceFolder}/build && rm ./** -drfv && cmake .. && make -j8",
+			"problemMatcher": [],
+			"detail": "CMake template clean task"
+		}
+	]
+}

@@ -41,7 +41,12 @@ void Game::Init(GameConfig& config)
     for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
     {
         Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
-        models[pair.first] = LoadModel(pair.second.c_str());
+        Model model = LoadModel(pair.second.c_str());
+        if (!model.meshes)
+        {
+            throw std::runtime_error("Failed to load model: " + pair.first + " from path: " + pair.second);
+        }
+        models[pair.first] = model;
     }
 
     Utilities::Log("Loading shaders...", "Game");
@@ -63,7 +68,12 @@ void Game::Init(GameConfig& config)
     for (std::pair<std::string, std::string> pair : gameConfig->texturePaths) // Textures.
     {
         Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
-        textures[pair.first] = LoadTexture(pair.second.c_str());
+        Texture texture = LoadTexture(pair.second.c_str());
+        if (!texture.id)
+        {
+            throw std::runtime_error("Failed to load texture: " + pair.first + " from path: " + pair.second);
+        }
+        textures[pair.first] = texture;
     }
 
     m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
@@ -112,6 +122,7 @@ void Game::ResetPlayer()
 {
     delete m_Player;
     m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    physicsObserver->observed = m_Player;
     nextRotationAxis = Vector3();
 }
 
@@ -130,6 +141,73 @@ void Game::Render()
         GetPlayer()->Render();
         EndMode3D();
     hud->Render();
+    EndDrawing();
+}
+
+void Game::HandleGui(Menu* menu)
+{
+    ClearBackground(gameConfig->backgroundColor);
+    BeginDrawing();
+    switch (gameState)
+    {
+        case GameState::MainMenu:
+        {
+            mainMenu->Update();
+            mainMenu->Render();
+            if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
+            {
+                gameState = GameState::Playing;
+                shouldRender = false;
+                Utilities::ScheduleWarmUp();                
+                delete mainMenu;
+                mainMenu = nullptr;
+            } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+            {
+                shouldRun = false;
+                delete mainMenu;
+                mainMenu = nullptr;
+            } else if (mainMenu->buttonStates[LOAD_LEVEL_BUTTON_TEXT])
+            {
+                gameState = GameState::LevelSelection;
+                delete mainMenu;
+                mainMenu = nullptr;
+            }
+            break;
+        }
+        case GameState::Paused:
+        {
+            ClearBackground(gameConfig->backgroundColor);
+            if (pauseMenu->buttonStates["Continue"])
+            {
+                gameState = GameState::Playing;
+            } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
+            {
+                shouldRun = false;
+            } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
+            {
+                gameState = GameState::MainMenu;
+                UnloadLevel();
+            }
+            pauseMenu->Update();
+            pauseMenu->Render();
+            break;
+        }
+        case GameState::LevelSelection:
+        {
+            if (levelMenu->buttonStates[SELECT_LEVEL_BUTTON_TEXT])
+            {
+                LoadLevel(levelMenu->levels[levelMenu->selected]);
+                gameState = GameState::Playing;
+            } else if (levelMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
+            {
+                UnloadLevel();
+                gameState = GameState::MainMenu;
+            }
+            levelMenu->Update();
+            levelMenu->Render();
+            break;
+        }
+    }
     EndDrawing();
 }
 
@@ -220,18 +298,29 @@ void Game::HandleKeyEvents()
     }
 }
 
+void Game::HandleScheduledEvents()
+{
+        for (ScheduledEvent* e : timedEvents)
+        {
+            if (e->triggered) {
+                timedEvents.erase(std::remove(timedEvents.begin(), timedEvents.end(), e), timedEvents.end());
+                delete e;
+                continue;
+            }
+            e->Update();
+        }
+}
+
 int Game::Run()
 {
-
     if (!m_Initialized)
     {
         Utilities::Log("Game is not initialized. Exiting...", "GAME", LOG_ERROR);
         return 1;
     }
-
     int returnCode = 0;
     gameState = GameState::MainMenu;
-    while (m_ShouldRun)  // Main loop.
+    while (shouldRun)  // Main loop.
     {
         try {
             HandleKeyEvents();
@@ -245,87 +334,36 @@ int Game::Run()
             break;
         }
 
+        try {
+            HandleScheduledEvents();
+        } catch (const std::exception& e) {
+            Utilities::Log("Exception caught during timed events handling: " + std::string(e.what()), "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        } catch (...) {
+            Utilities::Log("Unknown exception caught during timed events handling.", "Game", LOG_ERROR);
+            returnCode = 1;
+            break;
+        }
+
         switch (gameState)
         {
             case GameState::MainMenu:
             {
-                if (mainMenu == nullptr) { mainMenu = new MainMenu(); }
-                if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
-                {
-                    gameState = GameState::Playing;
-                } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
-                {
-                    m_ShouldRun = false;
-                } else if (mainMenu->buttonStates[LOAD_LEVEL_BUTTON_TEXT])
-                {
-                    gameState = GameState::LevelSelection;
-                }
-                mainMenu->Update();
-
-                ClearBackground(gameConfig->backgroundColor);
-                BeginDrawing();
-                // FIXME MOVE THIS TO MENU RENDER 
-                Texture* texture = &textures["mainMenuBackground"];
-                float offsetX = (GetScreenWidth() - texture->width) / 2;
-                float offsetY = (GetScreenHeight() - texture->height) / 2;
-                DrawTextureEx(textures["mainMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-                // FIXME MOVE THIS TO MENU RENDER 
-                mainMenu->Render();
-                EndDrawing();
+                if (mainMenu == nullptr) { mainMenu = new MainMenu(textures["mainMenuBackground"]); }
+                HandleGui(mainMenu);
                 break;
             }
             case GameState::Paused:
             {
-                ClearBackground(gameConfig->backgroundColor);
-                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(); }
-                if (pauseMenu->buttonStates["Continue"])
-                {
-                    gameState = GameState::Playing;
-                } else if (pauseMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
-                {
-                    m_ShouldRun = false;
-                } else if (pauseMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
-                {
-                    gameState = GameState::MainMenu;
-                    UnloadLevel();
-                }
-                pauseMenu->Update();
-
-                // FIXME MOVE THIS TO MENU RENDER 
-                Texture* texture = &textures["levelSelectionMenuBackground"];
-                float offsetX = (GetScreenWidth() - texture->width) / 2;
-                float offsetY = (GetScreenHeight() - texture->height) / 2;
-                DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-                // FIXME MOVE THIS TO MENU RENDER 
-                BeginDrawing();
-                pauseMenu->Render();
-                EndDrawing();
+                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(textures["levelSelectionMenuBackground"]); }
+                HandleGui(pauseMenu);
                 break;
             }
             case GameState::LevelSelection:
             {
-                if (levelMenu  == nullptr) { levelMenu = new LevelMenu(); }
-                if (levelMenu->buttonStates[SELECT_LEVEL_BUTTON_TEXT])
-                {
-                    LoadLevel(levelMenu->levels[levelMenu->selected]);
-                    gameState = GameState::Playing;
-                } else if (levelMenu->buttonStates[RETURN_TO_MAIN_MENU_BUTTON_TEXT])
-                {
-                    UnloadLevel();
-                    gameState = GameState::MainMenu;
-                }
-                levelMenu->Update();
-
-                ClearBackground(gameConfig->backgroundColor);
-                BeginDrawing();
-                // FIXME MOVE THIS TO MENU RENDER 
-                Texture* texture = &textures["levelSelectionMenuBackground"];
-                float offsetX = (GetScreenWidth() - texture->width) / 2;
-                float offsetY = (GetScreenHeight() - texture->height) / 2;
-                DrawTextureEx(textures["levelSelectionMenuBackground"], {offsetX, offsetY}, 0, 1, WHITE);
-                // FIXME MOVE THIS TO MENU RENDER 
-                levelMenu->Render();
-                EndDrawing();
+                if (levelMenu == nullptr) { levelMenu = new LevelMenu(textures["levelSelectionMenuBackground"]); }
+                HandleGui(levelMenu);
                 break;
             }
             case GameState::Playing:
@@ -339,15 +377,17 @@ int Game::Run()
                     } break;
                 }
 
-                delete levelMenu;
-                delete pauseMenu;
-                delete mainMenu;
-                levelMenu = nullptr;
-                pauseMenu = nullptr;
-                mainMenu = nullptr;
+                if (levelMenu) {
+                    delete levelMenu;
+                    levelMenu = nullptr;
 
+                }
+                if (pauseMenu) {
+                    delete pauseMenu;
+                    pauseMenu = nullptr;
+                }
                 try {
-                    Update();
+                    if (shouldUpdate){ Update(); }
                 } catch (const std::exception& e) {
                     Utilities::Log("Exception caught during update: " + std::string(e.what()), "Game", LOG_ERROR);
                     returnCode = 1;
@@ -359,7 +399,7 @@ int Game::Run()
                 }
 
                 try {
-                    Render();
+                    if (shouldRender){ Render(); }
                 } catch (const std::exception& e) {
                     Utilities::Log("Exception caught during render: " + std::string(e.what()), "Game", LOG_ERROR);
                     returnCode = 1;
@@ -371,10 +411,7 @@ int Game::Run()
                 }
             }
         }
-
         if (WindowShouldClose()){ break; }
-
-    }
-
+    }  // End main loop.
     return returnCode;
 }
