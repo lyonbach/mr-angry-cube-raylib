@@ -41,7 +41,12 @@ void Game::Init(GameConfig& config)
     for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
     {
         Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
-        models[pair.first] = LoadModel(pair.second.c_str());
+        Model model = LoadModel(pair.second.c_str());
+        if (!model.meshes)
+        {
+            throw std::runtime_error("Failed to load model: " + pair.first + " from path: " + pair.second);
+        }
+        models[pair.first] = model;
     }
 
     Utilities::Log("Loading shaders...", "Game");
@@ -63,7 +68,12 @@ void Game::Init(GameConfig& config)
     for (std::pair<std::string, std::string> pair : gameConfig->texturePaths) // Textures.
     {
         Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
-        textures[pair.first] = LoadTexture(pair.second.c_str());
+        Texture texture = LoadTexture(pair.second.c_str());
+        if (!texture.id)
+        {
+            throw std::runtime_error("Failed to load texture: " + pair.first + " from path: " + pair.second);
+        }
+        textures[pair.first] = texture;
     }
 
     m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
