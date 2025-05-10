@@ -29,6 +29,7 @@ public:
     std::map<std::string, Texture> textures;
     std::map<std::string, Model> models;
     std::map<std::string, Material> materials;
+    std::vector<TimedEvent*> timedEvents;
 
     Vector3 currentRotationAxis = DEFAULT_NEXT_ROTATION_AXIS;
     Vector3 nextRotationAxis = DEFAULT_NEXT_ROTATION_AXIS;
@@ -68,6 +69,7 @@ private:
     bool m_Initialized = false;
     bool m_ShouldRun = true;
     bool m_ShouldUpdate = true;
+    bool m_ShouldRender = true;
     float m_LastUpdateTime = 0.0f;
     float m_DeltaTime = 0.0f;
     unsigned int m_Anger = MINIMUM_ANGER;

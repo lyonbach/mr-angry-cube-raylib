@@ -147,6 +147,13 @@ void Game::HandleGui(Menu* menu)
             if (mainMenu->buttonStates[NEW_GAME_BUTTON_TEXT])
             {
                 gameState = GameState::Playing;
+                m_ShouldRender = false;
+
+                Utilities::ScheduleEvent(
+                    [](){ Utilities::Log("Warmup finished...");
+                    Game::Get().m_ShouldRender = true;
+                    }, gameConfig->warmUpTime );
+
                 delete mainMenu;
                 mainMenu = nullptr;
             } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
@@ -361,7 +368,7 @@ int Game::Run()
                 }
 
                 try {
-                    Render();
+                    if (m_ShouldRender){ Render(); }
                 } catch (const std::exception& e) {
                     Utilities::Log("Exception caught during render: " + std::string(e.what()), "Game", LOG_ERROR);
                     returnCode = 1;
@@ -374,6 +381,17 @@ int Game::Run()
             }
         }
         if (WindowShouldClose()){ break; }
-    }
+
+        for (TimedEvent* e : timedEvents)
+        {
+            if (e->triggered) {
+                timedEvents.erase(std::remove(timedEvents.begin(), timedEvents.end(), e), timedEvents.end());
+                delete e;
+                continue;
+            }
+            e->Update();
+        }
+
+    }  // End main loop.
     return returnCode;
 }
