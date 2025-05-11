@@ -37,10 +37,10 @@ void Game::Init(GameConfig& config)
     if (gameConfig->fullScreen) { ToggleFullscreen(); }
 
     // Initialize models, shaders, textures and materials.
-    Utilities::Log("Loading models...", "Game");  // Models.
+    Utilities::Log("Loading models...", "Game", LOG_INFO);
     for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
     {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game");
         Model model = LoadModel(pair.second.c_str());
         if (!model.meshes)
         {
@@ -49,25 +49,25 @@ void Game::Init(GameConfig& config)
         models[pair.first] = model;
     }
 
-    Utilities::Log("Loading shaders...", "Game");
+    Utilities::Log("Loading shaders...", "Game", LOG_INFO);
     for (std::pair<std::string, std::string> pair : gameConfig->shaderPaths)  // Shaders.
     {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game", LOG_INFO);
 
         std::string vertexShaderPath = pair.second.substr(0, pair.second.find('|'));
         std::string fragmentShaderPath = pair.second.substr(pair.second.find('|') + 1);
         shaders[pair.first] = LoadShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
-        Utilities::Log("Material created for shader: " + pair.first, "GAME");
+        Utilities::Log("Material created for shader: " + pair.first, "Game");
         Material material = LoadMaterialDefault();
         material.shader = shaders[pair.first];
         materials[pair.first] = material;
     }
 
-    Utilities::Log("Loading textures...", "GAME");
+    Utilities::Log("Loading textures...", "Game", LOG_INFO);
     for (std::pair<std::string, std::string> pair : gameConfig->texturePaths) // Textures.
     {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game");
         Texture texture = LoadTexture(pair.second.c_str());
         if (!texture.id)
         {
@@ -76,8 +76,7 @@ void Game::Init(GameConfig& config)
         textures[pair.first] = texture;
     }
 
-    m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
-
+    m_Player = new MrAngryCube(&models["mr_angry_cube_high_res"], &materials["mr-angry-cube"], &textures["concrete"]);
     physicsObserver = new PhysicsObserver();
     physicsObserver->observed = m_Player;
 
@@ -121,7 +120,7 @@ MrAngryCube* Game::GetPlayer()
 void Game::ResetPlayer()
 {
     delete m_Player;
-    m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    m_Player = new MrAngryCube(&models["mr_angry_cube_high_res"], &materials["mr-angry-cube"], &textures["concrete"]);
     physicsObserver->observed = m_Player;
     nextRotationAxis = Vector3();
 }
@@ -158,7 +157,7 @@ void Game::HandleGui(Menu* menu)
             {
                 gameState = GameState::Playing;
                 shouldRender = false;
-                Utilities::ScheduleWarmUp();                
+                Utilities::ScheduleWarmUp();
                 delete mainMenu;
                 mainMenu = nullptr;
             } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
@@ -315,7 +314,7 @@ int Game::Run()
 {
     if (!m_Initialized)
     {
-        Utilities::Log("Game is not initialized. Exiting...", "GAME", LOG_ERROR);
+        Utilities::Log("Game is not initialized. Exiting...", "Game", LOG_ERROR);
         return 1;
     }
     int returnCode = 0;
@@ -350,19 +349,19 @@ int Game::Run()
         {
             case GameState::MainMenu:
             {
-                if (mainMenu == nullptr) { mainMenu = new MainMenu(textures["mainMenuBackground"]); }
+                if (mainMenu == nullptr) { mainMenu = new MainMenu(textures["mr-angry-cube-artwork"]); }
                 HandleGui(mainMenu);
                 break;
             }
             case GameState::Paused:
             {
-                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(textures["levelSelectionMenuBackground"]); }
+                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(textures["mr-angry-cube-artwork-level-select"]); }
                 HandleGui(pauseMenu);
                 break;
             }
             case GameState::LevelSelection:
             {
-                if (levelMenu == nullptr) { levelMenu = new LevelMenu(textures["levelSelectionMenuBackground"]); }
+                if (levelMenu == nullptr) { levelMenu = new LevelMenu(textures["mr-angry-cube-artwork-level-select"]); }
                 HandleGui(levelMenu);
                 break;
             }

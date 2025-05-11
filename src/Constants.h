@@ -27,3 +27,11 @@ const std::string CONTINUE_BUTTON_TEXT = "Continue";
 const std::string RETURN_TO_MAIN_MENU_BUTTON_TEXT = "Return To Main Menu";
 const std::string SELECT_LEVEL_BUTTON_TEXT = "Select";
 
+const std::string MODEL_EXTENSION = ".obj";
+const std::string TEXTURE_EXTENSION = ".png";
+const std::string VERTEX_SHADER_EXTENSION = ".vs";
+const std::string FRAGMENT_SHADER_EXTENSION = ".fs";
+const std::string ASSETS_DIRECTORY = "assets";
+const std::string MODELS_DIRECTORY = "models";
+const std::string TEXTURES_DIRECTORY = "textures";
+const std::string SHADERS_DIRECTORY = "shaders";

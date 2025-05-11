@@ -63,3 +63,11 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${LEVELS_FOLDER}")
 else()
     message(WARNING "Directory ${CMAKE_CURRENT_SOURCE_DIR}/${LEVELS_FOLDER} does not exist. Skipping copy.")
 endif()
+
+if(DEFINED LOG_LEVEL)
+    message(STATUS "Log level set to ${LOG_LEVEL} from command line.")
+else()
+    message(STATUS "Using default log level: LOG_LEVEL_WARNING.")
+    set(LOG_LEVEL 3) # WARNING
+endif()
+add_compile_definitions(LOG_LEVEL=${LOG_LEVEL})
