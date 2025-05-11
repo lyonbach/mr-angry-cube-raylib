@@ -5,7 +5,7 @@
 int main()
 {
     #ifdef LOG_LEVEL
-        TraceLog(LOG_ALL, "Setting log level to %i", LOG_LEVEL);
+        TraceLog(LOG_INFO, "Setting log level to %i", LOG_LEVEL);
         SetTraceLogLevel(LOG_LEVEL);
     #endif
 
