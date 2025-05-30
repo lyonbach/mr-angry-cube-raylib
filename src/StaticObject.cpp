@@ -1,11 +1,11 @@
 #include "StaticObject.h"
 
-StaticObject::StaticObject(Model* model, Material* material, Texture* texture)
-    : GameObject(model, material, texture) {}
+StaticObject::StaticObject(Model* model, std::vector<Material*> materials)
+    : GameObject(model, materials) {}
 
 void StaticObject::Render()
 {
-    DrawMesh(model->meshes[0], *material, transform);
+    DrawMesh(model->meshes[0], *materials[0], transform);
 }
 
 

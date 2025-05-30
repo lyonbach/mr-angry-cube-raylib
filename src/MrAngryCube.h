@@ -6,7 +6,7 @@
 class MrAngryCube : public GameObject
 {
 public:
-    MrAngryCube(Model* model, Material* material, Texture* texture);
+    MrAngryCube(Model* model, std::vector<Material*> materials);
     ~MrAngryCube();
     void Render() override;
     void Update(float deltaTime) override;

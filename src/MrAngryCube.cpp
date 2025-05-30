@@ -2,8 +2,8 @@
 #include "Game.h"
 
 
-MrAngryCube::MrAngryCube(Model* model, Material* material, Texture* texture)
-    : GameObject(model, material, texture)
+MrAngryCube::MrAngryCube(Model* model, std::vector<Material*> materials)
+    : GameObject(model, materials)
 {
     rotation = {0, 0, 0};
     canMove = true;
@@ -15,14 +15,15 @@ MrAngryCube::MrAngryCube(Model* model, Material* material, Texture* texture)
 }
 MrAngryCube::~MrAngryCube()
 {
-    GameObject::~GameObject();
+    Utilities::Log("Destroying MrAngryCube", "MrAngryCube", LOG_DEBUG);
     delete m_MoveBehaviour;
     delete m_AngerControlBehaviour;
 }
 
 void MrAngryCube::Render()
 {
-    DrawMesh(model->meshes[0], *material, transform);
+    DrawMesh(model->meshes[0], *materials[0], transform);
+    DrawMesh(model->meshes[1], *materials[1], transform);
 }
 
 void MrAngryCube::Update(float deltaTime)
@@ -32,7 +33,7 @@ void MrAngryCube::Update(float deltaTime)
     if (m_AngerControlBehaviour->angerCounter >= MAXIMUM_ANGER)
     {
         auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
-        // int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();
+        // int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();  // FIXME
         unsigned int idx = GetMoveBehaviourIndex();
         SetMoveBehaviour(allBehaviours[(idx + 1) % allBehaviours.size()]);
         m_AngerControlBehaviour->angerCounter = MINIMUM_ANGER;

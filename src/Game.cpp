@@ -36,34 +36,7 @@ void Game::Init(GameConfig& config)
 
     if (gameConfig->fullScreen) { ToggleFullscreen(); }
 
-    // Initialize models, shaders, textures and materials.
-    Utilities::Log("Loading models...", "Game", LOG_INFO);
-    for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
-    {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game");
-        Model model = LoadModel(pair.second.c_str());
-        if (!model.meshes)
-        {
-            throw std::runtime_error("Failed to load model: " + pair.first + " from path: " + pair.second);
-        }
-        models[pair.first] = model;
-    }
-
-    Utilities::Log("Loading shaders...", "Game", LOG_INFO);
-    for (std::pair<std::string, std::string> pair : gameConfig->shaderPaths)  // Shaders.
-    {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game", LOG_INFO);
-
-        std::string vertexShaderPath = pair.second.substr(0, pair.second.find('|'));
-        std::string fragmentShaderPath = pair.second.substr(pair.second.find('|') + 1);
-        shaders[pair.first] = LoadShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
-
-        Utilities::Log("Material created for shader: " + pair.first, "Game");
-        Material material = LoadMaterialDefault();
-        material.shader = shaders[pair.first];
-        materials[pair.first] = material;
-    }
-
+    // Load textures first to be able to set the material textures.
     Utilities::Log("Loading textures...", "Game", LOG_INFO);
     for (std::pair<std::string, std::string> pair : gameConfig->texturePaths) // Textures.
     {
@@ -76,9 +49,39 @@ void Game::Init(GameConfig& config)
         textures[pair.first] = texture;
     }
 
-    m_Player = new MrAngryCube(&models["mr_angry_cube_high_res"], &materials["mr-angry-cube"], &textures["concrete"]);
-    physicsObserver = new PhysicsObserver();
-    physicsObserver->observed = m_Player;
+    // Initialize models, shaders, textures and materials.
+    Utilities::Log("Loading models...", "Game", LOG_DEBUG);
+    for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
+    {
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game");
+        Model model = LoadModel(pair.second.c_str());
+        if (!model.meshes)
+        {
+            throw std::runtime_error("Failed to load model: " + pair.first + " from path: " + pair.second);
+        }
+        models[pair.first] = model;
+    }
+
+    Utilities::Log("Loading shaders...", "Game", LOG_DEBUG);
+    for (std::pair<std::string, std::string> pair : gameConfig->shaderPaths)  // Shaders.
+    {
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game", LOG_DEBUG);
+
+        std::string vertexShaderPath = pair.second.substr(0, pair.second.find('|'));
+        std::string fragmentShaderPath = pair.second.substr(pair.second.find('|') + 1);
+        shaders[pair.first] = LoadShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+
+        Utilities::Log("Material created for shader: " + pair.first, "Game");
+        Material material = LoadMaterialDefault();
+        material.shader = shaders[pair.first];
+        materials[pair.first] = material;
+    }
+
+    // Setting Textures to materials.
+    Utilities::Log("Setting textures to materials...", "Game", LOG_DEBUG);
+    SetMaterialTexture(&materials["mr-angry-cube-body"], MATERIAL_MAP_DIFFUSE, textures["concrete"]);
+    SetMaterialTexture(&materials["mr-angry-cube-face"], MATERIAL_MAP_DIFFUSE, textures["mr-angry-cube-face"]);
+    SetMaterialTexture(&materials["static-object"], MATERIAL_MAP_DIFFUSE, textures["texel_checker"]);
 
     Gui::Init();
 
@@ -119,8 +122,15 @@ MrAngryCube* Game::GetPlayer()
 
 void Game::ResetPlayer()
 {
-    delete m_Player;
-    m_Player = new MrAngryCube(&models["mr_angry_cube_high_res"], &materials["mr-angry-cube"], &textures["concrete"]);
+    if (m_Player != nullptr) { delete m_Player; }
+    m_Player = new MrAngryCube(&models["mr_angry_cube"], {&materials["mr-angry-cube-body"], &materials["mr-angry-cube-face"]});
+
+    if (physicsObserver != nullptr)
+    {
+        delete physicsObserver;
+    }
+    
+    physicsObserver = new PhysicsObserver(); 
     physicsObserver->observed = m_Player;
     nextRotationAxis = Vector3();
 }
