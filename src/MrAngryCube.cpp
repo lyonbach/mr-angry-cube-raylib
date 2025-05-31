@@ -10,8 +10,10 @@ MrAngryCube::MrAngryCube(Model* model, std::vector<Material*> materials)
     size = 1.0f;
     halfSize =  size * .5f;
     hypotenuse = sqrt(halfSize * halfSize * 2);
+
     m_MoveBehaviour = new MACMoveBehaviour();
     m_AngerControlBehaviour = new NormalAngerControlBehaviour();
+    m_FaceAnimation = new TextureAnimation(&materials[1]->shader, 3, 3);
 }
 MrAngryCube::~MrAngryCube()
 {
@@ -30,6 +32,7 @@ void MrAngryCube::Update(float deltaTime)
 {
     m_AngerControlBehaviour->Update();
     m_MoveBehaviour->Action(this);
+    m_FaceAnimation->Update();
     if (m_AngerControlBehaviour->angerCounter >= MAXIMUM_ANGER)
     {
         auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();

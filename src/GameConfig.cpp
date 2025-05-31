@@ -71,7 +71,7 @@ void GameConfig::Init()
     Utilities::LoadFilesFromDirectory(shadersDirectory.string(), VERTEX_SHADER_EXTENSION, vertexShaderPaths);
     Utilities::LoadFilesFromDirectory(shadersDirectory.string(), FRAGMENT_SHADER_EXTENSION, fragmentShaderPaths);
     shaderPaths["mr-angry-cube-body"] = vertexShaderPaths["base"] + "|" + fragmentShaderPaths["base"];
-    shaderPaths["mr-angry-cube-face"] = vertexShaderPaths["base"] + "|" + fragmentShaderPaths["base"];
+    shaderPaths["mr-angry-cube-face"] = vertexShaderPaths["base_animatable"] + "|" + fragmentShaderPaths["base"];
     shaderPaths["static-object"] = vertexShaderPaths["base"] + "|" + fragmentShaderPaths["base"];
     LogFilePaths(vertexShaderPaths, "Vertex Shader");
     LogFilePaths(fragmentShaderPaths, "Fragment Shader");
