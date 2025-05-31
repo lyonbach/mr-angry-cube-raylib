@@ -79,9 +79,9 @@ void Game::Init(GameConfig& config)
 
     // Setting Textures to materials.
     Utilities::Log("Setting textures to materials...", "Game", LOG_DEBUG);
-    SetMaterialTexture(&materials["mr-angry-cube-body"], MATERIAL_MAP_DIFFUSE, textures["concrete"]);
-    SetMaterialTexture(&materials["mr-angry-cube-face"], MATERIAL_MAP_DIFFUSE, textures["mr-angry-cube-face"]);
-    SetMaterialTexture(&materials["static-object"], MATERIAL_MAP_DIFFUSE, textures["texel_checker"]);
+    SetMaterialTexture(&materials["mr-angry-cube-body"], MATERIAL_MAP_DIFFUSE, textures["mr-angry-cube-body-normal"]);
+    SetMaterialTexture(&materials["mr-angry-cube-face"], MATERIAL_MAP_DIFFUSE, textures["mr-angry-cube-face-normal"]);
+    SetMaterialTexture(&materials["static-object"], MATERIAL_MAP_DIFFUSE, textures["texel-checker"]);
 
     Gui::Init();
 

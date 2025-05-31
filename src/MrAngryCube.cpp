@@ -15,6 +15,7 @@ MrAngryCube::MrAngryCube(Model* model, std::vector<Material*> materials)
     m_AngerControlBehaviour = new NormalAngerControlBehaviour();
     m_FaceAnimation = new TextureAnimation(&materials[1]->shader, 3, 3);
 }
+
 MrAngryCube::~MrAngryCube()
 {
     Utilities::Log("Destroying MrAngryCube", "MrAngryCube", LOG_DEBUG);
