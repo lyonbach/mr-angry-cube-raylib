@@ -37,12 +37,14 @@ void MrAngryCube::Update(float deltaTime)
     if (m_AngerControlBehaviour->angerCounter >= MAXIMUM_ANGER)
     {
         auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
-        // int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();  // FIXME
         unsigned int idx = GetMoveBehaviourIndex();
         SetMoveBehaviour(allBehaviours[(idx + 1) % allBehaviours.size()]);
         m_AngerControlBehaviour->angerCounter = MINIMUM_ANGER;
-    }
 
+        Utilities::Log("Current move behaviour index: " + std::to_string(idx), "MrAngryCube", LOG_DEBUG);
+
+    }
+    
     if (IsAtQuarterRotation(rotation) && nextMoveBehaviourName != MoveBehaviourName::NoMoveBehaviour)
     {
         ApplyMoveBehaviourChange();
@@ -89,6 +91,10 @@ void MrAngryCube::SetMoveBehaviour(MoveBehaviourName behaviourName)  // FIXME TH
 {
     Utilities::Log("Setting move behaviour to: " + std::to_string(static_cast<int>(behaviourName)), "MrAngryCube", LOG_INFO);
     nextMoveBehaviourName = behaviourName;
+    Texture* texture;
+    Game& game = Game::Get();
+    texture = &game.textures[MoveBehaviour::GetTextureNameFromBehaviour(behaviourName)];
+    materials[1]->maps->texture = *texture;
 }
 
 void MrAngryCube::ApplyMoveBehaviourChange()
@@ -96,7 +102,15 @@ void MrAngryCube::ApplyMoveBehaviourChange()
     MACMoveBehaviourBase* moveBehaviour = MoveBehaviour::Get(nextMoveBehaviourName);
     if (moveBehaviour == nullptr){ return; }
 
-    Utilities::Log("Applying move behaviour", "MrAngryCube", LOG_INFO);
+    Shader* shader = &materials[0]->shader;
+    unsigned int idx = GetMoveBehaviourIndex();
+    float fIdx = static_cast<float>(idx);
+    SetShaderValue(*shader, GetShaderLocation(*shader, "uMoveBehaviourIndex"), &fIdx, SHADER_UNIFORM_FLOAT);
+
+    shader = &materials[1]->shader;
+    SetShaderValue(*shader, GetShaderLocation(*shader, "uMoveBehaviourIndex"), &fIdx, SHADER_UNIFORM_FLOAT);
+
+    Utilities::Log("Applying move behaviour", "MrAngryCube", LOG_DEBUG);
     delete m_MoveBehaviour;
     m_MoveBehaviour = moveBehaviour;
     currentMoveBehaviourName = nextMoveBehaviourName;

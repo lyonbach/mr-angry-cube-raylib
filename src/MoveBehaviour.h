@@ -103,4 +103,5 @@ namespace MoveBehaviour
     MACMoveBehaviourBase* Get(MoveBehaviourName name);
     const std::vector<MoveBehaviourName> GetAllBehaviourNames();
     const int MoveBehaviourCount();
+    const std::string GetTextureNameFromBehaviour(MoveBehaviourName moveBehaviourName);
 };

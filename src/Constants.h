@@ -20,18 +20,29 @@ constexpr unsigned int MAXIMUM_ANGER = 10;
 constexpr Vector3 DEFAULT_CURRENT_ROTATION_AXIS = { 0.0, 0.0f, 0.0f };
 constexpr Vector3 DEFAULT_NEXT_ROTATION_AXIS = { 0.0, 0.0f, 0.0f };
 
-const std::string NEW_GAME_BUTTON_TEXT = "New Game";
-const std::string LOAD_LEVEL_BUTTON_TEXT = "Load Level";
-const std::string EXIT_GAME_BUTTON_TEXT = "Exit Game";
-const std::string CONTINUE_BUTTON_TEXT = "Continue";
-const std::string RETURN_TO_MAIN_MENU_BUTTON_TEXT = "Return To Main Menu";
-const std::string SELECT_LEVEL_BUTTON_TEXT = "Select";
+const static std::string NEW_GAME_BUTTON_TEXT = "New Game";
+const static std::string LOAD_LEVEL_BUTTON_TEXT = "Load Level";
+const static std::string EXIT_GAME_BUTTON_TEXT = "Exit Game";
+const static std::string CONTINUE_BUTTON_TEXT = "Continue";
+const static std::string RETURN_TO_MAIN_MENU_BUTTON_TEXT = "Return To Main Menu";
+const static std::string SELECT_LEVEL_BUTTON_TEXT = "Select";
 
-const std::string MODEL_EXTENSION = ".obj";
-const std::string TEXTURE_EXTENSION = ".png";
-const std::string VERTEX_SHADER_EXTENSION = ".vs";
-const std::string FRAGMENT_SHADER_EXTENSION = ".fs";
-const std::string ASSETS_DIRECTORY = "assets";
-const std::string MODELS_DIRECTORY = "models";
-const std::string TEXTURES_DIRECTORY = "textures";
-const std::string SHADERS_DIRECTORY = "shaders";
+const static std::string MODEL_EXTENSION = ".obj";
+const static std::string TEXTURE_EXTENSION = ".png";
+const static std::string VERTEX_SHADER_EXTENSION = ".vs";
+const static std::string FRAGMENT_SHADER_EXTENSION = ".fs";
+const static std::string ASSETS_DIRECTORY = "assets";
+const static std::string MODELS_DIRECTORY = "models";
+const static std::string TEXTURES_DIRECTORY = "textures";
+const static std::string SHADERS_DIRECTORY = "shaders";
+
+const static std::string M_MR_ANGRY_CUBE_FACE = "mr-angry-cube-face";
+const static std::string M_MR_ANGRY_CUBE_BODY = "mr-angry-cube-body";
+
+const static std::string T_MR_ANGRY_CUBE_FACE_NORMAL = "mr-angry-cube-face-normal";
+const static std::string T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_1 = "mr-angry-cube-face-anger-level-1";
+const static std::string T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_2 = "mr-angry-cube-face-anger-level-2";
+const static std::string T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_3 = "mr-angry-cube-face-anger-level-3";
+const static std::string T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_4 = "mr-angry-cube-face-anger-level-4";
+const static std::string T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_5 = "mr-angry-cube-face-anger-level-5";
+const static std::string T_MR_ANGRY_CUBE_BODY_NORMAL = "mr-angry-cube-body-normal";

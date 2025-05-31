@@ -79,10 +79,10 @@ void Game::Init(GameConfig& config)
 
     // Setting Textures to materials.
     Utilities::Log("Setting textures to materials...", "Game", LOG_DEBUG);
-    SetMaterialTexture(&materials["mr-angry-cube-body"], MATERIAL_MAP_DIFFUSE, textures["mr-angry-cube-body-normal"]);
-    SetMaterialTexture(&materials["mr-angry-cube-face"], MATERIAL_MAP_DIFFUSE, textures["mr-angry-cube-face-normal"]);
-    SetMaterialTexture(&materials["static-object"], MATERIAL_MAP_DIFFUSE, textures["texel-checker"]);
+    SetMaterialTexture(&materials[M_MR_ANGRY_CUBE_BODY], MATERIAL_MAP_DIFFUSE, textures[T_MR_ANGRY_CUBE_BODY_NORMAL]);
+    SetMaterialTexture(&materials[M_MR_ANGRY_CUBE_FACE], MATERIAL_MAP_DIFFUSE, textures[T_MR_ANGRY_CUBE_FACE_NORMAL]);
 
+    SetMaterialTexture(&materials["static-object"], MATERIAL_MAP_DIFFUSE, textures["texel-checker"]);
     Gui::Init();
 
     hud = new Hud();
@@ -114,7 +114,7 @@ MrAngryCube* Game::GetPlayer()
 {
     if (m_Player == nullptr)
     {
-        Utilities::Log("Player object is not initialized!", "GAME", LOG_ERROR);
+        Utilities::Log("Player was not initialized!", "GAME", LOG_ERROR);
         return nullptr;
     }
     return m_Player;
@@ -123,7 +123,7 @@ MrAngryCube* Game::GetPlayer()
 void Game::ResetPlayer()
 {
     if (m_Player != nullptr) { delete m_Player; }
-    m_Player = new MrAngryCube(&models["mr_angry_cube"], {&materials["mr-angry-cube-body"], &materials["mr-angry-cube-face"]});
+    m_Player = new MrAngryCube(&models["mr_angry_cube"], {&materials[M_MR_ANGRY_CUBE_BODY], &materials[M_MR_ANGRY_CUBE_FACE]});
 
     if (physicsObserver != nullptr)
     {
@@ -280,9 +280,18 @@ void Game::HandleKeyEvents()
     } else if (IsKeyPressed(KEY_Q))
     {
         nextRotationAxis = { 0, 1, 0 };
+        if (GetPlayer()->currentMoveBehaviourName == MoveBehaviourName::NormalMoveBehaviour)
+        {
+            GetPlayer()->materials[1]->maps[MATERIAL_MAP_DIFFUSE].texture = textures["mr-angry-cube-face-normal-looking-left"];
+        }
     } else if (IsKeyPressed(KEY_E))
     {
         nextRotationAxis = { 0, -1, 0 };
+        if (GetPlayer()->currentMoveBehaviourName == MoveBehaviourName::NormalMoveBehaviour)
+        {
+            GetPlayer()->materials[1]->maps[MATERIAL_MAP_DIFFUSE].texture = textures["mr-angry-cube-face-normal-looking-right"];
+        }
+        
     } else if (IsKeyPressedRepeat(KEY_Z) || IsKeyPressed(KEY_Z))
     {
         cameraController.ZoomIn();
@@ -324,7 +333,7 @@ int Game::Run()
 {
     if (!m_Initialized)
     {
-        Utilities::Log("Game is not initialized. Exiting...", "Game", LOG_ERROR);
+        Utilities::Log("Game was not initialized. Exiting...", "Game", LOG_ERROR);
         return 1;
     }
     int returnCode = 0;
