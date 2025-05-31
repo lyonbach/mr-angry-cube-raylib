@@ -21,7 +21,7 @@ void TextureAnimation::Update()
         uvOffsetNum++;
         m_UVOffset[0] = uvOffsetNum % uCount;
         m_UVOffset[1] = (uvOffsetNum - m_UVOffset[0]) / uCount;
-        uvOffsetNum = uvOffsetNum % 56;
+        uvOffsetNum = uvOffsetNum % (uCount * vCount - 1);
         SetShaderValue(*shader, GetShaderLocation(*shader, "uvOffset"), m_UVOffset, SHADER_UNIFORM_VEC2);
         SetShaderValue(*shader, GetShaderLocation(*shader, "uvScale"), m_UVScale, SHADER_UNIFORM_VEC2);
         lastUpdateTime = GetTime();
