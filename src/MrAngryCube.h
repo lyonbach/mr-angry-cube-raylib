@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include "MoveBehaviour.h"
 #include "AngerControlBehaviour.h"
+#include "TextureAnimation.h"
 
 
 class MrAngryCube : public GameObject
@@ -25,9 +26,10 @@ public:
     Vector3 rotation;
     MoveBehaviourName nextMoveBehaviourName = MoveBehaviourName::NoMoveBehaviour;
     MoveBehaviourName currentMoveBehaviourName = nextMoveBehaviourName;
-
+    
 private:
     void ApplyMoveBehaviourChange();
+    TextureAnimation* m_FaceAnimation;
     MACMoveBehaviourBase* m_MoveBehaviour;
     NormalAngerControlBehaviour* m_AngerControlBehaviour;
 };
