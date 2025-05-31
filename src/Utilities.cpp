@@ -24,6 +24,19 @@ std::string Utilities::GenerateHash()
     return std::to_string(GetTime());  // Use current time as object id.
 }
 
+void Utilities::LoadFilesFromDirectory(const std::string& directoryPath, const std::string& extension, std::map<std::string, std::string>& mapping)
+    {
+        for (const auto& entry : fs::directory_iterator(directoryPath))
+        {
+            if (entry.is_regular_file() && entry.path().extension() == extension)
+            {
+                std::string fileName = entry.path().stem().string();
+                std::string filePath = entry.path().string();
+                mapping[fileName] = filePath;
+            }
+        }
+    }
+
 void Utilities::ScheduleEvent(std::function<void()> callback, float time)
 {
     ScheduledEvent* timedEvent = new ScheduledEvent(callback, time);

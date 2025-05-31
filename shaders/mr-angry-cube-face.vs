@@ -8,19 +8,23 @@ attribute vec4 vertexColor;
 
 // Input uniform values
 uniform mat4 mvp;
+uniform float uMoveBehaviourIndex;
 
 // Output vertex attributes (to fragment shader)
 varying vec2 fragTexCoord;
 varying vec4 fragColor;
+varying float moveBehaviourIndex;
 
-// NOTE: Add your custom variables here
+// Custom for animation
+uniform vec2 uvOffset;
+uniform vec2 uvScale;
 
 void main()
 {
     // Send vertex attributes to fragment shader
-    fragTexCoord = vertexTexCoord;
+    fragTexCoord = vec2(vertexTexCoord.x + uvOffset.x, vertexTexCoord.y + uvOffset.y) * uvScale;
     fragColor = vertexColor;
-
+    moveBehaviourIndex = uMoveBehaviourIndex;
     // Calculate final vertex position
     gl_Position = mvp*vec4(vertexPosition, 1.0);
 }

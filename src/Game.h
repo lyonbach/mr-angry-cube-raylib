@@ -69,7 +69,7 @@ public:
 
 private:
     Game();
-    MrAngryCube* m_Player;
+    MrAngryCube* m_Player = nullptr;
 
     bool m_Initialized = false;
     float m_LastUpdateTime = 0.0f;

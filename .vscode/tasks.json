@@ -4,7 +4,29 @@
 		{
 			"type": "shell",
 			"label": "Build",
-			"command": "cd ${workspaceFolder}/build && cmake .. && make -j8",
+			"command": "cd ${workspaceFolder} && mkdir build -p && cd ./build && cmake .. && make -j8",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		},
+		{
+			"type": "shell",
+			"label": "Build: Log Level Debug",
+			"command": "cd ${workspaceFolder} && mkdir build -p && cd ./build && cmake .. -DLOG_LEVEL=1 && make -j8",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"detail": "CMake template build task"
+		},
+		{
+			"type": "shell",
+			"label": "Build: Log Level Warning",
+			"command": "cd ${workspaceFolder} && mkdir build -p && cd ./build && cmake .. -DLOG_LEVEL=1 && make -j8",
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -15,7 +37,14 @@
 		{
 			"type": "shell",
 			"label": "Clean and Build",
-			"command": "cd ${workspaceFolder}/build && rm ./** -drfv && cmake .. && make -j8",
+			"command": "cd ${workspaceFolder} && rm ./build -drfv && mkdir build -p && cd ./build && cmake .. && make -j8",
+			"problemMatcher": [],
+			"detail": "CMake template clean task"
+		},
+		{
+			"type": "shell",
+			"label": "Clean",
+			"command": "cd ${workspaceFolder} && rm build -drfv",
 			"problemMatcher": [],
 			"detail": "CMake template clean task"
 		}

@@ -1,36 +1,27 @@
 #pragma once
 #define RINI_IMPLEMENTATION
+#include "Constants.h"
+#include "Utilities.h"
 #include "raylib.h"
 #include <string>
 #include <map>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 
 struct GameConfig
 {
     GameConfig();
     GameConfig(const char* configPath);
     void LogConfig();
+    void LogFilePaths(std::map<std::string, std::string>& paths, std::string typeName) const;
     void Init();
 
-    std::map<std::string, std::string> texturePaths = {  // TODO MOVE TO game.ini
-        {"macDefault", "./assets/textures/concrete.png"},
-        {"objectTest", "./assets/textures/texel_checker_crayon.png"},
-        {"mainMenuBackground", "./assets/textures/mr-angry-cube-artwork.png"},
-        {"levelSelectionMenuBackground", "./assets/textures/mr-angry-cube-artwork-level-select.png"}  // TODO REAL GAME ASSET.
-    };
-
-    std::map<std::string, std::string> shaderPaths = {  // TODO MOVE TO game.ini
-        {"macDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"},
-        {"staticObjectDefault", "./assets/shaders/base.vs|./assets/shaders/base.fs"},
-    };
-
-    std::map<std::string, std::string> modelPaths = {  // TODO MOVE TO game.ini
-        {"macDefault", "./assets/models/mr_angry_cube.obj"},
-        {"enemyDefault", "./assets/models/enemy.obj"},
-        {"column", "./assets/models/column.obj"},
-        {"tileSmall", "./assets/models/tileSmall.obj"},
-        {"tileMedium", "./assets/models/tileMedium.obj"},
-    };
+    std::map<std::string, std::string> texturePaths;
+    std::map<std::string, std::string> shaderPaths;
+    std::map<std::string, std::string> vertexShaderPaths;
+    std::map<std::string, std::string> fragmentShaderPaths;
+    std::map<std::string, std::string> modelPaths;
 
     const char* configPath;
     Vector2 screenSize = {640, 480};

@@ -36,38 +36,11 @@ void Game::Init(GameConfig& config)
 
     if (gameConfig->fullScreen) { ToggleFullscreen(); }
 
-    // Initialize models, shaders, textures and materials.
-    Utilities::Log("Loading models...", "Game");  // Models.
-    for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
-    {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
-        Model model = LoadModel(pair.second.c_str());
-        if (!model.meshes)
-        {
-            throw std::runtime_error("Failed to load model: " + pair.first + " from path: " + pair.second);
-        }
-        models[pair.first] = model;
-    }
-
-    Utilities::Log("Loading shaders...", "Game");
-    for (std::pair<std::string, std::string> pair : gameConfig->shaderPaths)  // Shaders.
-    {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
-
-        std::string vertexShaderPath = pair.second.substr(0, pair.second.find('|'));
-        std::string fragmentShaderPath = pair.second.substr(pair.second.find('|') + 1);
-        shaders[pair.first] = LoadShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
-
-        Utilities::Log("Material created for shader: " + pair.first, "GAME");
-        Material material = LoadMaterialDefault();
-        material.shader = shaders[pair.first];
-        materials[pair.first] = material;
-    }
-
-    Utilities::Log("Loading textures...", "GAME");
+    // Load textures first to be able to set the material textures.
+    Utilities::Log("Loading textures...", "Game", LOG_INFO);
     for (std::pair<std::string, std::string> pair : gameConfig->texturePaths) // Textures.
     {
-        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "GAME");
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game");
         Texture texture = LoadTexture(pair.second.c_str());
         if (!texture.id)
         {
@@ -76,11 +49,40 @@ void Game::Init(GameConfig& config)
         textures[pair.first] = texture;
     }
 
-    m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    // Initialize models, shaders, textures and materials.
+    Utilities::Log("Loading models...", "Game", LOG_DEBUG);
+    for (std::pair<std::string, std::string> pair : gameConfig->modelPaths)
+    {
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game");
+        Model model = LoadModel(pair.second.c_str());
+        if (!model.meshes)
+        {
+            throw std::runtime_error("Failed to load model: " + pair.first + " from path: " + pair.second);
+        }
+        models[pair.first] = model;
+    }
 
-    physicsObserver = new PhysicsObserver();
-    physicsObserver->observed = m_Player;
+    Utilities::Log("Loading shaders...", "Game", LOG_DEBUG);
+    for (std::pair<std::string, std::string> pair : gameConfig->shaderPaths)  // Shaders.
+    {
+        Utilities::Log("Loading: " + pair.first + " from:\n" + pair.second, "Game", LOG_DEBUG);
 
+        std::string vertexShaderPath = pair.second.substr(0, pair.second.find('|'));
+        std::string fragmentShaderPath = pair.second.substr(pair.second.find('|') + 1);
+        shaders[pair.first] = LoadShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+
+        Utilities::Log("Material created for shader: " + pair.first, "Game");
+        Material material = LoadMaterialDefault();
+        material.shader = shaders[pair.first];
+        materials[pair.first] = material;
+    }
+
+    // Setting Textures to materials.
+    Utilities::Log("Setting textures to materials...", "Game", LOG_DEBUG);
+    SetMaterialTexture(&materials[M_MR_ANGRY_CUBE_BODY], MATERIAL_MAP_DIFFUSE, textures[T_MR_ANGRY_CUBE_BODY_NORMAL]);
+    SetMaterialTexture(&materials[M_MR_ANGRY_CUBE_FACE], MATERIAL_MAP_DIFFUSE, textures[T_MR_ANGRY_CUBE_FACE_NORMAL]);
+
+    SetMaterialTexture(&materials["static-object"], MATERIAL_MAP_DIFFUSE, textures["texel-checker"]);
     Gui::Init();
 
     hud = new Hud();
@@ -112,7 +114,7 @@ MrAngryCube* Game::GetPlayer()
 {
     if (m_Player == nullptr)
     {
-        Utilities::Log("Player object is not initialized!", "GAME", LOG_ERROR);
+        Utilities::Log("Player was not initialized!", "GAME", LOG_ERROR);
         return nullptr;
     }
     return m_Player;
@@ -120,8 +122,15 @@ MrAngryCube* Game::GetPlayer()
 
 void Game::ResetPlayer()
 {
-    delete m_Player;
-    m_Player = new MrAngryCube(&models["macDefault"], &materials["macDefault"], &textures["macDefault"]);
+    if (m_Player != nullptr) { delete m_Player; }
+    m_Player = new MrAngryCube(&models["mr_angry_cube"], {&materials[M_MR_ANGRY_CUBE_BODY], &materials[M_MR_ANGRY_CUBE_FACE]});
+
+    if (physicsObserver != nullptr)
+    {
+        delete physicsObserver;
+    }
+    
+    physicsObserver = new PhysicsObserver(); 
     physicsObserver->observed = m_Player;
     nextRotationAxis = Vector3();
 }
@@ -158,7 +167,7 @@ void Game::HandleGui(Menu* menu)
             {
                 gameState = GameState::Playing;
                 shouldRender = false;
-                Utilities::ScheduleWarmUp();                
+                Utilities::ScheduleWarmUp();
                 delete mainMenu;
                 mainMenu = nullptr;
             } else if (mainMenu->buttonStates[EXIT_GAME_BUTTON_TEXT])
@@ -271,9 +280,18 @@ void Game::HandleKeyEvents()
     } else if (IsKeyPressed(KEY_Q))
     {
         nextRotationAxis = { 0, 1, 0 };
+        if (GetPlayer()->currentMoveBehaviourName == MoveBehaviourName::NormalMoveBehaviour)
+        {
+            GetPlayer()->materials[1]->maps[MATERIAL_MAP_DIFFUSE].texture = textures["mr-angry-cube-face-normal-looking-left"];
+        }
     } else if (IsKeyPressed(KEY_E))
     {
         nextRotationAxis = { 0, -1, 0 };
+        if (GetPlayer()->currentMoveBehaviourName == MoveBehaviourName::NormalMoveBehaviour)
+        {
+            GetPlayer()->materials[1]->maps[MATERIAL_MAP_DIFFUSE].texture = textures["mr-angry-cube-face-normal-looking-right"];
+        }
+        
     } else if (IsKeyPressedRepeat(KEY_Z) || IsKeyPressed(KEY_Z))
     {
         cameraController.ZoomIn();
@@ -315,7 +333,7 @@ int Game::Run()
 {
     if (!m_Initialized)
     {
-        Utilities::Log("Game is not initialized. Exiting...", "GAME", LOG_ERROR);
+        Utilities::Log("Game was not initialized. Exiting...", "Game", LOG_ERROR);
         return 1;
     }
     int returnCode = 0;
@@ -350,19 +368,19 @@ int Game::Run()
         {
             case GameState::MainMenu:
             {
-                if (mainMenu == nullptr) { mainMenu = new MainMenu(textures["mainMenuBackground"]); }
+                if (mainMenu == nullptr) { mainMenu = new MainMenu(textures["mr-angry-cube-artwork"]); }
                 HandleGui(mainMenu);
                 break;
             }
             case GameState::Paused:
             {
-                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(textures["levelSelectionMenuBackground"]); }
+                if (pauseMenu == nullptr) { pauseMenu = new PauseMenu(textures["mr-angry-cube-artwork-level-select"]); }
                 HandleGui(pauseMenu);
                 break;
             }
             case GameState::LevelSelection:
             {
-                if (levelMenu == nullptr) { levelMenu = new LevelMenu(textures["levelSelectionMenuBackground"]); }
+                if (levelMenu == nullptr) { levelMenu = new LevelMenu(textures["mr-angry-cube-artwork-level-select"]); }
                 HandleGui(levelMenu);
                 break;
             }

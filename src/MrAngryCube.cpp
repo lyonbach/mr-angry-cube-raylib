@@ -2,42 +2,49 @@
 #include "Game.h"
 
 
-MrAngryCube::MrAngryCube(Model* model, Material* material, Texture* texture)
-    : GameObject(model, material, texture)
+MrAngryCube::MrAngryCube(Model* model, std::vector<Material*> materials)
+    : GameObject(model, materials)
 {
     rotation = {0, 0, 0};
     canMove = true;
     size = 1.0f;
     halfSize =  size * .5f;
     hypotenuse = sqrt(halfSize * halfSize * 2);
+
     m_MoveBehaviour = new MACMoveBehaviour();
     m_AngerControlBehaviour = new NormalAngerControlBehaviour();
+    m_FaceAnimation = new TextureAnimation(&materials[1]->shader, 3, 3);
 }
+
 MrAngryCube::~MrAngryCube()
 {
-    GameObject::~GameObject();
+    Utilities::Log("Destroying MrAngryCube", "MrAngryCube", LOG_DEBUG);
     delete m_MoveBehaviour;
     delete m_AngerControlBehaviour;
 }
 
 void MrAngryCube::Render()
 {
-    DrawMesh(model->meshes[0], *material, transform);
+    DrawMesh(model->meshes[0], *materials[0], transform);
+    DrawMesh(model->meshes[1], *materials[1], transform);
 }
 
 void MrAngryCube::Update(float deltaTime)
 {
     m_AngerControlBehaviour->Update();
     m_MoveBehaviour->Action(this);
+    m_FaceAnimation->Update();
     if (m_AngerControlBehaviour->angerCounter >= MAXIMUM_ANGER)
     {
         auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
-        // int idx = std::find(allBehaviours.begin(), allBehaviours.end(), currentMoveBehaviourName) - allBehaviours.begin();
         unsigned int idx = GetMoveBehaviourIndex();
         SetMoveBehaviour(allBehaviours[(idx + 1) % allBehaviours.size()]);
         m_AngerControlBehaviour->angerCounter = MINIMUM_ANGER;
-    }
 
+        Utilities::Log("Current move behaviour index: " + std::to_string(idx), "MrAngryCube", LOG_DEBUG);
+
+    }
+    
     if (IsAtQuarterRotation(rotation) && nextMoveBehaviourName != MoveBehaviourName::NoMoveBehaviour)
     {
         ApplyMoveBehaviourChange();
@@ -84,6 +91,10 @@ void MrAngryCube::SetMoveBehaviour(MoveBehaviourName behaviourName)  // FIXME TH
 {
     Utilities::Log("Setting move behaviour to: " + std::to_string(static_cast<int>(behaviourName)), "MrAngryCube", LOG_INFO);
     nextMoveBehaviourName = behaviourName;
+    Texture* texture;
+    Game& game = Game::Get();
+    texture = &game.textures[MoveBehaviour::GetTextureNameFromBehaviour(behaviourName)];
+    materials[1]->maps->texture = *texture;
 }
 
 void MrAngryCube::ApplyMoveBehaviourChange()
@@ -91,7 +102,15 @@ void MrAngryCube::ApplyMoveBehaviourChange()
     MACMoveBehaviourBase* moveBehaviour = MoveBehaviour::Get(nextMoveBehaviourName);
     if (moveBehaviour == nullptr){ return; }
 
-    Utilities::Log("Applying move behaviour", "MrAngryCube", LOG_INFO);
+    Shader* shader = &materials[0]->shader;
+    unsigned int idx = GetMoveBehaviourIndex();
+    float fIdx = static_cast<float>(idx);
+    SetShaderValue(*shader, GetShaderLocation(*shader, "uMoveBehaviourIndex"), &fIdx, SHADER_UNIFORM_FLOAT);
+
+    shader = &materials[1]->shader;
+    SetShaderValue(*shader, GetShaderLocation(*shader, "uMoveBehaviourIndex"), &fIdx, SHADER_UNIFORM_FLOAT);
+
+    Utilities::Log("Applying move behaviour", "MrAngryCube", LOG_DEBUG);
     delete m_MoveBehaviour;
     m_MoveBehaviour = moveBehaviour;
     currentMoveBehaviourName = nextMoveBehaviourName;

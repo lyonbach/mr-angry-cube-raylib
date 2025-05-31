@@ -36,7 +36,7 @@ Level::Level(std::string levelName, Game* game)
 
         if (objType == "s")
         {
-            StaticObject* object = new StaticObject(&game->models[objName], &game->materials["staticObjectDefault"], &game->textures["objectTest"]);
+            StaticObject* object = new StaticObject(&game->models[objName], {&game->materials["static-object"], });
             object->SetPosition(position);
             staticObjects.push_back(object);
         } else if (objType == "d")

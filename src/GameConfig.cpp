@@ -7,7 +7,7 @@
 
 GameConfig::GameConfig()
 {
-    Utilities::Log("No config path was provided, falling back to defaults.", "GameConfig", LOG_INFO);
+    Utilities::Log("No config path was provided, falling back to defaults.", "GameConfig", LOG_WARNING);
     LogConfig();
 }
 
@@ -21,13 +21,22 @@ GameConfig::GameConfig(const char* configPath) : configPath(configPath)
 void GameConfig::LogConfig()
 {
     updateTime = 1.0f / updateRate;
-    Utilities::Log("GameConfig State:", "GameConfig", LOG_INFO);
-    Utilities::Log("  Configured: " + std::string(configured ? "true" : "false"), "GameConfig", LOG_INFO);
-    Utilities::Log("  FullScreen: " + std::string(fullScreen ? "true" : "false"), "GameConfig", LOG_INFO);
-    Utilities::Log("  ScreenSize: (" + std::to_string(screenSize.x) + ", " + std::to_string(screenSize.y) + ")", "GameConfig", LOG_INFO);
-    Utilities::Log("  WarmUpTime: " + std::to_string(warmUpTime) + " (seconds)", "GameConfig", LOG_INFO);
-    Utilities::Log("  UpdateRate: " + std::to_string(updateRate) + " (times/seconds)", "GameConfig", LOG_INFO);
-    Utilities::Log("  UpdateTime: " + std::to_string(updateTime) + " (seconds)", "GameConfig", LOG_INFO);
+    Utilities::Log("GameConfig State:", "GameConfig", LOG_DEBUG);
+    Utilities::Log("  Configured: " + std::string(configured ? "true" : "false"), "GameConfig", LOG_DEBUG);
+    Utilities::Log("  FullScreen: " + std::string(fullScreen ? "true" : "false"), "GameConfig", LOG_DEBUG);
+    Utilities::Log("  ScreenSize: (" + std::to_string(screenSize.x) + ", " + std::to_string(screenSize.y) + ")", "GameConfig", LOG_DEBUG);
+    Utilities::Log("  WarmUpTime: " + std::to_string(warmUpTime) + " (seconds)", "GameConfig", LOG_DEBUG);
+    Utilities::Log("  UpdateRate: " + std::to_string(updateRate) + " (times/seconds)", "GameConfig", LOG_DEBUG);
+    Utilities::Log("  UpdateTime: " + std::to_string(updateTime) + " (seconds)", "GameConfig", LOG_DEBUG);
+}
+
+void GameConfig::LogFilePaths(std::map<std::string, std::string>& paths, std::string typeName) const
+{
+    for (const auto& pair : paths)
+    {
+        Utilities::Log(typeName + ": " + pair.second, "GameConfig", LOG_DEBUG);
+    }
+
 }
 
 void GameConfig::Init()
@@ -46,10 +55,33 @@ void GameConfig::Init()
     for (size_t i = 0; i < config.count; ++i)
     {
         auto& [key, text, desc] = config.values[i];
-        Utilities::Log("Key: " + std::string(key) + ", Value: " + std::string(text) + ", Description: " + std::string(desc), "GameConfig", LOG_INFO);
+        Utilities::Log("Key: " + std::string(key) + ", Value: " + std::string(text) + ", Description: " + std::string(desc), "GameConfig", LOG_DEBUG);
     }
 
-    Utilities::Log(std::to_string(updateRate));
     updateTime = 1.0f / updateRate;
+
+    fs::path assetsDirectory = fs::path("./") / ASSETS_DIRECTORY;
+    Utilities::Log("Gathering texture paths...", "GameConfig", LOG_INFO);  // FIXME DEBUG
+    fs::path texturesDirectory = assetsDirectory / TEXTURES_DIRECTORY;
+    Utilities::LoadFilesFromDirectory(texturesDirectory.string(), TEXTURE_EXTENSION, texturePaths);
+    LogFilePaths(texturePaths, "Texture");
+    
+    Utilities::Log("Gathering shader paths...", "GameConfig", LOG_INFO);  // FIXME DEBUG
+    fs::path shadersDirectory = assetsDirectory / SHADERS_DIRECTORY;
+    Utilities::LoadFilesFromDirectory(shadersDirectory.string(), VERTEX_SHADER_EXTENSION, vertexShaderPaths);
+    Utilities::LoadFilesFromDirectory(shadersDirectory.string(), FRAGMENT_SHADER_EXTENSION, fragmentShaderPaths);
+
+    shaderPaths[M_MR_ANGRY_CUBE_BODY] = vertexShaderPaths[M_MR_ANGRY_CUBE_BODY] + "|" + fragmentShaderPaths[M_MR_ANGRY_CUBE_BODY];
+    shaderPaths[M_MR_ANGRY_CUBE_FACE] = vertexShaderPaths[M_MR_ANGRY_CUBE_FACE] + "|" + fragmentShaderPaths[M_MR_ANGRY_CUBE_FACE];
+
+    shaderPaths["static-object"] = vertexShaderPaths["base"] + "|" + fragmentShaderPaths["base"];
+    LogFilePaths(vertexShaderPaths, "Vertex Shader");
+    LogFilePaths(fragmentShaderPaths, "Fragment Shader");
+
+    Utilities::Log("Gathering model paths...", "GameConfig");
+    fs::path modelsDirectory = assetsDirectory / MODELS_DIRECTORY;
+    Utilities::LoadFilesFromDirectory(modelsDirectory.string(), MODEL_EXTENSION, modelPaths);
+    LogFilePaths(modelPaths, "Model");
+
     configured = true;
 }

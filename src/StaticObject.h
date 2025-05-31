@@ -5,7 +5,7 @@
 class StaticObject : public GameObject
 {
 public:
-    StaticObject(Model* model, Material* material, Texture* texture);
+    StaticObject(Model* model, std::vector<Material*> materials);
     void Render() override;
     void Update(float deltaTime) override;
 };

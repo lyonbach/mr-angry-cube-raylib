@@ -148,3 +148,17 @@ const int MoveBehaviour::MoveBehaviourCount()
 {
     return GetAllBehaviourNames().size();
 }
+
+const std::string MoveBehaviour::GetTextureNameFromBehaviour(MoveBehaviourName moveBehaviourName)
+{
+    std::map<MoveBehaviourName, std::string> moveBehaviourTextureMapping = {
+        {MoveBehaviourName::NormalMoveBehaviour, T_MR_ANGRY_CUBE_FACE_NORMAL},
+        {MoveBehaviourName::MoveBehaviourAngerLevel1, T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_1},
+        {MoveBehaviourName::MoveBehaviourAngerLevel2, T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_2},
+        {MoveBehaviourName::MoveBehaviourAngerLevel3, T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_3},
+        {MoveBehaviourName::MoveBehaviourAngerLevel4, T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_4},
+        {MoveBehaviourName::MoveBehaviourAngerLevelInsane, T_MR_ANGRY_CUBE_FACE_ANGER_LEVEL_5}
+    };
+
+    return moveBehaviourTextureMapping[moveBehaviourName];
+}

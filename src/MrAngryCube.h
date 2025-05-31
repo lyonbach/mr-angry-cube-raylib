@@ -1,12 +1,13 @@
 #include "GameObject.h"
 #include "MoveBehaviour.h"
 #include "AngerControlBehaviour.h"
+#include "TextureAnimation.h"
 
 
 class MrAngryCube : public GameObject
 {
 public:
-    MrAngryCube(Model* model, Material* material, Texture* texture);
+    MrAngryCube(Model* model, std::vector<Material*> materials);
     ~MrAngryCube();
     void Render() override;
     void Update(float deltaTime) override;
@@ -25,9 +26,10 @@ public:
     Vector3 rotation;
     MoveBehaviourName nextMoveBehaviourName = MoveBehaviourName::NoMoveBehaviour;
     MoveBehaviourName currentMoveBehaviourName = nextMoveBehaviourName;
-
+    
 private:
     void ApplyMoveBehaviourChange();
+    TextureAnimation* m_FaceAnimation;
     MACMoveBehaviourBase* m_MoveBehaviour;
     NormalAngerControlBehaviour* m_AngerControlBehaviour;
 };
