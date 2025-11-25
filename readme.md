@@ -1,5 +1,5 @@
 #### Welcome to the Mr. Angry Cube Code Repository!
 
-I wanted to learn more about game math and started to create my game idea. Let us see where it goes!<br>
+I am exploring game math as part of developing my game idea and observing how the process progresses.<br>
 
 ![Mr. Angry Cube](./textures/mr-angry-cube-artwork.png)
