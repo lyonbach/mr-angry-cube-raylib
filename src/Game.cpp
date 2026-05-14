@@ -235,8 +235,12 @@ void Game::Update()
         }
     }
     if (m_Player->IsAtQuarterRotation(m_Player->rotation))
-    {
+    {   // Here we change the rotation axis when it is eligible.
         currentRotationAxis = nextRotationAxis;
+        if (m_Player->IsFaceOnTheGround())
+        {
+            // Utilities::Log("Face on the ground!", "AAAAAA", LOG_DEBUG);  // FIXME
+        }
     }
 }
 
@@ -343,7 +347,7 @@ int Game::Run()
         try {
             HandleKeyEvents();
         } catch (const std::exception& e) {
-            Utilities::Log("Exception caught in main loop: " + std::string(e.what()), "Game", LOG_ERROR);
+            Utilities::Log("Exception caught during key events handling: " + std::string(e.what()), "Game", LOG_ERROR);
             returnCode = 1;
             break;
         } catch (...) {

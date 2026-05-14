@@ -1,5 +1,6 @@
 #include "MrAngryCube.h"
 #include "Game.h"
+#include "Utilities.h"
 
 
 MrAngryCube::MrAngryCube(Model* model, std::vector<Material*> materials)
@@ -27,26 +28,24 @@ void MrAngryCube::Render()
 {
     DrawMesh(model->meshes[0], *materials[0], transform);
     DrawMesh(model->meshes[1], *materials[1], transform);
+    m_FaceAnimation->Update();
 }
 
 void MrAngryCube::Update(float deltaTime)
 {
     m_AngerControlBehaviour->Update();
     m_MoveBehaviour->Action(this);
-    m_FaceAnimation->Update();
     if (m_AngerControlBehaviour->angerCounter >= MAXIMUM_ANGER)
     {
         auto allBehaviours = MoveBehaviour::GetAllBehaviourNames();
         unsigned int idx = GetMoveBehaviourIndex();
         SetMoveBehaviour(allBehaviours[(idx + 1) % allBehaviours.size()]);
         m_AngerControlBehaviour->angerCounter = MINIMUM_ANGER;
-
         Utilities::Log("Current move behaviour index: " + std::to_string(idx), "MrAngryCube", LOG_DEBUG);
-
     }
     
     if (IsAtQuarterRotation(rotation) && nextMoveBehaviourName != MoveBehaviourName::NoMoveBehaviour)
-    {
+    {   // Here we change the move behaviour when it is eligible.
         ApplyMoveBehaviourChange();
     }
 }
@@ -75,6 +74,17 @@ bool MrAngryCube::IsAtQuarterRotation(Vector3& rotation) const
         abs(fmod(rotation.z, 90.0f)) < 0.05f
     );
     return result;
+}
+
+bool MrAngryCube::IsFaceOnTheGround()
+{
+    if (IsAtQuarterRotation(rotation))  // PERFORMANCE
+    {
+        Vector3 origin = Vector3Transform({0.0f, 0.0f, 0.0f}, transform);
+        Vector3 upPoint = Vector3Transform({0.0f, 1.0f, 0.0f}, transform);
+        return roundf(Vector3Subtract(upPoint, origin).y)== -1;
+    }
+    return false;
 }
 
 bool MrAngryCube::HasEverMoved() const

@@ -61,12 +61,12 @@ void GameConfig::Init()
     updateTime = 1.0f / updateRate;
 
     fs::path assetsDirectory = fs::path("./") / ASSETS_DIRECTORY;
-    Utilities::Log("Gathering texture paths...", "GameConfig", LOG_INFO);  // FIXME DEBUG
+    Utilities::Log("Gathering texture paths...", "GameConfig", LOG_DEBUG);
     fs::path texturesDirectory = assetsDirectory / TEXTURES_DIRECTORY;
     Utilities::LoadFilesFromDirectory(texturesDirectory.string(), TEXTURE_EXTENSION, texturePaths);
     LogFilePaths(texturePaths, "Texture");
-    
-    Utilities::Log("Gathering shader paths...", "GameConfig", LOG_INFO);  // FIXME DEBUG
+
+    Utilities::Log("Gathering shader paths...", "GameConfig", LOG_DEBUG);
     fs::path shadersDirectory = assetsDirectory / SHADERS_DIRECTORY;
     Utilities::LoadFilesFromDirectory(shadersDirectory.string(), VERTEX_SHADER_EXTENSION, vertexShaderPaths);
     Utilities::LoadFilesFromDirectory(shadersDirectory.string(), FRAGMENT_SHADER_EXTENSION, fragmentShaderPaths);

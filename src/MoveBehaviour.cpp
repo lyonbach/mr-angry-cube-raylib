@@ -6,7 +6,7 @@ Vector2 VecSin(Vector2 vec) {
     return (Vector2){sin(DEG2RAD * (45 + abs((int)vec.x) % 90)), sin(DEG2RAD * (45 + abs((int)vec.y % 90)))};
 }
 
-void QuantizeVector3(Vector3& vector)
+void QuantizeVector3(Vector3& vector)  // TODO MOVE TO UTILS
 {
     vector.x = round(vector.x * 2) / 2;
     vector.y  = round(vector.y * 2) / 2;
@@ -93,7 +93,7 @@ void MACNoRotateMoveBehaviour::Action(GameObject* gameObject)
 
     Vector2 deltaY = Vector2Scale(Vector2Scale(VecSin({nextRotation.x, nextRotation.z}), player->hypotenuse), 1 / player->halfSize);
     nextTransform.m12 = -nextRotation.z / 90.0f * player->size * 2;
-    // nextTransform.m13 = deltaY.y * deltaY.x * player->size;
+    // nextTransform.m13 = deltaY.y * deltaY.x * player->size;  // FIXME COMMENTED OUT CODE!
     nextTransform.m14 = nextRotation.x / 90.0f  * player->size * 2;
     player->transform = nextTransform;
 }

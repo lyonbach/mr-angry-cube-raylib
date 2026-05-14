@@ -15,6 +15,7 @@ public:
     unsigned int GetMoveBehaviourIndex() const;
     void SetAnger(float newAnger);
     bool IsAtQuarterRotation(Vector3& vector) const;
+    bool IsFaceOnTheGround();
     bool HasEverMoved() const;
     void SetMoveBehaviour(MoveBehaviourName behaviourType);
 

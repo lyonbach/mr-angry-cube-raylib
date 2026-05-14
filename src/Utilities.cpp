@@ -53,6 +53,15 @@ void Utilities::ScheduleWarmUp()
         }, game.gameConfig->warmUpTime );
 }
 
+Vector3 Utilities::QuantizeVector3(Vector3 vector)
+{
+    Vector3 vectorTemp;
+    vectorTemp.x = round(vector.x * 2) / 2;
+    vectorTemp.y  = round(vector.y * 2) / 2;
+    vectorTemp.z = round(vector.z * 2) / 2;
+    return vectorTemp;
+}
+
 ScheduledEvent::ScheduledEvent(std::function<void()> callback, float time) : callbackFunction(callback), waitTime(time)
 {
     setTime = GetTime();

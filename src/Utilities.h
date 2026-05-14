@@ -24,5 +24,6 @@ namespace Utilities
     void LoadFilesFromDirectory(const std::string& directoryPath, const std::string& extension, std::map<std::string, std::string>& mapping);
     void ScheduleEvent(std::function<void()> callback, float time);
     void ScheduleWarmUp();
+    Vector3 QuantizeVector3(Vector3 vector);
 }
 

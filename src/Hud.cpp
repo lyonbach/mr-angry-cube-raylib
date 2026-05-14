@@ -22,6 +22,7 @@ void Hud::Render()
     DrawText(("Rot: " + Hud::Vector3ToString(rotation)).c_str(), 50, GetScreenHeight() - 200, fontSize, YELLOW);
     DrawText(("Vel: " + Hud::Vector3ToString(velocity)).c_str(), 50, GetScreenHeight() - 150, fontSize, YELLOW);
     DrawText(("Pos: " + Hud::Vector3ToString(position)).c_str(), 50, GetScreenHeight() - 100, fontSize, YELLOW);
+    DrawText(("Face on the Ground: " + std::string(player->IsFaceOnTheGround() ? "YES!" : "NOPE")).c_str(), 50, GetScreenHeight() - 50, fontSize, YELLOW);
 }
 
 std::string Hud::Vector3ToString(Vector3& vector)
