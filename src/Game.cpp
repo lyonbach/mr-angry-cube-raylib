@@ -4,6 +4,7 @@
 #include "Gui.h"
 #include "StaticObject.h"
 #include <stdexcept>
+#include <algorithm>
 
 bool AssertLevelLoaded()
 {
@@ -402,12 +403,12 @@ int Game::Run()
                 if (levelMenu) {
                     delete levelMenu;
                     levelMenu = nullptr;
-
                 }
                 if (pauseMenu) {
                     delete pauseMenu;
                     pauseMenu = nullptr;
                 }
+
                 try {
                     if (shouldUpdate){ Update(); }
                 } catch (const std::exception& e) {

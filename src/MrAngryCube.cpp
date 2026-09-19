@@ -1,7 +1,7 @@
 #include "MrAngryCube.h"
 #include "Game.h"
 #include "Utilities.h"
-
+#include <algorithm>
 
 MrAngryCube::MrAngryCube(Model* model, std::vector<Material*> materials)
     : GameObject(model, materials)

@@ -1,5 +1,4 @@
 #include "Game.h"
-// #include "raylib.h"
 #include <memory>
 
 int main()
@@ -11,7 +10,6 @@ int main()
 
     const char* wd = GetWorkingDirectory();
     GameConfig gameConfig("game.ini");
-    Game* gameInstance = &Game::Get();
-    gameInstance->Init(gameConfig);
-    return gameInstance->Run();
+    Game::Get().Init(gameConfig);
+    return Game::Get().Run();
 }
