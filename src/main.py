@@ -34,11 +34,17 @@ class MrAngryCube:
         self.size = size
         self.behaviour = MrAngryCubeMoveBehaviour(self)
 
+        texture = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/metal.png")
+        shader =  raylib.load_shader(
+            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/base.vs",
+            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/base.fs"
+            )
+
         self.model = raylib.load_model("/media/lyonbach/work/Projects/mr-angry-cube-raylib/models/mr_angry_cube.obj")
         self.model.materialCount = 2
         self.model.meshCount = 2
-        self.model.materials[0] = raylib.load_material_default()
-        self.model.materials[0].tex
+        self.model.materials[0].shader = shader
+        self.model.materials[0].maps[raylib.MATERIAL_MAP_DIFFUSE].texture = texture
 
     @property
     def position(self):
