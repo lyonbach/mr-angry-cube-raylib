@@ -6,6 +6,44 @@ V4  = raylib.Vector4
 TRS = raylib.Matrix
 mul_v3 = raylib.vector3_multiply
 
+def snap_vector_to_cardinal(v: raylib.Vector3) -> raylib.Vector3:
+    ax, ay, az = abs(v.x), abs(v.y), abs(v.z)
+
+    # Identify which cardinal axis is closest
+    if ax >= ay and ax >= az:
+        return raylib.Vector3(1.0 if v.x > 0 else -1.0, 0.0, 0.0)
+    elif ay >= ax and ay >= az:
+        return raylib.Vector3(0.0, 1.0 if v.y > 0 else -1.0, 0.0)
+    else:
+        return raylib.Vector3(0.0, 0.0, 1.0 if v.z > 0 else -1.0)
+
+def snap_rotation_to_grid(mat: raylib.Matrix) -> raylib.Matrix:
+    right = raylib.Vector3(mat.m0, mat.m1, mat.m2)
+    up    = raylib.Vector3(mat.m4, mat.m5, mat.m6)
+
+    snapped_right = snap_vector_to_cardinal(right)
+    snapped_up    = snap_vector_to_cardinal(up)
+
+    snapped_forward = raylib.vector3_cross_product(snapped_right, snapped_up)
+
+    # 4. Write back the snapped rotation basis
+    mat.m0, mat.m1, mat.m2 = snapped_right.x, snapped_right.y, snapped_right.z
+    mat.m4, mat.m5, mat.m6 = snapped_up.x, snapped_up.y, snapped_up.z
+    mat.m8, mat.m9, mat.m10 = snapped_forward.x, snapped_forward.y, snapped_forward.z
+    return mat
+
+def snap_translation_to_grid(mat: raylib.Matrix, grid_size: float = 1.0) -> raylib.Matrix:
+    # m12, m13, m14 contain the XYZ world position
+    mat.m12 = round(mat.m12 / grid_size) * grid_size
+    mat.m13 = round(mat.m13 / grid_size) * grid_size
+    mat.m14 = round(mat.m14 / grid_size) * grid_size
+    return mat
+
+def snap_matrix_to_grid(mat: raylib.Matrix, grid_size: float = 1.0) -> raylib.Matrix:
+    mat = snap_rotation_to_grid(mat)
+    mat = snap_translation_to_grid(mat, grid_size)
+    return mat
+
 
 def print_v3(vec: V3):
     print(f"Vec: X: {vec.x} | Y: {vec.y} | Z: {vec.z}")
@@ -68,11 +106,12 @@ class MrAngryCubeMoveBehaviour:
             self._can_move = False
             self._quarter_rotation = 0
 
-            rot_vec: V3 = self.get_rotation_vector()
-            rot_add: V3 = raylib.vector3_multiply(rot_vec, get_v3(90, 90, 90))
-            r = raylib.vector3_add(rot_add, quantize_v3(self.rotation))
+            # rot_vec: V3 = self.get_rotation_vector()
+            # rot_add: V3 = raylib.vector3_multiply(rot_vec, get_v3(90, 90, 90))
+            # r = raylib.vector3_add(rot_add, quantize_v3(self.rotation))
+            # self.transform = raylib.matrix_multiply(raylib.matrix_rotate_xyz(to_rad_vec3(r)), raylib.matrix_translate(self.position.x, self.position.y, self.position.z))
 
-            self.transform = raylib.matrix_multiply(raylib.matrix_rotate_xyz(to_rad_vec3(r)), raylib.matrix_translate(self.position.x, self.position.y, self.position.z))
+            self.transform = snap_matrix_to_grid(self.transform)
             self.__last_move_time = raylib.get_time()
 
         else:
