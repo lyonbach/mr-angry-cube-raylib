@@ -68,14 +68,11 @@ class Game:
             raylib.draw_grid(20, 1.0)
 
             key_events_listener.update()
-
             mr_angry_cube.update()
             mr_angry_cube.draw()
-
             follow_camera.update()
 
             raylib.end_mode_3d()
-
             raylib.end_drawing()
         # De-Initialization
         raylib.close_window()  # Close window and OpenGL context

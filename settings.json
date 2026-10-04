@@ -13,8 +13,14 @@
     "wait_time": 0.25
   },
   "assets": {
-    "model_path": "models/mr_angry_cube_1.obj",
-    "body_texture": "textures/test_1.png",
-    "face_texture": "textures/33ad35f1.png"
+    "player": {
+      "model_path": "models/mr_angry_cube.obj",
+      "body_tex": "textures/mr-angry-cube-body-normal.png",
+      "face_tex": "textures/mr-angry-cube-face-normal.png",
+      "body_vs":"shaders/mr-angry-cube-body.vs",
+      "body_fs":"shaders/mr-angry-cube-body.fs",
+      "face_vs":"shaders/mr-angry-cube-face.vs",
+      "face_fs":"shaders/mr-angry-cube-face.fs"
+    }
   }
 }

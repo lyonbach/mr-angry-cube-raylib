@@ -1,6 +1,6 @@
 from mac_types import *
 from mac_move_behaviour import MrAngryCubeMoveBehaviour
-from mac_helpers import get_v3
+from mac_helpers import get_v3, get_game
 from mac_texture_animation import TextureAnimation
 
 
@@ -11,26 +11,26 @@ class MrAngryCube:
         self.size = size
         self.behaviour = MrAngryCubeMoveBehaviour(self)
 
-        self.model = raylib.load_model("/media/lyonbach/work/Projects/mr-angry-cube-raylib/models/mr_angry_cube_1.obj")
+        game = get_game()
+        self.model = raylib.load_model(game.settings["assets"]["player"]["model_path"])
         assert self.model.meshCount >= 2, f"Expected >= 2 meshes in OBJ, found {self.model.meshCount}"
 
         body_shader = raylib.load_shader(
-            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-body.vs",
-            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-body.fs"
+            game.settings["assets"]["player"]["body_vs"],
+            game.settings["assets"]["player"]["body_fs"],
         )
 
         face_shader = raylib.load_shader(
-            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-face.vs",
-            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-face.fs"
+            game.settings["assets"]["player"]["face_vs"],
+            game.settings["assets"]["player"]["face_fs"],
         )
 
-        texture_body = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/test_1.png")
+        texture_body = raylib.load_texture(game.settings["assets"]["player"]["body_tex"])
         self.mat_body = raylib.load_material_default()
         self.mat_body.shader = body_shader
         self.mat_body.maps[raylib.MATERIAL_MAP_DIFFUSE].texture = texture_body
 
-        # texture_face = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/mr-angry-cube-face-0.png")
-        texture_face = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/33ad35f1.png")
+        texture_face = raylib.load_texture(game.settings["assets"]["player"]["face_tex"])
         self.mat_face = raylib.load_material_default()
         self.mat_face.shader = face_shader
         self.mat_face.maps[raylib.MATERIAL_MAP_DIFFUSE].texture = texture_face

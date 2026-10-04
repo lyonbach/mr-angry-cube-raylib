@@ -12,7 +12,7 @@ class TextureAnimation:
         loc_uv_offset = raylib.get_shader_location(self.shader, "uvOffset")
 
         # Set texel size once based on the texture's resolution
-        uv_scale_data  = raylib.ffi.new("float[2]", [0, 0])  # FIXME
+        uv_scale_data  = raylib.ffi.new("float[2]", [1/3, 1/3])  # FIXME
         raylib.set_shader_value(self.shader, loc_uv_scale, uv_scale_data, raylib.ShaderUniformDataType.SHADER_UNIFORM_VEC2)
 
         # Update moveBehaviourIndex in your update loop whenever it changes
