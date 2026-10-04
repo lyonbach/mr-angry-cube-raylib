@@ -1,17 +1,18 @@
 from __future__ import annotations
 from mac_types import *
 
-from mac_helpers import Heading, get_v3, get_minus_v3, snap_matrix_to_grid
+from mac_helpers import Heading, get_v3, get_minus_v3, snap_matrix_to_grid, get_game
 
 
 
 class MrAngryCubeMoveBehaviour:
 
     def __init__(self, player: MrAngryCube):
+        game = get_game()
         self._quarter_rotation = 0.0
         self._can_move = True
-        self._wait_time = .50  # seconds
-        self._velocity  =  45  # degrees
+        self._wait_time = game.settings["player"]["wait_time"]
+        self._velocity  = game.settings["player"]["velocity"]
         self.__last_move_time = raylib.get_time()
 
         self.player = player

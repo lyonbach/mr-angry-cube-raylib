@@ -1,0 +1,20 @@
+{
+  "window": {
+    "width": 1200,
+    "height": 800,
+    "title": "Mr Angry Cube",
+    "full_screen": true,
+    "fps": 60
+  },
+  "player": {
+    "start_position": [0.0, 1.0, 0.0],
+    "size": 2.0,
+    "velocity": 145.0,
+    "wait_time": 0.25
+  },
+  "assets": {
+    "model_path": "models/mr_angry_cube_1.obj",
+    "body_texture": "textures/test_1.png",
+    "face_texture": "textures/33ad35f1.png"
+  }
+}

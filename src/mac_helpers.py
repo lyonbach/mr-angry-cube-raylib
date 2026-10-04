@@ -1,5 +1,6 @@
 from mac_types import *
 
+
 def get_v3(x: float=0.0, y: float=0.0, z: float=0.0) -> V3:
     return V3(x, y, z)
 
@@ -62,3 +63,6 @@ class Heading:
     EAST      : V3 = get_v3(z= 1.0)
     WEST      : V3 = get_v3(z=-1.0)
 
+def get_game():
+    from mac_game import Game
+    return Game()
