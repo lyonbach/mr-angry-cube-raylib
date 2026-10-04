@@ -70,15 +70,34 @@ class Heading:
     EAST      : V3 = get_v3(z= 1.0)
     WEST      : V3 = get_v3(z=-1.0)
 
+class Animation:
+    def __init__(self, shader: raylib.Shader, texture: raylib.Texture, frame_count: int):
+        self.shader = shader
+        self.texture = texture
+        self.frame_count = frame_count
+        self._current_frame = 0
+
+    def update(self):
+        loc_texel = raylib.get_shader_location(self.shader, "texelSize")
+        loc_move  = raylib.get_shader_location(self.shader, "moveBehaviourIndex")
+
+        # Set texel size once based on the texture's resolution
+        texel_data = raylib.ffi.new("float[2]", [1.0 / self.texture.width, 1.0 / self.texture.height])
+        raylib.set_shader_value(self.shader, loc_texel, texel_data, raylib.ShaderUniformDataType.SHADER_UNIFORM_VEC2)
+
+        # Update moveBehaviourIndex in your update loop whenever it changes
+        current_behavior = raylib.ffi.new("float[1]", [4.0])
+        raylib.set_shader_value(self.shader, loc_move, current_behavior, raylib.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
+
 class MrAngryCubeMoveBehaviour:
 
     def __init__(self, player: MrAngryCube):
         self._quarter_rotation = 0.0
         self._can_move = True
-        self._velocity = 90    # degrees
-        # self._wait_time = .50  # seconds
-        # self._velocity  =  45  # degrees
-        self._wait_time =  1.0 # seconds
+        # self._velocity = 90    # degrees
+        self._wait_time = .50  # seconds
+        self._velocity  =  45  # degrees
+        # self._wait_time =  1.0 # seconds
         self.__last_move_time = raylib.get_time()
 
         self.player = player
@@ -135,7 +154,6 @@ class MrAngryCubeMoveBehaviour:
         else:
             self._quarter_rotation += angle_step
 
-
         if self._can_move:
             initial_transform = raylib.matrix_translate(self._pivot_point.x, self._pivot_point.y, self._pivot_point.z)
             self.transform = mat_mul(self.transform, initial_transform)
@@ -154,26 +172,31 @@ class MrAngryCube:
         self.size = size
         self.behaviour = MrAngryCubeMoveBehaviour(self)
 
-        # 1. Load the model
         self.model = raylib.load_model("/media/lyonbach/work/Projects/mr-angry-cube-raylib/models/mr_angry_cube_1.obj")
         assert self.model.meshCount >= 2, f"Expected >= 2 meshes in OBJ, found {self.model.meshCount}"
 
-        # 2. Share a single shader instance
-        shader = raylib.load_shader(
-            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/base.vs",
-            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/base.fs"
+        body_shader = raylib.load_shader(
+            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-body.vs",
+            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-body.fs"
         )
 
-        # 3. Create independent materials rather than indexing unallocated C arrays
+        face_shader = raylib.load_shader(
+            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-face.vs",
+            "/media/lyonbach/work/Projects/mr-angry-cube-raylib/shaders/mr-angry-cube-face.fs"
+        )
+
         texture_body = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/test_1.png")
         self.mat_body = raylib.load_material_default()
-        self.mat_body.shader = shader
+        self.mat_body.shader = body_shader
         self.mat_body.maps[raylib.MATERIAL_MAP_DIFFUSE].texture = texture_body
 
-        texture_face = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/mr-angry-cube-face-0.png")
+        # texture_face = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/mr-angry-cube-face-0.png")
+        texture_face = raylib.load_texture("/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/33ad35f1.png")
         self.mat_face = raylib.load_material_default()
-        self.mat_face.shader = shader
+        self.mat_face.shader = face_shader
         self.mat_face.maps[raylib.MATERIAL_MAP_DIFFUSE].texture = texture_face
+
+        self.animation = Animation(self.mat_face.shader, texture_face, 9)
 
     @property
     def position(self):
@@ -185,6 +208,7 @@ class MrAngryCube:
 
     def update(self):
         self.behaviour.update()
+        self.animation.update()
 
     def draw(self):
         raylib.draw_mesh(self.model.meshes[0], self.mat_body, self.transform)
