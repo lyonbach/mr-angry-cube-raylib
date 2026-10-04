@@ -5,11 +5,11 @@ from mac_texture_animation import TextureAnimation
 
 
 class MrAngryCube:
-    def __init__(self, position: V3=get_v3(), size:float=2.0):
+    def __init__(self, position: V3=get_v3(), move_behaviour: MrAngryCubeMoveBehaviour=None, size:float=2.0):
         self.transform = raylib.matrix_identity()
         self.position = position
         self.size = size
-        self.behaviour = MrAngryCubeMoveBehaviour(self)
+        self.behaviour = move_behaviour or MrAngryCubeMoveBehaviour(self)
 
         game = get_game()
         self.model = raylib.load_model(game.settings["assets"]["player"]["model_path"])

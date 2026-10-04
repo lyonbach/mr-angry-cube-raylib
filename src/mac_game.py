@@ -44,21 +44,21 @@ class Game:
     def main(self):
         print(self.settings["window"]["full_screen"])
         raylib.init_window(self.screen_width, self.screen_height, "MrAngryCube")
-        raylib.set_target_fps(self.target_fps)  # Set our game to run at 60 frames-per-second
+        raylib.set_target_fps(self.target_fps)
         if self.settings["window"]["full_screen"]:
             raylib.toggle_fullscreen()
 
         # TODO THIS SHOULD BE LOADED FROM THE LEVEL DATA
         player_position = self.settings["player"]["start_position"]
-        player_velocity = self.settings["player"]["velocity"]
-
         mr_angry_cube = MrAngryCube(get_v3(*player_position))
-        follow_camera = FollowCamera(mr_angry_cube, get_v3(-10, 10, 10))
-        key_events_listener = KeyEventsListener(mr_angry_cube)
 
+        camera_offset = self.settings["camera"]["offset"]
+        camera_fovy = self.settings["camera"]["fovy"]
+        follow_camera = FollowCamera(mr_angry_cube, get_v3(*camera_offset), camera_fovy)
+
+        key_events_listener = KeyEventsListener(mr_angry_cube)
         # Main game loop
         while not raylib.window_should_close():  # Detect window close button or ESC key
-            # player.behaviour.heading = Heading.NO_HEADING
             # Update
             raylib.begin_drawing()
             raylib.clear_background(raylib.DARKBLUE)
@@ -74,5 +74,6 @@ class Game:
 
             raylib.end_mode_3d()
             raylib.end_drawing()
+
         # De-Initialization
         raylib.close_window()  # Close window and OpenGL context

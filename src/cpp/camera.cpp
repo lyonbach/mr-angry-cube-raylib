@@ -19,6 +19,6 @@ void FollowCamera::Update() {
     Vector3 diff = Vector3Subtract(targetPos, camera.position);
     camera.position = Vector3Add(camera.position, Vector3Scale(diff, 0.025f));
     
-    camera.position.y = offset.y;
+    camera.position.y = playerPos.y + offset.y;
     camera.target = playerPos;
 }

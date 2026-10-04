@@ -1,8 +1,13 @@
 #include "player.hpp"
 #include "utils.hpp"
+#include "game.hpp"
 #include <iostream>
 
 MrAngryCubeMoveBehaviour::MrAngryCubeMoveBehaviour(MrAngryCube* p) : player(p) {
+    Game& game = Game::getInstance();
+    velocity = game.settings["player"]["velocity"];
+    waitTime = game.settings["player"]["wait_time"];
+    
     heading = Heading::EAST;
     nextHeading = Heading::EAST;
     lastMoveTime = GetTime();
@@ -79,17 +84,20 @@ MrAngryCube::MrAngryCube(Vector3 position, float s) : size(s), behaviour(this) {
     transform = MatrixIdentity();
     SetPosition(position);
 
-    model = LoadModel("models/mr_angry_cube_1.obj");
-    
-    Shader bodyShader = LoadShader("shaders/mr-angry-cube-body.vs", "shaders/mr-angry-cube-body.fs");
-    Shader faceShader = LoadShader("shaders/mr-angry-cube-face.vs", "shaders/mr-angry-cube-face.fs");
+    Game& game = Game::getInstance();
+    auto& assets = game.settings["assets"]["player"];
 
-    Texture2D textureBody = LoadTexture("textures/test_1.png");
+    model = LoadModel(assets["model_path"].get<std::string>().c_str());
+    
+    Shader bodyShader = LoadShader(assets["body_vs"].get<std::string>().c_str(), assets["body_fs"].get<std::string>().c_str());
+    Shader faceShader = LoadShader(assets["face_vs"].get<std::string>().c_str(), assets["face_fs"].get<std::string>().c_str());
+
+    Texture2D textureBody = LoadTexture(assets["body_tex"].get<std::string>().c_str());
     matBody = LoadMaterialDefault();
     matBody.shader = bodyShader;
     matBody.maps[MATERIAL_MAP_DIFFUSE].texture = textureBody;
 
-    Texture2D textureFace = LoadTexture("textures/33ad35f1.png");
+    Texture2D textureFace = LoadTexture(assets["face_tex"].get<std::string>().c_str());
     matFace = LoadMaterialDefault();
     matFace.shader = faceShader;
     matFace.maps[MATERIAL_MAP_DIFFUSE].texture = textureFace;
