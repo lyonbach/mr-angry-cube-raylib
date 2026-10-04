@@ -12,7 +12,8 @@ def main():
     )
 
     texture = raylib.load_texture(
-        "/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/33ad35f1.png"
+        "/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/mr-angry-cube-face-anger-level-1.png"
+        # "/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/33ad35f1.png"
         # "/media/lyonbach/work/Projects/mr-angry-cube-raylib/textures/texel_checker_crayon.png"
     )
 
@@ -35,7 +36,7 @@ def main():
     camera.fovy = 90
     camera.projection = raylib.CameraProjection.CAMERA_PERSPECTIVE
     camera.up = raylib.Vector3(0, 1, 0)
-    camera.position = raylib.Vector3(0, 2, 2)
+    camera.position = raylib.Vector3(0, 4, 4)
     camera.target = raylib.Vector3(0, 0, 0)
 
     uv_offsets = [
@@ -64,7 +65,7 @@ def main():
         raylib.begin_mode_3d(camera)
         raylib.clear_background(raylib.BLACK)
 
-        if raylib.get_time() - last_frame_change > 1/5:
+        if raylib.get_time() - last_frame_change > 1/10:
             value = uv_offsets[current_frame]
             print("setting...")
             print(value)
