@@ -25,6 +25,12 @@
       "body_fs":"shaders/mr-angry-cube-body.fs",
       "face_vs":"shaders/mr-angry-cube-face.vs",
       "face_fs":"shaders/mr-angry-cube-face.fs"
+    },
+    "enemy": {
+      "model_path": "models/mr_icosahedron.obj",
+      "main_tex": "textures/texel_checker.png",
+      "main_fs": "shaders/base.fs",
+      "main_vs": "shaders/base.vs"
     }
   }
 }

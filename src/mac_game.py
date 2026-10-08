@@ -1,9 +1,11 @@
-from typing import Dict
+from typing import Dict, List
 
 from mac_types import *
 from mac_helpers import Heading, get_v3
 from mac_camera import FollowCamera
 from mac_mr_angry_cube import MrAngryCube
+from mac_enemy import EnemyBase
+from mac_game_object import GameObject
 
 
 class KeyEventsListener:
@@ -34,7 +36,8 @@ class Game:
         return cls._instance
 
     def _init_game(self, settings: Dict=None):
-        self.settings = {}
+        self.game_objects: List[GameObject] = []
+        self.settings: Dict = {}
         if settings:
             self.settings.update(settings)
             self.screen_width  = settings["window"]["width"]
@@ -50,13 +53,19 @@ class Game:
 
         # TODO THIS SHOULD BE LOADED FROM THE LEVEL DATA
         player_position = self.settings["player"]["start_position"]
-        mr_angry_cube = MrAngryCube(get_v3(*player_position))
+        mr_angry_cube = MrAngryCube("player", get_v3(*player_position))
+        enemy = EnemyBase("enemy", get_v3(x=3), 1)
 
+        self.game_objects.extend([mr_angry_cube, enemy])
+        
         camera_offset = self.settings["camera"]["offset"]
         camera_fovy = self.settings["camera"]["fovy"]
         follow_camera = FollowCamera(mr_angry_cube, get_v3(*camera_offset), camera_fovy)
 
         key_events_listener = KeyEventsListener(mr_angry_cube)
+
+
+
         # Main game loop
         while not raylib.window_should_close():  # Detect window close button or ESC key
             # Update
@@ -68,8 +77,10 @@ class Game:
             raylib.draw_grid(20, 1.0)
 
             key_events_listener.update()
-            mr_angry_cube.update()
-            mr_angry_cube.draw()
+            for object in self.game_objects:
+                object.update()
+                object.draw()
+
             follow_camera.update()
 
             raylib.end_mode_3d()
