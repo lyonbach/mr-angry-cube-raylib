@@ -80,12 +80,9 @@ void MrAngryCubeMoveBehaviour::Update() {
     }
 }
 
-MrAngryCube::MrAngryCube(Vector3 position, float s) : size(s), behaviour(this) {
-    transform = MatrixIdentity();
-    SetPosition(position);
-
+MrAngryCube::MrAngryCube(const std::string& name, Vector3 position, float s) : GameObject(name, position, s), behaviour(this) {
     Game& game = Game::getInstance();
-    auto& assets = game.settings["assets"]["player"];
+    auto& assets = game.settings["assets"][name];
 
     model = LoadModel(assets["model_path"].get<std::string>().c_str());
     
@@ -106,18 +103,7 @@ MrAngryCube::MrAngryCube(Vector3 position, float s) : size(s), behaviour(this) {
 }
 
 MrAngryCube::~MrAngryCube() {
-    UnloadModel(model);
     delete animation;
-}
-
-Vector3 MrAngryCube::GetPosition() {
-    return { transform.m12, transform.m13, transform.m14 };
-}
-
-void MrAngryCube::SetPosition(Vector3 pos) {
-    transform.m12 = pos.x;
-    transform.m13 = pos.y;
-    transform.m14 = pos.z;
 }
 
 void MrAngryCube::Update() {

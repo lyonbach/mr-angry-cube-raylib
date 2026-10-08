@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "animation.hpp"
+#include "game_object.hpp"
 #include <string>
 
 struct Heading {
@@ -37,23 +38,17 @@ private:
     Vector3 GetRotationVector();
 };
 
-class MrAngryCube {
+class MrAngryCube : public GameObject {
 public:
-    MrAngryCube(Vector3 position, float size = 2.0f);
+    MrAngryCube(const std::string& name, Vector3 position, float size = 2.0f);
     ~MrAngryCube();
     
-    void Update();
-    void Draw();
+    void Update() override;
+    void Draw() override;
     
-    Vector3 GetPosition();
-    void SetPosition(Vector3 pos);
-    
-    Matrix transform;
-    float size;
     MrAngryCubeMoveBehaviour behaviour;
 
 private:
-    Model model;
     Material matBody;
     Material matFace;
     Animation* animation;
