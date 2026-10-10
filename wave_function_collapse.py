@@ -91,13 +91,22 @@ class Map:
                 self.pieces.append(Piece(i, j, piece_length, 300, 250))
 
     def generate(self):
-        available = list(COLORS.keys())
-        available.remove('x')
-        possible_north_east = [f'xx{p[0]}{p[1]}' for p in itertools.product(available, repeat=2)]
-        possible_east = [f'{p[0]}x{p[1]}{p[2]}' for p in itertools.product(available, repeat=3)]
-        possible_south_east = [f'x{p[0]}{p[1]}x' for p in itertools.product(available, repeat=2)]
-        possible_south = [f'{p[0]}{p[1]}x{p[2]}' for p in itertools.product(available, repeat=3)]
-        possible_south_west = [f'{p[0]}{p[1]}xx' for p in itertools.product(available, repeat=2)]
+        import random
+        available = [k for k in COLORS.keys() if k != 'x']
+
+        variants = (
+            [f'xx{p[0]}{p[1]}' for p in itertools.product(available, repeat=2)] +
+            [f'{p[0]}x{p[1]}{p[2]}' for p in itertools.product(available, repeat=3)] +
+            [f'x{p[0]}{p[1]}x' for p in itertools.product(available, repeat=2)] +
+            [f'{p[0]}{p[1]}x{p[2]}' for p in itertools.product(available, repeat=3)]
+        )
+
+        for piece in self.pieces:
+            v = random.choice(variants)
+            piece.north = v[0]
+            piece.east  = v[1]
+            piece.south = v[2]
+            piece.west  = v[3]
 
 
 def main():
@@ -106,6 +115,7 @@ def main():
     rl.init_window(width, height, "raylib [core] example - basic window")
     rl.set_target_fps(60)
     game_map = Map((10, 5), 60)
+    game_map.generate()
 
     camera = rl.Camera2D()
 
